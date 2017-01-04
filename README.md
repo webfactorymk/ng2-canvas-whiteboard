@@ -17,10 +17,10 @@ To reuse them anywhere, they need to be remapped (multiply the received x and y 
     ```json
     {
         "map": {
-            "ng2-modal": "node_modules/ng2-canvas-whiteboard"
+            "ng2-canvas-whiteboard": "node_modules/ng2-canvas-whiteboard"
         },
         "packages": {
-            "ng2-modal": { "main": "index.js", "defaultExtension": "js" }
+            "ng2-canvas-whiteboard": { "main": "index.js", "defaultExtension": "js" }
         }
     }
     ```
