@@ -1,0 +1,30 @@
+{
+  "name": "ng2-canvas-whiteboard",
+  "version": "1.0.0",
+  "description": "A Canvas component for Angular2 which supports free drawing.",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "tsc",
+    "watch": "tsc -w "
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebFactoryMk/ng2-canvas-whiteboard.git"
+  },
+  "author": "webfactory",
+  "license": "MIT",
+  "keywords": [
+    "angular2",
+    "canvas",
+    "drawing"
+  ],
+  "dependencies": {
+    "@angular/core": "^2.2.4",
+    "rxjs": "5.0.0-beta.12",
+    "zone.js": "^0.6.21"
+  },
+  "devDependencies": {
+    "@types/core-js": "^0.9.35",
+    "typescript": "^2.0.10"
+  }
+}
