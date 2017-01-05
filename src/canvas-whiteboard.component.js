@@ -1,180 +1,146 @@
-import {
-    Component,
-    Input,
-    Output,
-    EventEmitter,
-    AfterViewInit,
-    ViewChild,
-    ElementRef,
-    OnInit,
-    OnChanges
-} from '@angular/core';
-import {CanvasWhiteboardUpdate, UPDATE_TYPE} from "./canvas-whiteboard-update.model";
-import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
-
-@Component({
-    selector: 'canvas-whiteboard',
-    template: DEFAULT_TEMPLATE,
-    styles: [DEFAULT_STYLES]
-})
-
-export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges {
-    @Input() imageUrl: string;
-    @Input() aspectRatio: number;
-
-    @Input() drawButtonClass: string;
-    @Input() clearButtonClass: string;
-    @Input() undoButtonClass: string;
-
-    @Input() drawButtonEnabled: boolean = true;
-    @Input() clearButtonEnabled: boolean = true;
-    @Input() undoButtonEnabled: boolean = true;
-
-    @Output() onClear = new EventEmitter<any>();
-    @Output() onUndo = new EventEmitter<any>();
-    @Output() onBatchUpdate = new EventEmitter<CanvasWhiteboardUpdate[]>();
-    @Output() onImageLoaded = new EventEmitter<any>();
-
-    @ViewChild('canvas') canvas: ElementRef;
-    private _context: CanvasRenderingContext2D;
-    private _imageElement: HTMLImageElement;
-
-    private _shouldDraw = false;
-    private _canDraw = true;
-
-    private _lastX: number;
-    private _lastY: number;
-    private _clientDragging = false;
-
-    private _undoStack: CanvasWhiteboardUpdate[] = []; //Stores the value of start and count for each continuous stroke
-    private _pathStack: CanvasWhiteboardUpdate[] = [];
-    private _drawHistory: CanvasWhiteboardUpdate[] = [];
-    private _batchUpdates: CanvasWhiteboardUpdate[] = [];
-    private _updatesNotDrawn: any = [];
-
-    private _updateTimeout: any;
-
-
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var core_1 = require('@angular/core');
+var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
+var template_1 = require("./template");
+var CanvasWhiteboardComponent = (function () {
+    function CanvasWhiteboardComponent() {
+        this.drawButtonEnabled = true;
+        this.clearButtonEnabled = true;
+        this.undoButtonEnabled = true;
+        this.onClear = new core_1.EventEmitter();
+        this.onUndo = new core_1.EventEmitter();
+        this.onBatchUpdate = new core_1.EventEmitter();
+        this.onImageLoaded = new core_1.EventEmitter();
+        this._shouldDraw = false;
+        this._canDraw = true;
+        this._clientDragging = false;
+        this._undoStack = []; //Stores the value of start and count for each continuous stroke
+        this._pathStack = [];
+        this._drawHistory = [];
+        this._batchUpdates = [];
+        this._updatesNotDrawn = [];
+    }
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
      */
-    ngOnInit() {
+    CanvasWhiteboardComponent.prototype.ngOnInit = function () {
         this._context = this.canvas.nativeElement.getContext("2d");
         this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
-        } else {
+        }
+        else {
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
         }
-    }
-
-    ngAfterViewInit() {
+    };
+    CanvasWhiteboardComponent.prototype.ngAfterViewInit = function () {
         this._drawHistory = [];
-    }
-
+    };
     /**
      * If an image exists and it's url changes, we need to redraw the new image on the canvas.
      */
-    ngOnChanges(changes: any) {
+    CanvasWhiteboardComponent.prototype.ngOnChanges = function (changes) {
         if (changes.imageUrl && changes.imageUrl.currentValue != changes.imageUrl.previousValue) {
             if (changes.imageUrl.currentValue != null) {
                 this._loadImage();
-            } else {
+            }
+            else {
                 this._canDraw = false;
                 this._redrawBackground();
             }
         }
-    }
-
+    };
     /**
      * Load an image and draw it on the canvas (if an image exists)
      * @constructor
      * @param callbackFn A function that is called after the image loading is finished
      * @return Emits a value when the image has been loaded.
      */
-    private _loadImage(callbackFn?: any) {
+    CanvasWhiteboardComponent.prototype._loadImage = function (callbackFn) {
+        var _this = this;
         this._canDraw = false;
         this._imageElement = new Image();
-        this._imageElement.addEventListener("load", () => {
-            this._context.save();
-            this._drawImage(this._context, this._imageElement, 0, 0, this._context.canvas.width, this._context.canvas.height, 0.5, 0.5);
-            this._context.restore();
-            this.drawMissingUpdates();
-            this._canDraw = true;
+        this._imageElement.addEventListener("load", function () {
+            _this._context.save();
+            _this._drawImage(_this._context, _this._imageElement, 0, 0, _this._context.canvas.width, _this._context.canvas.height, 0.5, 0.5);
+            _this._context.restore();
+            _this.drawMissingUpdates();
+            _this._canDraw = true;
             callbackFn && callbackFn();
-            this.onImageLoaded.emit(true);
+            _this.onImageLoaded.emit(true);
         });
         this._imageElement.src = this.imageUrl;
-    }
-
+    };
     /**
      * Clears all content on the canvas.
      * @return Emits a value when the clearing is finished
      */
-    clearCanvas() {
+    CanvasWhiteboardComponent.prototype.clearCanvas = function () {
         this._clientDragging = false;
         this._redrawBackground();
         this._drawHistory = [];
         this._pathStack = [];
         this._undoStack = [];
         this.onClear.emit(true);
-    }
-
+    };
     /**
      * Clears the canvas and redraws the image if the url exists.
      * @param callbackFn A function that is called after the background is redrawn
      * @return Emits a value when the clearing is finished
      */
-    private _redrawBackground(callbackFn?: any) {
+    CanvasWhiteboardComponent.prototype._redrawBackground = function (callbackFn) {
         this._context.setTransform(1, 0, 0, 1, 0, 0);
         this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
         if (this.imageUrl) {
-            this._loadImage(() => {
+            this._loadImage(function () {
                 callbackFn && callbackFn();
             });
         }
-    }
-
+    };
     /**
      * Returns a value of whether the user clicked the draw button on the canvas.
      */
-    getShouldDraw() {
+    CanvasWhiteboardComponent.prototype.getShouldDraw = function () {
         return this._shouldDraw;
-    }
-
+    };
     /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
-    toggleShouldDraw() {
+    CanvasWhiteboardComponent.prototype.toggleShouldDraw = function () {
         this._shouldDraw = !this._shouldDraw;
-    }
-
+    };
     /**
      * Undo a drawing action on the canvas.
      * All drawings made after the last Start Draw (mousedown | touchstart) event are removed.
      * @return Emits a value when an Undo is created.
      */
-    undoCanvas() {
+    CanvasWhiteboardComponent.prototype.undoCanvas = function () {
+        var _this = this;
         if (this._undoStack.length === 0)
             return;
         var update = this._undoStack.pop();
         var lastDoodleIndex = this._drawHistory.lastIndexOf(update);
         if (lastDoodleIndex != -1) {
-            this._drawHistory = this._drawHistory.filter((update, index) => {
+            this._drawHistory = this._drawHistory.filter(function (update, index) {
                 return index < lastDoodleIndex;
             });
-            this._redrawBackground(() => {
-                var updatesToDraw = this._drawHistory;
-                this._drawHistory = [];
-                updatesToDraw.forEach((update) => {
-                    this._draw(update);
+            this._redrawBackground(function () {
+                var updatesToDraw = _this._drawHistory;
+                _this._drawHistory = [];
+                updatesToDraw.forEach(function (update) {
+                    _this._draw(update);
                 });
             });
             this.onUndo.emit(true);
         }
-    }
-
+    };
     /**
      * Catches the Mouse and Touch events made on the canvas.
      * If drawing is disabled (If an image exists but it's not loaded, or the user did not click Draw),
@@ -190,7 +156,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * an CanvasWhiteboardUpdate object of type "stop" will be drawn and then sent as an update to all receiving ends.
      *
      */
-    private _canvasUserEvents(event: any) {
+    CanvasWhiteboardComponent.prototype._canvasUserEvents = function (event) {
         if (!this._shouldDraw || !this._canDraw) {
             //Ignore all if we didn't click the _draw! button or the image did not load
             return;
@@ -204,14 +170,14 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                var update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.start);
+                var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.start);
                 this._draw(update);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (this._clientDragging) {
-                    var update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.drag);
+                    var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.drag);
                     this._draw(update);
                     this._createUpdate(update, event.offsetX, event.offsetY);
                 }
@@ -221,12 +187,11 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                var update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.stop);
+                var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.stop);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
         }
-    }
-
+    };
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
      * can reverse the mapping and get the same position as the one that
@@ -236,25 +201,21 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {number} eventX The offsetX that needs to be mapped
      * @param {number} eventY The offsetY that needs to be mapped
      */
-    private _createUpdate(update: CanvasWhiteboardUpdate, eventX: number, eventY: number) {
+    CanvasWhiteboardComponent.prototype._createUpdate = function (update, eventX, eventY) {
         update.setX(eventX / this._context.canvas.width);
         update.setY(eventY / this._context.canvas.height);
         this.sendUpdate(update);
-    }
-
-
+    };
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey was held and the keyCode is 90 (z), an undo action will be performed
      *
      * @param event The event that occured.
      */
-    private _canvasKeyUp(event: any) {
+    CanvasWhiteboardComponent.prototype._canvasKeyUp = function (event) {
         if (event.ctrlKey && event.keyCode === 90) {
-            // this.undoCanvas();
         }
-    }
-
+    };
     /**
      * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
      * are first reverse mapped so that they can be drawn in the proper place. The update
@@ -266,7 +227,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {CanvasWhiteboardUpdate} update The update object.
      * @param {boolean} mappedCoordinates? The offsetX that needs to be mapped
      */
-    private _draw(update: CanvasWhiteboardUpdate, mappedCoordinates?: boolean) {
+    CanvasWhiteboardComponent.prototype._draw = function (update, mappedCoordinates) {
         this._drawHistory.push(update);
         var xToDraw = update.getX();
         var yToDraw = update.getY();
@@ -274,12 +235,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             xToDraw = update.getX() * this._context.canvas.width;
             yToDraw = update.getY() * this._context.canvas.height;
         }
-
-        if (update.getType() === UPDATE_TYPE.start) {
+        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.start) {
             this._undoStack.push(update);
         }
-
-        if (update.getType() === UPDATE_TYPE.drag) {
+        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
             this._context.save();
             this._context.beginPath();
             this._context.lineWidth = 2;
@@ -291,11 +250,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             this._context.stroke();
             this._context.restore();
         }
-
         this._lastX = xToDraw;
         this._lastY = yToDraw;
-    }
-
+    };
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
      * multiple updates are sent at the same time). If this method is called, after 100 ms all updates
@@ -304,47 +261,50 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {CanvasWhiteboardUpdate} update The update object.
      * @return Emits an Array of Updates when the batch.
      */
-    sendUpdate(update: CanvasWhiteboardUpdate) {
+    CanvasWhiteboardComponent.prototype.sendUpdate = function (update) {
+        var _this = this;
         this._batchUpdates.push(update);
         if (!this._updateTimeout) {
-            this._updateTimeout = setTimeout(() => {
-                this.onBatchUpdate.emit(this._batchUpdates);
-                this._batchUpdates = [];
-                this._updateTimeout = null;
+            this._updateTimeout = setTimeout(function () {
+                _this.onBatchUpdate.emit(_this._batchUpdates);
+                _this._batchUpdates = [];
+                _this._updateTimeout = null;
             }, 100);
         }
     };
-
+    ;
     /**
      * Draws an Array of Updates on the canvas.
      *
      * @param {CanvasWhiteboardUpdate[]} updates The array with Updates.
      */
-    drawUpdates(updates: CanvasWhiteboardUpdate[]) {
+    CanvasWhiteboardComponent.prototype.drawUpdates = function (updates) {
+        var _this = this;
         if (this._canDraw) {
             this.drawMissingUpdates();
-            updates.forEach((update: CanvasWhiteboardUpdate) => {
-                this._draw(update, true);
+            updates.forEach(function (update) {
+                _this._draw(update, true);
             });
-        } else {
+        }
+        else {
             this._updatesNotDrawn = this._updatesNotDrawn.concat(updates);
         }
     };
-
+    ;
     /**
      * Draw any missing updates that were received before the image was loaded
      *
      */
-    drawMissingUpdates() {
+    CanvasWhiteboardComponent.prototype.drawMissingUpdates = function () {
+        var _this = this;
         if (this._updatesNotDrawn.length > 0) {
             var updatesToDraw = [].concat(this._updatesNotDrawn);
             this._updatesNotDrawn = [];
-            updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
-                this._draw(update, true);
+            updatesToDraw.forEach(function (update) {
+                _this._draw(update, true);
             });
         }
-    }
-
+    };
     /**
      * Draws an image on the canvas
      *
@@ -357,52 +317,102 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {number} offsetX The offsetX if the image size is larger than the canvas (aspect Ratio)
      * @param {number} offsetY The offsetY if the image size is larger than the canvas (aspect Ratio)
      */
-    private _drawImage(context: any, image: any, x: number, y: number, width: number, height: number, offsetX: number, offsetY: number) {
+    CanvasWhiteboardComponent.prototype._drawImage = function (context, image, x, y, width, height, offsetX, offsetY) {
         if (arguments.length === 2) {
             x = y = 0;
             width = context.canvas.width;
             height = context.canvas.height;
         }
-
         offsetX = typeof offsetX === 'number' ? offsetX : 0.5;
         offsetY = typeof offsetY === 'number' ? offsetY : 0.5;
-
-        if (offsetX < 0) offsetX = 0;
-        if (offsetY < 0) offsetY = 0;
-        if (offsetX > 1) offsetX = 1;
-        if (offsetY > 1) offsetY = 1;
-
+        if (offsetX < 0)
+            offsetX = 0;
+        if (offsetY < 0)
+            offsetY = 0;
+        if (offsetX > 1)
+            offsetX = 1;
+        if (offsetY > 1)
+            offsetY = 1;
         var imageWidth = image.width;
         var imageHeight = image.height;
         var radius = Math.min(width / imageWidth, height / imageHeight);
         var newWidth = imageWidth * radius;
         var newHeight = imageHeight * radius;
-        var finalDrawX: any;
-        var finalDrawY: any;
-        var finalDrawWidth: any;
-        var finalDrawHeight: any;
+        var finalDrawX;
+        var finalDrawY;
+        var finalDrawWidth;
+        var finalDrawHeight;
         var aspectRatio = 1;
-
         // decide which gap to fill
-        if (newWidth < width) aspectRatio = width / newWidth;
-        if (Math.abs(aspectRatio - 1) < 1e-14 && newHeight < height) aspectRatio = height / newHeight;
+        if (newWidth < width)
+            aspectRatio = width / newWidth;
+        if (Math.abs(aspectRatio - 1) < 1e-14 && newHeight < height)
+            aspectRatio = height / newHeight;
         newWidth *= aspectRatio;
         newHeight *= aspectRatio;
-
         // calculate source rectangle
         finalDrawWidth = imageWidth / (newWidth / width);
         finalDrawHeight = imageHeight / (newHeight / height);
-
         finalDrawX = (imageWidth - finalDrawWidth) * offsetX;
         finalDrawY = (imageHeight - finalDrawHeight) * offsetY;
-
         // make sure the source rectangle is valid
-        if (finalDrawX < 0) finalDrawX = 0;
-        if (finalDrawY < 0) finalDrawY = 0;
-        if (finalDrawWidth > imageWidth) finalDrawWidth = imageWidth;
-        if (finalDrawHeight > imageHeight) finalDrawHeight = imageHeight;
-
+        if (finalDrawX < 0)
+            finalDrawX = 0;
+        if (finalDrawY < 0)
+            finalDrawY = 0;
+        if (finalDrawWidth > imageWidth)
+            finalDrawWidth = imageWidth;
+        if (finalDrawHeight > imageHeight)
+            finalDrawHeight = imageHeight;
         // fill the image in destination rectangle
         context.drawImage(image, finalDrawX, finalDrawY, finalDrawWidth, finalDrawHeight, x, y, width, height);
-    }
-}
+    };
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "imageUrl", void 0);
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "aspectRatio", void 0);
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "drawButtonClass", void 0);
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "clearButtonClass", void 0);
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "undoButtonClass", void 0);
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "drawButtonEnabled", void 0);
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "clearButtonEnabled", void 0);
+    __decorate([
+        core_1.Input()
+    ], CanvasWhiteboardComponent.prototype, "undoButtonEnabled", void 0);
+    __decorate([
+        core_1.Output()
+    ], CanvasWhiteboardComponent.prototype, "onClear", void 0);
+    __decorate([
+        core_1.Output()
+    ], CanvasWhiteboardComponent.prototype, "onUndo", void 0);
+    __decorate([
+        core_1.Output()
+    ], CanvasWhiteboardComponent.prototype, "onBatchUpdate", void 0);
+    __decorate([
+        core_1.Output()
+    ], CanvasWhiteboardComponent.prototype, "onImageLoaded", void 0);
+    __decorate([
+        core_1.ViewChild('canvas')
+    ], CanvasWhiteboardComponent.prototype, "canvas", void 0);
+    CanvasWhiteboardComponent = __decorate([
+        core_1.Component({
+            selector: 'canvas-whiteboard',
+            template: template_1.DEFAULT_TEMPLATE,
+            styles: [template_1.DEFAULT_STYLES]
+        })
+    ], CanvasWhiteboardComponent);
+    return CanvasWhiteboardComponent;
+}());
+exports.CanvasWhiteboardComponent = CanvasWhiteboardComponent;

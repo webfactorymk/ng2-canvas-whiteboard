@@ -1,8 +1,4 @@
-# Node generated files
 node_modules
 npm-debug.log
-# OS generated files
-Thumbs.db
-.DS_Store
-runtime
-dist
+examples
+src

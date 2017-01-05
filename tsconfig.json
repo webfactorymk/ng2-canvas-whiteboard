@@ -1,21 +1,19 @@
 {
   "compilerOptions": {
-    "removeComments": false,
-    "noImplicitAny": false,
     "module": "commonjs",
     "target": "es5",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "declaration": true,
     "sourceMap": true,
     "moduleResolution": "node",
-    "rootDir": "."
+    "declaration": true,
+    "outDir": "./dist"
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "runtime",
-    "typings/main",
-    "typings/main.d.ts"
-  ]
+  "files": [
+    "./src/ng2-canvas-whiteboard.ts"
+  ],
+  "angularCompilerOptions": {
+    "genDir": "../aot",
+    "skipMetadataEmit": false
+  }
 }
