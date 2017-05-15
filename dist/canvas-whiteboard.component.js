@@ -8,18 +8,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require('@angular/core');
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
 var template_1 = require("./template");
 var CanvasWhiteboardComponent = (function () {
     function CanvasWhiteboardComponent() {
+        this.drawButtonText = "";
+        this.clearButtonText = "";
+        this.undoButtonText = "";
         this.drawButtonEnabled = true;
         this.clearButtonEnabled = true;
-        this.undoButtonEnabled = true;
+        this.undoButtonEnabled = false;
+        this.colorPickerEnabled = false;
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onBatchUpdate = new core_1.EventEmitter();
         this.onImageLoaded = new core_1.EventEmitter();
+        this._strokeColor = "rgb(216, 184, 0)";
         this._shouldDraw = false;
         this._canDraw = true;
         this._clientDragging = false;
@@ -34,9 +40,20 @@ var CanvasWhiteboardComponent = (function () {
      * according to the aspect ratio.
      */
     CanvasWhiteboardComponent.prototype.ngOnInit = function () {
+        this._initCanvasEventListeners();
         this._context = this.canvas.nativeElement.getContext("2d");
+        this._calculateCanvasWidthAndHeight();
+    };
+    CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
+        window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
+    };
+    CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
+        console.log(this._context.canvas);
+        console.log(this.canvas.nativeElement.parentNode.clientWidth);
+        console.log(this.canvas.nativeElement.parentNode.clientHeight);
         this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
+            console.log(this.aspectRatio);
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
         }
         else {
@@ -86,12 +103,15 @@ var CanvasWhiteboardComponent = (function () {
      * @return Emits a value when the clearing is finished
      */
     CanvasWhiteboardComponent.prototype.clearCanvas = function () {
+        this._removeCanvasData();
+        this.onClear.emit(true);
+    };
+    CanvasWhiteboardComponent.prototype._removeCanvasData = function (callbackFn) {
         this._clientDragging = false;
-        this._redrawBackground();
         this._drawHistory = [];
         this._pathStack = [];
         this._undoStack = [];
-        this.onClear.emit(true);
+        this._redrawBackground(callbackFn);
     };
     /**
      * Clears the canvas and redraws the image if the url exists.
@@ -106,6 +126,9 @@ var CanvasWhiteboardComponent = (function () {
                 callbackFn && callbackFn();
             });
         }
+        else {
+            callbackFn && callbackFn();
+        }
     };
     /**
      * Returns a value of whether the user clicked the draw button on the canvas.
@@ -118,6 +141,16 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype.toggleShouldDraw = function () {
         this._shouldDraw = !this._shouldDraw;
+    };
+    /**
+     * Replaces the drawing color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the stroke color
+     *
+     * @param {string} newStrokeColor The new stroke color
+     */
+    CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
+        this._strokeColor = newStrokeColor;
     };
     /**
      * Undo a drawing action on the canvas.
@@ -169,18 +202,19 @@ var CanvasWhiteboardComponent = (function () {
             return;
         }
         event.preventDefault();
+        var update;
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.start);
+                update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.start, this._strokeColor);
                 this._draw(update);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (this._clientDragging) {
-                    var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.drag);
+                    update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.drag, this._strokeColor);
                     this._draw(update);
                     this._createUpdate(update, event.offsetX, event.offsetY);
                 }
@@ -190,7 +224,7 @@ var CanvasWhiteboardComponent = (function () {
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.stop);
+                update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.stop, this._strokeColor);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
         }
@@ -217,7 +251,20 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype._canvasKeyUp = function (event) {
         if (event.ctrlKey && event.keyCode === 90) {
+            // this.undoCanvas();
         }
+    };
+    CanvasWhiteboardComponent.prototype._redrawCanvasOnResize = function (event) {
+        var _this = this;
+        console.log(this);
+        this._calculateCanvasWidthAndHeight();
+        var updatesToDraw = this._drawHistory;
+        console.log(updatesToDraw);
+        this._removeCanvasData(function () {
+            updatesToDraw.forEach(function (update) {
+                _this._draw(update, true);
+            });
+        });
     };
     /**
      * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
@@ -245,7 +292,7 @@ var CanvasWhiteboardComponent = (function () {
             this._context.save();
             this._context.beginPath();
             this._context.lineWidth = 2;
-            this._context.strokeStyle = "rgb(216, 184, 0)";
+            this._context.strokeStyle = update.getStrokeColor() || this._strokeColor;
             this._context.lineJoin = "round";
             this._context.moveTo(this._lastX, this._lastY);
             this._context.lineTo(xToDraw, yToDraw);
@@ -370,67 +417,82 @@ var CanvasWhiteboardComponent = (function () {
         // fill the image in destination rectangle
         context.drawImage(image, finalDrawX, finalDrawY, finalDrawWidth, finalDrawHeight, x, y, width, height);
     };
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', String)
-    ], CanvasWhiteboardComponent.prototype, "imageUrl", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Number)
-    ], CanvasWhiteboardComponent.prototype, "aspectRatio", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', String)
-    ], CanvasWhiteboardComponent.prototype, "drawButtonClass", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', String)
-    ], CanvasWhiteboardComponent.prototype, "clearButtonClass", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', String)
-    ], CanvasWhiteboardComponent.prototype, "undoButtonClass", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Boolean)
-    ], CanvasWhiteboardComponent.prototype, "drawButtonEnabled", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Boolean)
-    ], CanvasWhiteboardComponent.prototype, "clearButtonEnabled", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Boolean)
-    ], CanvasWhiteboardComponent.prototype, "undoButtonEnabled", void 0);
-    __decorate([
-        core_1.Output(), 
-        __metadata('design:type', Object)
-    ], CanvasWhiteboardComponent.prototype, "onClear", void 0);
-    __decorate([
-        core_1.Output(), 
-        __metadata('design:type', Object)
-    ], CanvasWhiteboardComponent.prototype, "onUndo", void 0);
-    __decorate([
-        core_1.Output(), 
-        __metadata('design:type', Object)
-    ], CanvasWhiteboardComponent.prototype, "onBatchUpdate", void 0);
-    __decorate([
-        core_1.Output(), 
-        __metadata('design:type', Object)
-    ], CanvasWhiteboardComponent.prototype, "onImageLoaded", void 0);
-    __decorate([
-        core_1.ViewChild('canvas'), 
-        __metadata('design:type', core_1.ElementRef)
-    ], CanvasWhiteboardComponent.prototype, "canvas", void 0);
-    CanvasWhiteboardComponent = __decorate([
-        core_1.Component({
-            selector: 'canvas-whiteboard',
-            template: template_1.DEFAULT_TEMPLATE,
-            styles: [template_1.DEFAULT_STYLES]
-        }), 
-        __metadata('design:paramtypes', [])
-    ], CanvasWhiteboardComponent);
     return CanvasWhiteboardComponent;
 }());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "imageUrl", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number)
+], CanvasWhiteboardComponent.prototype, "aspectRatio", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "drawButtonClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "clearButtonClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "undoButtonClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "drawButtonText", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "clearButtonText", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "undoButtonText", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], CanvasWhiteboardComponent.prototype, "drawButtonEnabled", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], CanvasWhiteboardComponent.prototype, "clearButtonEnabled", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], CanvasWhiteboardComponent.prototype, "undoButtonEnabled", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], CanvasWhiteboardComponent.prototype, "colorPickerEnabled", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", Object)
+], CanvasWhiteboardComponent.prototype, "onClear", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", Object)
+], CanvasWhiteboardComponent.prototype, "onUndo", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", Object)
+], CanvasWhiteboardComponent.prototype, "onBatchUpdate", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", Object)
+], CanvasWhiteboardComponent.prototype, "onImageLoaded", void 0);
+__decorate([
+    core_1.ViewChild('canvas'),
+    __metadata("design:type", core_1.ElementRef)
+], CanvasWhiteboardComponent.prototype, "canvas", void 0);
+CanvasWhiteboardComponent = __decorate([
+    core_1.Component({
+        selector: 'canvas-whiteboard',
+        template: template_1.DEFAULT_TEMPLATE,
+        styles: [template_1.DEFAULT_STYLES]
+    })
+], CanvasWhiteboardComponent);
 exports.CanvasWhiteboardComponent = CanvasWhiteboardComponent;
 //# sourceMappingURL=canvas-whiteboard.component.js.map

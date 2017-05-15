@@ -1,17 +1,21 @@
 export const DEFAULT_TEMPLATE = `
 <div class="canvas_wrapper_div">
      <span class="canvas_whiteboard_buttons">
+         <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled" [selectedColor]="_strokeColor" (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
          <button *ngIf="drawButtonEnabled" (click)="toggleShouldDraw()"
+                 [class.canvas_whiteboard_button-draw_animated]="getShouldDraw()"
                  class="canvas_whiteboard_button canvas_whiteboard_button-draw">
-                <i [class]="drawButtonClass" aria-hidden="true"
-                   [class.canvas_whiteboard_button-draw_animated]="getShouldDraw()"></i>
+                <i [class]="drawButtonClass" aria-hidden="true"></i>
+                   {{drawButtonText}}
         </button>
-        <button *ngIf="clearButtonEnabled" (click)="clearCanvas()" class="canvas_whiteboard_button">
+        <button *ngIf="clearButtonEnabled" (click)="clearCanvas()" class="canvas_whiteboard_button  canvas_whiteboard_button-clear">
             <i [class]="clearButtonClass" aria-hidden="true"></i>
+                    {{clearButtonText}}
         </button>
-         <button *ngIf="undoButtonEnabled" (click)="undoCanvas()" class="canvas_whiteboard_button">
+         <button *ngIf="undoButtonEnabled" (click)="undoCanvas()" class="canvas_whiteboard_button canvas_whiteboard_button-undo">
              <i [class]="undoButtonClass" aria-hidden="true"></i>
-        </button>
+                    {{undoButtonText}}
+    </button>
      </span>
     <canvas #canvas
             (mousedown)="_canvasUserEvents($event)" (mouseup)="_canvasUserEvents($event)"
@@ -70,6 +74,11 @@ export const DEFAULT_STYLES = `
         -webkit-transform: scale(1.2, 1.2);
         opacity: 0.0;
     }
+}
+.canvas_wrapper_div {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #afafaf;
 }
 
 .canvas_whiteboard_button-clear {

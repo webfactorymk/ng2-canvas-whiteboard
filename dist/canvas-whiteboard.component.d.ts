@@ -6,14 +6,19 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     drawButtonClass: string;
     clearButtonClass: string;
     undoButtonClass: string;
+    drawButtonText: string;
+    clearButtonText: string;
+    undoButtonText: string;
     drawButtonEnabled: boolean;
     clearButtonEnabled: boolean;
     undoButtonEnabled: boolean;
+    colorPickerEnabled: boolean;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onBatchUpdate: EventEmitter<CanvasWhiteboardUpdate[]>;
     onImageLoaded: EventEmitter<any>;
     canvas: ElementRef;
+    private _strokeColor;
     private _context;
     private _imageElement;
     private _shouldDraw;
@@ -32,6 +37,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * according to the aspect ratio.
      */
     ngOnInit(): void;
+    private _initCanvasEventListeners();
+    private _calculateCanvasWidthAndHeight();
     ngAfterViewInit(): void;
     /**
      * If an image exists and it's url changes, we need to redraw the new image on the canvas.
@@ -49,6 +56,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @return Emits a value when the clearing is finished
      */
     clearCanvas(): void;
+    private _removeCanvasData(callbackFn?);
     /**
      * Clears the canvas and redraws the image if the url exists.
      * @param callbackFn A function that is called after the background is redrawn
@@ -63,6 +71,14 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
     toggleShouldDraw(): void;
+    /**
+     * Replaces the drawing color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the stroke color
+     *
+     * @param {string} newStrokeColor The new stroke color
+     */
+    changeColor(newStrokeColor: string): void;
     /**
      * Undo a drawing action on the canvas.
      * All drawings made after the last Start Draw (mousedown | touchstart) event are removed.
@@ -102,6 +118,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param event The event that occured.
      */
     private _canvasKeyUp(event);
+    private _redrawCanvasOnResize(event);
     /**
      * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
      * are first reverse mapped so that they can be drawn in the proper place. The update

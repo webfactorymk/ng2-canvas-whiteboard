@@ -58,31 +58,58 @@ In the html file, you can insert the Canvas Whiteboard
 </canvas-whiteboard>
 ```
 
-#Drawing on the canvas
+# Drawing on the canvas
 
 The canvas drawing is triggered when the user touches the canvas, draws (moves the mouse or finger) and then stops drawing.
 When the drawing is started, after 100 ms all the signals in between are added to a list and are sent as a batch signal which is 
 emitted by the **onBatchUpdate** emitter. If received, the user can then manipulate with the sent signals.
 
-#Inputs
-###imageUrl: string (optional)
+# Inputs
+### imageUrl: string (optional)
 The path to the image. If not specified, the drawings will be placed on the background color of the canvas
 
-###aspectRatio: number (optional)
+### aspectRatio: number (optional)
 If specified, the canvas will be resized according to this ratio
 
-####drawButtonClass: string <br/>clearButtonClass: string
+#### drawButtonClass: string <br/>clearButtonClass: string
 The classes of the draw and clear buttons. Since the buttons do not contain any text, these classes are used in "\<i>"
 tags. <br/>
 Example:  
 ```html
-     [drawButtonClass]="'fa fa-pencil fa-2x'"
-     [clearButtonClass]="'fa fa-eraser fa-2x canvas_whiteboard_button-clear'"
+[drawButtonClass]="'fa fa-pencil fa-2x'"
+[clearButtonClass]="'fa fa-eraser fa-2x canvas_whiteboard_button-clear'"
    ```
-####drawButtonEnabled: boolean (default: true) <br/>clearButtonEnabled: boolean (default: true)
+#### drawButtonEnabled: boolean (default: true) <br/>clearButtonEnabled: boolean (default: true)
 Specifies whether or not the button for drawing or clearing the canvas should be shown.
 
-##Event emitters
+#### drawButtonText, clearButtonText
+Specify the text to add to the buttons, default is no text
+```html
+[drawButtonText]="'Draw'"
+[clearButtonText]="'Clear'"
+```
+
+### To add text to the buttons via css
+Each button has its on class (example: Draw button -> .canvas_whiteboard_button-draw)<br/>
+This button can be customized by overriding it's css
+```css
+.canvas_whiteboard_button-draw:before {
+  content: "Draw";
+}
+```
+will add the "Draw" text to the button.
+
+If using component-only styles, for this to work the viewEncapsulation must be set to None.
+```typescript
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+  encapsulation: ViewEncapsulation.None
+})
+```
+
+## Event emitters
 ```typescript
  @Output() onClear = new EventEmitter<any>();
  @Output() onBatchUpdate = new EventEmitter<CanvasWhiteboardUpdate[]>();
@@ -91,12 +118,12 @@ Specifies whether or not the button for drawing or clearing the canvas should be
 **onClear** is emitted when the canvas has been cleared. <br/>
 **onImageLoaded** is emitted if the user specified an image and it has successfully been drawn on the canvas.
 
-#Example of a drawn image
+# Example of a drawn image
 An example of a drawn image and shape on the canvas with additional css for the buttons and a date:
 
 ![Image of CanvasWhiteboard](example/canvas_draw_image.png)
 
-##Current limitations
+## Current limitations
 
 - There is no undo / redo functionality yet.
 - There is no color picker for drawing yet, the only supported color is **rgb(216, 184, 0)**.

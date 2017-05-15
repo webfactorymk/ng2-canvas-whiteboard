@@ -7,11 +7,16 @@
     "sourceMap": true,
     "moduleResolution": "node",
     "declaration": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "lib":  ["es5", "dom", "es6", "es2015.iterable", "es7"],
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
   },
   "files": [
     "./src/ng2-canvas-whiteboard.ts"
   ],
+
   "angularCompilerOptions": {
     "genDir": "../aot",
     "skipMetadataEmit": false

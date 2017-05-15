@@ -17,7 +17,6 @@ import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
     template: DEFAULT_TEMPLATE,
     styles: [DEFAULT_STYLES]
 })
-
 export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() imageUrl: string;
     @Input() aspectRatio: number;
@@ -26,9 +25,15 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() clearButtonClass: string;
     @Input() undoButtonClass: string;
 
+    @Input() drawButtonText: string = "";
+    @Input() clearButtonText: string = "";
+    @Input() undoButtonText: string = "";
+
     @Input() drawButtonEnabled: boolean = true;
     @Input() clearButtonEnabled: boolean = true;
-    @Input() undoButtonEnabled: boolean = true;
+    @Input() undoButtonEnabled: boolean = false;
+
+    @Input() colorPickerEnabled: boolean = false;
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -36,6 +41,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Output() onImageLoaded = new EventEmitter<any>();
 
     @ViewChild('canvas') canvas: ElementRef;
+
+    private _strokeColor: string = "rgb(216, 184, 0)";
     private _context: CanvasRenderingContext2D;
     private _imageElement: HTMLImageElement;
 
@@ -60,9 +67,22 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * according to the aspect ratio.
      */
     ngOnInit() {
+        this._initCanvasEventListeners();
         this._context = this.canvas.nativeElement.getContext("2d");
+        this._calculateCanvasWidthAndHeight();
+    }
+
+    private _initCanvasEventListeners() {
+        window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
+    }
+
+    private _calculateCanvasWidthAndHeight() {
+        console.log(this._context.canvas);
+        console.log(this.canvas.nativeElement.parentNode.clientWidth);
+        console.log(this.canvas.nativeElement.parentNode.clientHeight);
         this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
+            console.log(this.aspectRatio);
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
         } else {
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
@@ -113,12 +133,16 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @return Emits a value when the clearing is finished
      */
     clearCanvas() {
+        this._removeCanvasData();
+        this.onClear.emit(true);
+    }
+
+    private _removeCanvasData(callbackFn?: any) {
         this._clientDragging = false;
-        this._redrawBackground();
         this._drawHistory = [];
         this._pathStack = [];
         this._undoStack = [];
-        this.onClear.emit(true);
+        this._redrawBackground(callbackFn);
     }
 
     /**
@@ -133,6 +157,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             this._loadImage(() => {
                 callbackFn && callbackFn();
             });
+        } else {
+            callbackFn && callbackFn();
         }
     }
 
@@ -148,6 +174,17 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     toggleShouldDraw() {
         this._shouldDraw = !this._shouldDraw;
+    }
+
+    /**
+     * Replaces the drawing color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the stroke color
+     *
+     * @param {string} newStrokeColor The new stroke color
+     */
+    changeColor(newStrokeColor: string) {
+        this._strokeColor = newStrokeColor;
     }
 
     /**
@@ -200,18 +237,20 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             return;
         }
         event.preventDefault();
+        let update;
+
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                var update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.start);
+                update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.start, this._strokeColor);
                 this._draw(update);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (this._clientDragging) {
-                    var update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.drag);
+                    update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.drag, this._strokeColor);
                     this._draw(update);
                     this._createUpdate(update, event.offsetX, event.offsetY);
                 }
@@ -221,7 +260,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                var update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.stop);
+                update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.stop, this._strokeColor);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
         }
@@ -255,6 +294,19 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         }
     }
 
+    private _redrawCanvasOnResize(event: any) {
+        console.log(this);
+        this._calculateCanvasWidthAndHeight();
+        let updatesToDraw = this._drawHistory;
+
+        console.log(updatesToDraw);
+        this._removeCanvasData(() => {
+            updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
+                this._draw(update, true);
+            });
+        });
+    }
+
     /**
      * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
      * are first reverse mapped so that they can be drawn in the proper place. The update
@@ -283,7 +335,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             this._context.save();
             this._context.beginPath();
             this._context.lineWidth = 2;
-            this._context.strokeStyle = "rgb(216, 184, 0)";
+            this._context.strokeStyle = update.getStrokeColor() || this._strokeColor;
             this._context.lineJoin = "round";
             this._context.moveTo(this._lastX, this._lastY);
             this._context.lineTo(xToDraw, yToDraw);

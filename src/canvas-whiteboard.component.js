@@ -5,7 +5,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var core_1 = require('@angular/core');
+exports.__esModule = true;
+var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
 var template_1 = require("./template");
 var CanvasWhiteboardComponent = (function () {
@@ -214,6 +215,7 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype._canvasKeyUp = function (event) {
         if (event.ctrlKey && event.keyCode === 90) {
+            // this.undoCanvas();
         }
     };
     /**
@@ -367,52 +369,52 @@ var CanvasWhiteboardComponent = (function () {
         // fill the image in destination rectangle
         context.drawImage(image, finalDrawX, finalDrawY, finalDrawWidth, finalDrawHeight, x, y, width, height);
     };
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "imageUrl", void 0);
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "aspectRatio", void 0);
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "drawButtonClass", void 0);
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "clearButtonClass", void 0);
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "undoButtonClass", void 0);
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "drawButtonEnabled", void 0);
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "clearButtonEnabled", void 0);
-    __decorate([
-        core_1.Input()
-    ], CanvasWhiteboardComponent.prototype, "undoButtonEnabled", void 0);
-    __decorate([
-        core_1.Output()
-    ], CanvasWhiteboardComponent.prototype, "onClear", void 0);
-    __decorate([
-        core_1.Output()
-    ], CanvasWhiteboardComponent.prototype, "onUndo", void 0);
-    __decorate([
-        core_1.Output()
-    ], CanvasWhiteboardComponent.prototype, "onBatchUpdate", void 0);
-    __decorate([
-        core_1.Output()
-    ], CanvasWhiteboardComponent.prototype, "onImageLoaded", void 0);
-    __decorate([
-        core_1.ViewChild('canvas')
-    ], CanvasWhiteboardComponent.prototype, "canvas", void 0);
-    CanvasWhiteboardComponent = __decorate([
-        core_1.Component({
-            selector: 'canvas-whiteboard',
-            template: template_1.DEFAULT_TEMPLATE,
-            styles: [template_1.DEFAULT_STYLES]
-        })
-    ], CanvasWhiteboardComponent);
     return CanvasWhiteboardComponent;
 }());
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "imageUrl");
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "aspectRatio");
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "drawButtonClass");
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "clearButtonClass");
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "undoButtonClass");
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "drawButtonEnabled");
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "clearButtonEnabled");
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "undoButtonEnabled");
+__decorate([
+    core_1.Output()
+], CanvasWhiteboardComponent.prototype, "onClear");
+__decorate([
+    core_1.Output()
+], CanvasWhiteboardComponent.prototype, "onUndo");
+__decorate([
+    core_1.Output()
+], CanvasWhiteboardComponent.prototype, "onBatchUpdate");
+__decorate([
+    core_1.Output()
+], CanvasWhiteboardComponent.prototype, "onImageLoaded");
+__decorate([
+    core_1.ViewChild('canvas')
+], CanvasWhiteboardComponent.prototype, "canvas");
+CanvasWhiteboardComponent = __decorate([
+    core_1.Component({
+        selector: 'canvas-whiteboard',
+        template: template_1.DEFAULT_TEMPLATE,
+        styles: [template_1.DEFAULT_STYLES]
+    })
+], CanvasWhiteboardComponent);
 exports.CanvasWhiteboardComponent = CanvasWhiteboardComponent;

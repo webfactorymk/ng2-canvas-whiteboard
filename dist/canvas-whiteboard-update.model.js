@@ -1,14 +1,16 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.UPDATE_TYPE = {
     "start": 0,
     "drag": 1,
     "stop": 2
 };
 var CanvasWhiteboardUpdate = (function () {
-    function CanvasWhiteboardUpdate(x, y, type) {
+    function CanvasWhiteboardUpdate(x, y, type, _strokeColor) {
         this._x = x;
         this._y = y;
         this._type = type;
+        this._strokeColor = _strokeColor;
     }
     CanvasWhiteboardUpdate.prototype.setX = function (newX) {
         this._x = newX;
@@ -25,15 +27,17 @@ var CanvasWhiteboardUpdate = (function () {
     CanvasWhiteboardUpdate.prototype.getY = function () {
         return this._y;
     };
+    CanvasWhiteboardUpdate.prototype.setStrokeColor = function (strokeColor) {
+        this._strokeColor = strokeColor;
+    };
+    CanvasWhiteboardUpdate.prototype.getStrokeColor = function () {
+        return this._strokeColor;
+    };
     CanvasWhiteboardUpdate.deserializeJson = function (json) {
-        var x = json['x'];
-        var y = json['y'];
-        var type = json['type'];
-        return new CanvasWhiteboardUpdate(x, y, type);
+        return new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color']);
     };
     CanvasWhiteboardUpdate.prototype.serializeToJson = function () {
-        var coordinatesJson = "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type + " }";
-        return coordinatesJson;
+        return "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type + this._strokeColor ? (", \"stroke_color\":" + this._strokeColor) : "";
     };
     return CanvasWhiteboardUpdate;
 }());

@@ -8,11 +8,13 @@ export class CanvasWhiteboardUpdate {
     private _x: number;
     private _y: number;
     private _type: number;
+    private _strokeColor: string;
 
-    constructor(x: number, y: number, type: number) {
+    constructor(x: number, y: number, type: number, _strokeColor?: string) {
         this._x = x;
         this._y = y;
         this._type = type;
+        this._strokeColor = _strokeColor;
     }
 
     setX(newX: number) {
@@ -35,15 +37,19 @@ export class CanvasWhiteboardUpdate {
         return this._y;
     }
 
+    setStrokeColor(strokeColor: string) {
+        this._strokeColor = strokeColor;
+    }
+
+    getStrokeColor() {
+        return this._strokeColor;
+    }
+
     static deserializeJson(json: any) {
-        var x = json['x'];
-        var y = json['y'];
-        var type = json['type'];
-        return new CanvasWhiteboardUpdate(x, y, type);
+        return new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color']);
     }
 
     serializeToJson() {
-        var coordinatesJson = `{ "x": ${this._x.toFixed(3)}, "y": ${this._y.toFixed(3)}, "type": ${this._type} }`;
-        return coordinatesJson;
+        return `{ "x": ${this._x.toFixed(3)}, "y": ${this._y.toFixed(3)}, "type": ${this._type}` + this._strokeColor ? (`, "stroke_color":${this._strokeColor}`) : "";
     }
 }

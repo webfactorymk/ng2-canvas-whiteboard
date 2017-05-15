@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.UPDATE_TYPE = {
     "start": 0,
     "drag": 1,
