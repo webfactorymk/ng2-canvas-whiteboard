@@ -3,7 +3,6 @@ import {
     Input,
     Output,
     EventEmitter,
-    AfterViewInit,
     ViewChild,
     ElementRef,
     OnInit,
@@ -17,7 +16,7 @@ import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
     template: DEFAULT_TEMPLATE,
     styles: [DEFAULT_STYLES]
 })
-export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges {
+export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
     //Number of ms to wait before sending out the updates as an array
     @Input() batchUpdateTimeoutDuration: number = 100;
@@ -28,19 +27,23 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() drawButtonClass: string;
     @Input() clearButtonClass: string;
     @Input() undoButtonClass: string;
+    @Input() redoButtonClass: string;
 
     @Input() drawButtonText: string = "";
     @Input() clearButtonText: string = "";
     @Input() undoButtonText: string = "";
+    @Input() redoButtonText: string = "";
 
     @Input() drawButtonEnabled: boolean = true;
     @Input() clearButtonEnabled: boolean = true;
     @Input() undoButtonEnabled: boolean = false;
+    @Input() redoButtonEnabled: boolean = false;
 
     @Input() colorPickerEnabled: boolean = false;
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
+    @Output() onRedo = new EventEmitter<any>();
     @Output() onBatchUpdate = new EventEmitter<CanvasWhiteboardUpdate[]>();
     @Output() onImageLoaded = new EventEmitter<any>();
 
@@ -54,17 +57,17 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     private _canDraw = true;
 
     private _lastX: number;
+    private _lastUUID: string;
     private _lastY: number;
     private _clientDragging = false;
 
-    private _undoStack: CanvasWhiteboardUpdate[] = []; //Stores the value of start and count for each continuous stroke
-    private _pathStack: CanvasWhiteboardUpdate[] = [];
+    private _undoStack: string[] = []; //Stores the value of start and count for each continuous stroke
+    private _redoStack: string[] = [];
     private _drawHistory: CanvasWhiteboardUpdate[] = [];
     private _batchUpdates: CanvasWhiteboardUpdate[] = [];
     private _updatesNotDrawn: any = [];
 
     private _updateTimeout: any;
-
 
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
@@ -78,6 +81,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     private _initCanvasEventListeners() {
         window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
+        window.addEventListener("touchstart", this._canvasUserEvents.bind(this), false);
+        window.addEventListener("touchmove", this._canvasUserEvents.bind(this), false);
+        window.addEventListener("touchcancel", this._canvasUserEvents.bind(this), false);
+        window.addEventListener("touchend", this._canvasUserEvents.bind(this), false);
     }
 
     private _calculateCanvasWidthAndHeight() {
@@ -87,10 +94,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         } else {
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
         }
-    }
-
-    ngAfterViewInit() {
-        this._drawHistory = [];
     }
 
     /**
@@ -134,13 +137,13 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     clearCanvas() {
         this._removeCanvasData();
+        this._redoStack = [];
         this.onClear.emit(true);
     }
 
     private _removeCanvasData(callbackFn?: any) {
         this._clientDragging = false;
         this._drawHistory = [];
-        this._pathStack = [];
         this._undoStack = [];
         this._redrawBackground(callbackFn);
     }
@@ -187,29 +190,48 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         this._strokeColor = newStrokeColor;
     }
 
-    /**
-     * Undo a drawing action on the canvas.
-     * All drawings made after the last Start Draw (mousedown | touchstart) event are removed.
-     * @return Emits a value when an Undo is created.
-     */
-    undoCanvas() {
-        if (this._undoStack.length === 0)
-            return;
-        var update = this._undoStack.pop();
-        var lastDoodleIndex = this._drawHistory.lastIndexOf(update);
-        if (lastDoodleIndex != -1) {
-            this._drawHistory = this._drawHistory.filter((update, index) => {
-                return index < lastDoodleIndex;
-            });
-            this._redrawBackground(() => {
-                var updatesToDraw = this._drawHistory;
-                this._drawHistory = [];
-                updatesToDraw.forEach((update) => {
-                    this._draw(update);
-                });
-            });
-            this.onUndo.emit(true);
-        }
+    undo() {
+        console.log("UNDDO CLICKED");
+        console.log(this._undoStack.length);
+        if (!this._undoStack.length || !this.undoButtonEnabled) return;
+
+        let updateUUID = this._undoStack.pop();
+        this._undoCanvas(updateUUID);
+
+        this.onUndo.emit(updateUUID);
+    }
+
+    private _undoCanvas(updateUUID: string) {
+        this._redoStack.push(updateUUID);
+
+        this._drawHistory.forEach((update: CanvasWhiteboardUpdate) => {
+            if (update.getUUID() === updateUUID) {
+                update.setVisible(false);
+            }
+        });
+
+        this._redrawHistory();
+    }
+
+    redo() {
+        if (!this._redoStack.length || !this.redoButtonEnabled) return;
+
+        let updateUUID = this._redoStack.pop();
+        this._redoCanvas(updateUUID);
+
+        this.onRedo.emit(updateUUID);
+    }
+
+    private _redoCanvas(updateUUID: string) {
+        this._undoStack.push(updateUUID);
+
+        this._drawHistory.forEach((update: CanvasWhiteboardUpdate) => {
+            if (update.getUUID() === updateUUID) {
+                update.setVisible(true);
+            }
+        });
+
+        this._redrawHistory();
     }
 
     /**
@@ -232,38 +254,42 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             //Ignore all if we didn't click the _draw! button or the image did not load
             return;
         }
+
         if ((event.type === 'mousemove' || event.type === 'touchmove' || event.type === 'mouseout') && !this._clientDragging) {
             // Ignore mouse move Events if we're not dragging
             return;
         }
-        event.preventDefault();
-        let update;
+
+        let update: CanvasWhiteboardUpdate;
+
+        let updateType: number;
 
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.start, this._strokeColor);
-                this._draw(update);
-                this._createUpdate(update, event.offsetX, event.offsetY);
+                this._lastUUID = parseInt(event.offsetX) + parseInt(event.offsetY) + Math.random().toString(36);
+                updateType = UPDATE_TYPE.start;
                 break;
             case 'mousemove':
             case 'touchmove':
-                if (this._clientDragging) {
-                    update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.drag, this._strokeColor);
-                    this._draw(update);
-                    this._createUpdate(update, event.offsetX, event.offsetY);
+                if (!this._clientDragging) {
+                    return;
                 }
+                updateType = UPDATE_TYPE.drag;
                 break;
             case 'touchcancel':
             case 'mouseup':
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, UPDATE_TYPE.stop, this._strokeColor);
-                this._createUpdate(update, event.offsetX, event.offsetY);
+                updateType = UPDATE_TYPE.stop;
                 break;
         }
+
+        update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, updateType, this._strokeColor, this._lastUUID, true);
+        this._draw(update);
+        this._prepareToSendUpdate(update, event.offsetX, event.offsetY);
     }
 
     /**
@@ -275,7 +301,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {number} eventX The offsetX that needs to be mapped
      * @param {number} eventY The offsetY that needs to be mapped
      */
-    private _createUpdate(update: CanvasWhiteboardUpdate, eventX: number, eventY: number) {
+    private _prepareToSendUpdate(update: CanvasWhiteboardUpdate, eventX: number, eventY: number) {
         update.setX(eventX / this._context.canvas.width);
         update.setY(eventY / this._context.canvas.height);
         this.sendUpdate(update);
@@ -288,18 +314,28 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      *
      * @param event The event that occured.
      */
-    private _canvasKeyUp(event: any) {
-        if (event.ctrlKey && event.keyCode === 90) {
-            // this.undoCanvas();
+    private _canvasKeyDown(event: any) {
+        console.log(event);
+        if (event.ctrlKey) {
+            if (event.keyCode === 90 && this.undoButtonEnabled) {
+                this.undo();
+                console.log('undo')
+            }
+            if (event.keyCode === 89 && this.redoButtonEnabled) {
+                this.redo();
+                console.log('redo')
+            }
         }
     }
 
     private _redrawCanvasOnResize(event: any) {
-        console.log(this);
         this._calculateCanvasWidthAndHeight();
+        this._redrawHistory();
+    }
+
+    private _redrawHistory() {
         let updatesToDraw = this._drawHistory;
 
-        console.log(updatesToDraw);
         this._removeCanvasData(() => {
             updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
                 this._draw(update, true);
@@ -320,28 +356,29 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     private _draw(update: CanvasWhiteboardUpdate, mappedCoordinates?: boolean) {
         this._drawHistory.push(update);
-        var xToDraw = update.getX();
-        var yToDraw = update.getY();
-        if (mappedCoordinates != null) {
-            xToDraw = update.getX() * this._context.canvas.width;
-            yToDraw = update.getY() * this._context.canvas.height;
-        }
 
-        if (update.getType() === UPDATE_TYPE.start) {
-            this._undoStack.push(update);
-        }
+        let xToDraw = (mappedCoordinates) ? (update.getX() * this._context.canvas.width) : update.getX();
+        let yToDraw = (mappedCoordinates) ? (update.getY() * this._context.canvas.height) : update.getY();
 
         if (update.getType() === UPDATE_TYPE.drag) {
             this._context.save();
             this._context.beginPath();
             this._context.lineWidth = 2;
-            this._context.strokeStyle = update.getStrokeColor() || this._strokeColor;
+            if (update.getVisible()) {
+                this._context.strokeStyle = update.getStrokeColor() || this._strokeColor;
+            } else {
+                this._context.strokeStyle = "rgba(0,0,0,0)";
+            }
             this._context.lineJoin = "round";
             this._context.moveTo(this._lastX, this._lastY);
             this._context.lineTo(xToDraw, yToDraw);
             this._context.closePath();
             this._context.stroke();
             this._context.restore();
+        } else if (update.getType() === UPDATE_TYPE.stop && update.getVisible()) {
+            this._undoStack.push(update.getUUID());
+            console.log("undo stack");
+            console.log(this._undoStack);
         }
 
         this._lastX = xToDraw;

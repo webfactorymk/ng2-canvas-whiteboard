@@ -6,10 +6,13 @@ exports.UPDATE_TYPE = {
     "stop": 2
 };
 var CanvasWhiteboardUpdate = (function () {
-    function CanvasWhiteboardUpdate(x, y, type) {
+    function CanvasWhiteboardUpdate(x, y, type, strokeColor, uuid, visible) {
         this._x = x;
         this._y = y;
         this._type = type;
+        this._strokeColor = strokeColor;
+        this._uuid = uuid;
+        this._visible = visible;
     }
     CanvasWhiteboardUpdate.prototype.setX = function (newX) {
         this._x = newX;
@@ -26,15 +29,32 @@ var CanvasWhiteboardUpdate = (function () {
     CanvasWhiteboardUpdate.prototype.getY = function () {
         return this._y;
     };
+    CanvasWhiteboardUpdate.prototype.setStrokeColor = function (strokeColor) {
+        this._strokeColor = strokeColor;
+    };
+    CanvasWhiteboardUpdate.prototype.getStrokeColor = function () {
+        return this._strokeColor;
+    };
+    CanvasWhiteboardUpdate.prototype.setUUID = function (uuid) {
+        this._uuid = uuid;
+    };
+    CanvasWhiteboardUpdate.prototype.getUUID = function () {
+        return this._uuid;
+    };
+    CanvasWhiteboardUpdate.prototype.setVisible = function (visible) {
+        this._visible = visible;
+    };
+    CanvasWhiteboardUpdate.prototype.getVisible = function () {
+        return this._visible;
+    };
     CanvasWhiteboardUpdate.deserializeJson = function (json) {
-        var x = json['x'];
-        var y = json['y'];
-        var type = json['type'];
-        return new CanvasWhiteboardUpdate(x, y, type);
+        return new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color'], json['uuid'], json['visible']);
     };
     CanvasWhiteboardUpdate.prototype.serializeToJson = function () {
-        var coordinatesJson = "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type + " }";
-        return coordinatesJson;
+        return "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type
+            + this._strokeColor ? (", \"stroke_color\": " + this._strokeColor) : ""
+            + this._uuid ? (", \"uuid\": " + this._uuid) : ""
+            + this._visible != null ? (", \"visible\": " + this._visible) : "";
     };
     return CanvasWhiteboardUpdate;
 }());

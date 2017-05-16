@@ -7,19 +7,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var CanvasWhiteboardColorpickerComponent = (function () {
-    function CanvasWhiteboardColorpickerComponent() {
+var CanvasWhiteboardColorPickerComponent = (function () {
+    function CanvasWhiteboardColorPickerComponent(_elementRef) {
+        this._elementRef = _elementRef;
+        this.selectedColor = "rgb(0,0,0)";
+        this._showColorPicker = false;
         this.onColorSelected = new core_1.EventEmitter();
     }
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
      */
-    CanvasWhiteboardColorpickerComponent.prototype.ngOnInit = function () {
+    CanvasWhiteboardColorPickerComponent.prototype.ngOnInit = function () {
         this._context = this.canvas.nativeElement.getContext("2d");
         this.createColorPalette();
     };
-    CanvasWhiteboardColorpickerComponent.prototype.createColorPalette = function () {
+    CanvasWhiteboardColorPickerComponent.prototype.createColorPalette = function () {
         var gradient = this._context.createLinearGradient(0, 0, this._context.canvas.width, 0);
         gradient.addColorStop(0, "rgb(255,   0,   0)");
         gradient.addColorStop(0.15, "rgb(255,   0, 255)");
@@ -30,7 +33,6 @@ var CanvasWhiteboardColorpickerComponent = (function () {
         gradient.addColorStop(1, "rgb(255,   0,   0)");
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-        //Add white -> transparent -> black
         gradient = this._context.createLinearGradient(0, 0, 0, this._context.canvas.height);
         gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
         gradient.addColorStop(0.5, "rgba(255, 255, 255, 0)");
@@ -39,31 +41,47 @@ var CanvasWhiteboardColorpickerComponent = (function () {
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
     };
-    CanvasWhiteboardColorpickerComponent.prototype._colorPickerEvents = function (event) {
-        event.preventDefault();
-        console.log(this);
-        console.log(event);
-        // let colorEventX = event.pageX - this.canvas.
+    CanvasWhiteboardColorPickerComponent.prototype._closeOnExternalClick = function (event) {
+        if (!this._elementRef.nativeElement.contains(event.target) && this._showColorPicker) {
+            this._showColorPicker = false;
+        }
     };
-    CanvasWhiteboardColorpickerComponent.prototype._selectColor = function (event) {
-        console.log(event);
-        var imageData = this._context.getImageData(event.pageX, event.pageY, 1, 1);
-        var selectedColor = "#ffffff";
-        this.onColorSelected.emit(selectedColor);
+    CanvasWhiteboardColorPickerComponent.prototype.toggleColorPicker = function (event) {
+        if (event) {
+            event.preventDefault();
+        }
+        this._showColorPicker = !this._showColorPicker;
     };
-    return CanvasWhiteboardColorpickerComponent;
+    CanvasWhiteboardColorPickerComponent.prototype._getColor = function (event) {
+        var canvasRect = this._context.canvas.getBoundingClientRect();
+        var imageData = this._context.getImageData(event.clientX - canvasRect.left, event.clientY - canvasRect.top, 1, 1);
+        return 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
+    };
+    CanvasWhiteboardColorPickerComponent.prototype._selectColor = function (event) {
+        this.selectedColor = this._getColor(event);
+        this.onColorSelected.emit(this.selectedColor);
+        this.toggleColorPicker(null);
+    };
+    return CanvasWhiteboardColorPickerComponent;
 }());
 __decorate([
-    core_1.ViewChild('canvas-whiteboard-colorpicker')
-], CanvasWhiteboardColorpickerComponent.prototype, "canvas", void 0);
+    core_1.Input()
+], CanvasWhiteboardColorPickerComponent.prototype, "selectedColor", void 0);
+__decorate([
+    core_1.ViewChild('canvaswhiteboardcolorpicker')
+], CanvasWhiteboardColorPickerComponent.prototype, "canvas", void 0);
 __decorate([
     core_1.Output()
-], CanvasWhiteboardColorpickerComponent.prototype, "onColorSelected", void 0);
-CanvasWhiteboardColorpickerComponent = __decorate([
+], CanvasWhiteboardColorPickerComponent.prototype, "onColorSelected", void 0);
+CanvasWhiteboardColorPickerComponent = __decorate([
     core_1.Component({
         selector: 'canvas-whiteboard-colorpicker',
-        template: "\n        <canvas #canvas-whiteboard-colorpicker class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n          (click)=\"_selectColor($event)\" \n          (mousemove)=\"_colorPickerEvents($event)\" \n          (touchmove)=\"_colorPickerEvents($event)\"\n        ></canvas>\n        \n        <div class=\"controls\">\n            <div><label>R</label> <input type=\"text\" id=\"rVal\" /></div>\n            <div><label>G</label> <input type=\"text\" id=\"gVal\" /></div>\n            <div><label>B</label> <input type=\"text\" id=\"bVal\" /></div>\n            <div><label>RGB</label> <input type=\"text\" id=\"rgbVal\" /></div>\n            <div><label>HEX</label> <input type=\"text\" id=\"hexVal\" /></div>\n        </div>\n    ",
-        styles: ["\n\n    "]
+        host: {
+            '(document:mousedown)': '_closeOnExternalClick($event)',
+            '(document:touchstart)': '_closeOnExternalClick($event)',
+        },
+        template: "\n        <input [style.background]=\"selectedColor\" [hidden]=\"_showColorPicker\" class=\"canvas-whiteboard-colorpicker-input\" (click)=\"toggleColorPicker($event)\"/>\n        <div [hidden]=\"!_showColorPicker\" class=\"canvas-whiteboard-colorpicker-wrapper\">\n            <canvas #canvaswhiteboardcolorpicker class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n          (click)=\"_selectColor($event)\"></canvas>\n        </div>\n    \n    ",
+        styles: ["\n        .canvas-whiteboard-colorpicker {\n            padding: 4px;\n            background: #000;\n            border: 1px solid #afafaf;\n        }\n        \n        @media (min-width: 401px) { \n            .canvas-whiteboard-colorpicker {\n               position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n\n        .canvas-whiteboard-colorpicker-input {\n            width: 44px;\n            height: 44px;\n            border: 2px solid black;\n            margin: 5px;\n        }\n    "]
     })
-], CanvasWhiteboardColorpickerComponent);
-exports.CanvasWhiteboardColorpickerComponent = CanvasWhiteboardColorpickerComponent;
+], CanvasWhiteboardColorPickerComponent);
+exports.CanvasWhiteboardColorPickerComponent = CanvasWhiteboardColorPickerComponent;

@@ -1,21 +1,25 @@
-import { EventEmitter, AfterViewInit, ElementRef, OnInit, OnChanges } from '@angular/core';
+import { EventEmitter, ElementRef, OnInit, OnChanges } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
-export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges {
+export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     batchUpdateTimeoutDuration: number;
     imageUrl: string;
     aspectRatio: number;
     drawButtonClass: string;
     clearButtonClass: string;
     undoButtonClass: string;
+    redoButtonClass: string;
     drawButtonText: string;
     clearButtonText: string;
     undoButtonText: string;
+    redoButtonText: string;
     drawButtonEnabled: boolean;
     clearButtonEnabled: boolean;
     undoButtonEnabled: boolean;
+    redoButtonEnabled: boolean;
     colorPickerEnabled: boolean;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
+    onRedo: EventEmitter<any>;
     onBatchUpdate: EventEmitter<CanvasWhiteboardUpdate[]>;
     onImageLoaded: EventEmitter<any>;
     canvas: ElementRef;
@@ -25,10 +29,11 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _shouldDraw;
     private _canDraw;
     private _lastX;
+    private _lastUUID;
     private _lastY;
     private _clientDragging;
     private _undoStack;
-    private _pathStack;
+    private _redoStack;
     private _drawHistory;
     private _batchUpdates;
     private _updatesNotDrawn;
@@ -40,7 +45,6 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     ngOnInit(): void;
     private _initCanvasEventListeners();
     private _calculateCanvasWidthAndHeight();
-    ngAfterViewInit(): void;
     /**
      * If an image exists and it's url changes, we need to redraw the new image on the canvas.
      */
@@ -80,12 +84,10 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param {string} newStrokeColor The new stroke color
      */
     changeColor(newStrokeColor: string): void;
-    /**
-     * Undo a drawing action on the canvas.
-     * All drawings made after the last Start Draw (mousedown | touchstart) event are removed.
-     * @return Emits a value when an Undo is created.
-     */
-    undoCanvas(): void;
+    undo(): void;
+    private _undoCanvas(updateUUID);
+    redo(): void;
+    private _redoCanvas(updateUUID);
     /**
      * Catches the Mouse and Touch events made on the canvas.
      * If drawing is disabled (If an image exists but it's not loaded, or the user did not click Draw),
@@ -111,15 +113,16 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param {number} eventX The offsetX that needs to be mapped
      * @param {number} eventY The offsetY that needs to be mapped
      */
-    private _createUpdate(update, eventX, eventY);
+    private _prepareToSendUpdate(update, eventX, eventY);
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey was held and the keyCode is 90 (z), an undo action will be performed
      *
      * @param event The event that occured.
      */
-    private _canvasKeyUp(event);
+    private _canvasKeyDown(event);
     private _redrawCanvasOnResize(event);
+    private _redrawHistory();
     /**
      * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
      * are first reverse mapped so that they can be drawn in the proper place. The update

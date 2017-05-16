@@ -5,23 +5,32 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
 var template_1 = require("./template");
+var paper = require("paper");
 var CanvasWhiteboardComponent = (function () {
     function CanvasWhiteboardComponent() {
+        //Number of ms to wait before sending out the updates as an array
+        this.batchUpdateTimeoutDuration = 100;
+        this.drawButtonText = "";
+        this.clearButtonText = "";
+        this.undoButtonText = "";
         this.drawButtonEnabled = true;
         this.clearButtonEnabled = true;
-        this.undoButtonEnabled = true;
+        this.undoButtonEnabled = false;
+        this.colorPickerEnabled = false;
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onBatchUpdate = new core_1.EventEmitter();
         this.onImageLoaded = new core_1.EventEmitter();
+        this._strokeColor = "rgb(216, 184, 0)";
         this._shouldDraw = false;
         this._canDraw = true;
         this._clientDragging = false;
         this._undoStack = []; //Stores the value of start and count for each continuous stroke
+        this._redoStack = [];
         this._pathStack = [];
         this._drawHistory = [];
         this._batchUpdates = [];
@@ -32,7 +41,21 @@ var CanvasWhiteboardComponent = (function () {
      * according to the aspect ratio.
      */
     CanvasWhiteboardComponent.prototype.ngOnInit = function () {
+        this._initCanvasEventListeners();
         this._context = this.canvas.nativeElement.getContext("2d");
+        this._calculateCanvasWidthAndHeight();
+        this._setupPaper();
+    };
+    CanvasWhiteboardComponent.prototype._setupPaper = function () {
+        paper.setup(this._context.canvas);
+        paper.view.viewSize = new paper.Size(this._context.canvas.width, this._context.canvas.height);
+        paper.view.draw();
+        console.log(paper);
+    };
+    CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
+        window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
+    };
+    CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
         this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
@@ -84,12 +107,17 @@ var CanvasWhiteboardComponent = (function () {
      * @return Emits a value when the clearing is finished
      */
     CanvasWhiteboardComponent.prototype.clearCanvas = function () {
+        this._removeCanvasData();
+        this.onClear.emit(true);
+    };
+    CanvasWhiteboardComponent.prototype._removeCanvasData = function (callbackFn) {
+        paper.project.clear();
+        paper.view.update();
         this._clientDragging = false;
-        this._redrawBackground();
         this._drawHistory = [];
         this._pathStack = [];
         this._undoStack = [];
-        this.onClear.emit(true);
+        this._redrawBackground(callbackFn);
     };
     /**
      * Clears the canvas and redraws the image if the url exists.
@@ -103,6 +131,9 @@ var CanvasWhiteboardComponent = (function () {
             this._loadImage(function () {
                 callbackFn && callbackFn();
             });
+        }
+        else {
+            callbackFn && callbackFn();
         }
     };
     /**
@@ -118,29 +149,59 @@ var CanvasWhiteboardComponent = (function () {
         this._shouldDraw = !this._shouldDraw;
     };
     /**
+     * Replaces the drawing color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the stroke color
+     *
+     * @param {string} newStrokeColor The new stroke color
+     */
+    CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
+        this._strokeColor = newStrokeColor;
+    };
+    CanvasWhiteboardComponent.prototype.undo = function () {
+        if (!this._undoStack.length)
+            return;
+        var updateUUID = this._undoStack.pop();
+        this.undoCanvas(updateUUID);
+        this.onUndo.emit(true);
+    };
+    /**
      * Undo a drawing action on the canvas.
      * All drawings made after the last Start Draw (mousedown | touchstart) event are removed.
      * @return Emits a value when an Undo is created.
      */
-    CanvasWhiteboardComponent.prototype.undoCanvas = function () {
-        var _this = this;
-        if (this._undoStack.length === 0)
+    CanvasWhiteboardComponent.prototype.undoCanvas = function (updateUUID) {
+        this._redoStack.push(updateUUID);
+        var path = this._pathStack[updateUUID];
+        path.visible = false;
+        paper.view.update();
+        this._drawHistory.forEach(function (update) {
+            if (update.getUUID() === updateUUID) {
+                update.setVisible(false);
+            }
+        });
+    };
+    CanvasWhiteboardComponent.prototype.redo = function () {
+        if (!this._redoStack.length)
             return;
-        var update = this._undoStack.pop();
-        var lastDoodleIndex = this._drawHistory.lastIndexOf(update);
-        if (lastDoodleIndex != -1) {
-            this._drawHistory = this._drawHistory.filter(function (update, index) {
-                return index < lastDoodleIndex;
-            });
-            this._redrawBackground(function () {
-                var updatesToDraw = _this._drawHistory;
-                _this._drawHistory = [];
-                updatesToDraw.forEach(function (update) {
-                    _this._draw(update);
-                });
-            });
-            this.onUndo.emit(true);
-        }
+        var updateUUID = this._redoStack.pop();
+        this.redoCanvas(updateUUID);
+        this.onUndo.emit(true);
+    };
+    /**
+     * Redo a drawing action on the canvas.
+     * @return Emits a value when an Undo is created.
+     */
+    CanvasWhiteboardComponent.prototype.redoCanvas = function (updateUUID) {
+        this._undoStack.push(updateUUID);
+        var path = this._pathStack[updateUUID];
+        path.visible = true;
+        paper.view.update();
+        this._drawHistory.forEach(function (update) {
+            if (update.getUUID() === updateUUID) {
+                update.setVisible(true);
+            }
+        });
     };
     /**
      * Catches the Mouse and Touch events made on the canvas.
@@ -167,18 +228,20 @@ var CanvasWhiteboardComponent = (function () {
             return;
         }
         event.preventDefault();
+        var update;
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.start);
+                this._lastUUID = parseInt(event.offsetX) + parseInt(event.offsetY) + Math.random().toString(36).substring(2);
+                update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.start, this._strokeColor, this._lastUUID, true);
                 this._draw(update);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (this._clientDragging) {
-                    var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.drag);
+                    update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.drag, this._strokeColor, this._lastUUID, true);
                     this._draw(update);
                     this._createUpdate(update, event.offsetX, event.offsetY);
                 }
@@ -188,7 +251,7 @@ var CanvasWhiteboardComponent = (function () {
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.stop);
+                update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, canvas_whiteboard_update_model_1.UPDATE_TYPE.stop, this._strokeColor, null, true);
                 this._createUpdate(update, event.offsetX, event.offsetY);
                 break;
         }
@@ -214,9 +277,29 @@ var CanvasWhiteboardComponent = (function () {
      * @param event The event that occured.
      */
     CanvasWhiteboardComponent.prototype._canvasKeyUp = function (event) {
-        if (event.ctrlKey && event.keyCode === 90) {
-            // this.undoCanvas();
+        console.log(event);
+        if (event.ctrlKey) {
+            if (event.keyCode === 90) {
+                this.undo();
+                console.log('undo');
+            }
+            if (event.keyCode === 89) {
+                this.redo();
+                console.log('undo');
+            }
         }
+    };
+    CanvasWhiteboardComponent.prototype._redrawCanvasOnResize = function (event) {
+        var _this = this;
+        console.log(this);
+        this._calculateCanvasWidthAndHeight();
+        var updatesToDraw = this._drawHistory;
+        console.log(updatesToDraw);
+        this._removeCanvasData(function () {
+            updatesToDraw.forEach(function (update) {
+                _this._draw(update, true);
+            });
+        });
     };
     /**
      * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
@@ -231,6 +314,8 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype._draw = function (update, mappedCoordinates) {
         this._drawHistory.push(update);
+        console.log(this._pathStack);
+        console.log(this._drawHistory);
         var xToDraw = update.getX();
         var yToDraw = update.getY();
         if (mappedCoordinates != null) {
@@ -238,19 +323,39 @@ var CanvasWhiteboardComponent = (function () {
             yToDraw = update.getY() * this._context.canvas.height;
         }
         if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.start) {
-            this._undoStack.push(update);
+            var path = new paper.Path();
+            path.strokeColor = update.getStrokeColor() || this._strokeColor;
+            path.strokeWidth = 2;
+            path.strokeCap = "round";
+            path.strokeJoin = "round";
+            if (update.getVisible()) {
+                path.visible = update.getVisible();
+            }
+            var start = new paper.Point(xToDraw, yToDraw);
+            path.moveTo(start);
+            paper.view.draw();
+            this._pathStack[update.getUUID()] = path;
         }
         if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
-            this._context.save();
-            this._context.beginPath();
-            this._context.lineWidth = 2;
-            this._context.strokeStyle = "rgb(216, 184, 0)";
-            this._context.lineJoin = "round";
-            this._context.moveTo(this._lastX, this._lastY);
-            this._context.lineTo(xToDraw, yToDraw);
-            this._context.closePath();
-            this._context.stroke();
-            this._context.restore();
+            // this._context.save();
+            // this._context.beginPath();
+            // this._context.lineWidth = 2;
+            // this._context.strokeStyle = update.getStrokeColor() || this._strokeColor;
+            // this._context.lineJoin = "round";
+            // this._context.moveTo(this._lastX, this._lastY);
+            // this._context.lineTo(xToDraw, yToDraw);
+            // this._context.closePath();
+            // this._context.stroke();
+            // this._context.restore();
+            console.log("found path from stack - " + this._pathStack[update.getUUID()]);
+            this._pathStack[update.getUUID()].add(xToDraw, yToDraw);
+            paper.view.draw();
+        }
+        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.stop) {
+            var path = this._pathStack[update.getUUID()];
+            path.simplify();
+            this._undoStack.push(update.getUUID());
+            paper.view.draw();
         }
         this._lastX = xToDraw;
         this._lastY = yToDraw;
@@ -271,7 +376,7 @@ var CanvasWhiteboardComponent = (function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
                 _this._batchUpdates = [];
                 _this._updateTimeout = null;
-            }, 100);
+            }, this.batchUpdateTimeoutDuration);
         }
     };
     ;
@@ -373,43 +478,58 @@ var CanvasWhiteboardComponent = (function () {
 }());
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "imageUrl");
+], CanvasWhiteboardComponent.prototype, "batchUpdateTimeoutDuration", void 0);
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "aspectRatio");
+], CanvasWhiteboardComponent.prototype, "imageUrl", void 0);
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "drawButtonClass");
+], CanvasWhiteboardComponent.prototype, "aspectRatio", void 0);
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "clearButtonClass");
+], CanvasWhiteboardComponent.prototype, "drawButtonClass", void 0);
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "undoButtonClass");
+], CanvasWhiteboardComponent.prototype, "clearButtonClass", void 0);
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "drawButtonEnabled");
+], CanvasWhiteboardComponent.prototype, "undoButtonClass", void 0);
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "clearButtonEnabled");
+], CanvasWhiteboardComponent.prototype, "drawButtonText", void 0);
 __decorate([
     core_1.Input()
-], CanvasWhiteboardComponent.prototype, "undoButtonEnabled");
+], CanvasWhiteboardComponent.prototype, "clearButtonText", void 0);
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "undoButtonText", void 0);
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "drawButtonEnabled", void 0);
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "clearButtonEnabled", void 0);
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "undoButtonEnabled", void 0);
+__decorate([
+    core_1.Input()
+], CanvasWhiteboardComponent.prototype, "colorPickerEnabled", void 0);
 __decorate([
     core_1.Output()
-], CanvasWhiteboardComponent.prototype, "onClear");
+], CanvasWhiteboardComponent.prototype, "onClear", void 0);
 __decorate([
     core_1.Output()
-], CanvasWhiteboardComponent.prototype, "onUndo");
+], CanvasWhiteboardComponent.prototype, "onUndo", void 0);
 __decorate([
     core_1.Output()
-], CanvasWhiteboardComponent.prototype, "onBatchUpdate");
+], CanvasWhiteboardComponent.prototype, "onBatchUpdate", void 0);
 __decorate([
     core_1.Output()
-], CanvasWhiteboardComponent.prototype, "onImageLoaded");
+], CanvasWhiteboardComponent.prototype, "onImageLoaded", void 0);
 __decorate([
     core_1.ViewChild('canvas')
-], CanvasWhiteboardComponent.prototype, "canvas");
+], CanvasWhiteboardComponent.prototype, "canvas", void 0);
 CanvasWhiteboardComponent = __decorate([
     core_1.Component({
         selector: 'canvas-whiteboard',

@@ -8,7 +8,9 @@ export declare class CanvasWhiteboardUpdate {
     private _y;
     private _type;
     private _strokeColor;
-    constructor(x: number, y: number, type: number, _strokeColor?: string);
+    private _uuid;
+    private _visible;
+    constructor(x: number, y: number, type: number, strokeColor?: string, uuid?: string, visible?: boolean);
     setX(newX: number): void;
     getX(): number;
     setY(newY: number): void;
@@ -16,6 +18,10 @@ export declare class CanvasWhiteboardUpdate {
     getY(): number;
     setStrokeColor(strokeColor: string): void;
     getStrokeColor(): string;
+    setUUID(uuid: string): void;
+    getUUID(): string;
+    setVisible(visible: boolean): void;
+    getVisible(): boolean;
     static deserializeJson(json: any): CanvasWhiteboardUpdate;
     serializeToJson(): string;
 }

@@ -4,25 +4,30 @@ export const DEFAULT_TEMPLATE = `
          <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled" [selectedColor]="_strokeColor" (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
          <button *ngIf="drawButtonEnabled" (click)="toggleShouldDraw()"
                  [class.canvas_whiteboard_button-draw_animated]="getShouldDraw()"
-                 class="canvas_whiteboard_button canvas_whiteboard_button-draw">
+                 class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">
                 <i [class]="drawButtonClass" aria-hidden="true"></i>
                    {{drawButtonText}}
         </button>
-        <button *ngIf="clearButtonEnabled" (click)="clearCanvas()" class="canvas_whiteboard_button  canvas_whiteboard_button-clear">
+        
+        <button *ngIf="clearButtonEnabled" (click)="clearCanvas()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-clear">
             <i [class]="clearButtonClass" aria-hidden="true"></i>
                     {{clearButtonText}}
         </button>
-         <button *ngIf="undoButtonEnabled" (click)="undoCanvas()" class="canvas_whiteboard_button canvas_whiteboard_button-undo">
+        
+         <button *ngIf="undoButtonEnabled" (click)="undo()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-undo">
              <i [class]="undoButtonClass" aria-hidden="true"></i>
-                    {{undoButtonText}}
-    </button>
+                    {{undoButtonText}} 
+         </button>
+         
+         <button *ngIf="redoButtonEnabled" (click)="redo()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-redo">
+             <i [class]="redoButtonClass" aria-hidden="true"></i>
+                    {{redoButtonText}}
+         </button>
      </span>
     <canvas #canvas
             (mousedown)="_canvasUserEvents($event)" (mouseup)="_canvasUserEvents($event)"
             (mousemove)="_canvasUserEvents($event)" (mouseout)="_canvasUserEvents($event)"
-            (touchstart)="_canvasUserEvents($event)" (touchmove)="_canvasUserEvents($event)"
-            (touchend)="_canvasUserEvents($event)" (touchcancel)="_canvasUserEvents($event)"
-            (keyup)="_canvasKeyUp($event)">
+            (keydown)="_canvasKeyDown($event)">
     </canvas>
 </div>
     `;

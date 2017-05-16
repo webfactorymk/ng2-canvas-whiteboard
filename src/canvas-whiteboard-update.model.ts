@@ -9,12 +9,16 @@ export class CanvasWhiteboardUpdate {
     private _y: number;
     private _type: number;
     private _strokeColor: string;
+    private _uuid: string;
+    private _visible: boolean;
 
-    constructor(x: number, y: number, type: number, _strokeColor?: string) {
+    constructor(x: number, y: number, type: number, strokeColor?: string, uuid?: string, visible?: boolean) {
         this._x = x;
         this._y = y;
         this._type = type;
-        this._strokeColor = _strokeColor;
+        this._strokeColor = strokeColor;
+        this._uuid = uuid;
+        this._visible = visible;
     }
 
     setX(newX: number) {
@@ -45,11 +49,30 @@ export class CanvasWhiteboardUpdate {
         return this._strokeColor;
     }
 
+    setUUID(uuid: string) {
+        this._uuid = uuid;
+    }
+
+    getUUID() {
+        return this._uuid;
+    }
+
+    setVisible(visible: boolean) {
+        this._visible = visible;
+    }
+
+    getVisible() {
+        return this._visible;
+    }
+
     static deserializeJson(json: any) {
-        return new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color']);
+        return new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color'], json['uuid'], json['visible']);
     }
 
     serializeToJson() {
-        return `{ "x": ${this._x.toFixed(3)}, "y": ${this._y.toFixed(3)}, "type": ${this._type}` + this._strokeColor ? (`, "stroke_color":${this._strokeColor}`) : "";
+        return `{ "x": ${this._x.toFixed(3)}, "y": ${this._y.toFixed(3)}, "type": ${this._type}`
+        + this._strokeColor ? (`, "stroke_color": ${this._strokeColor}`) : ""
+            + this._uuid ? (`, "uuid": ${this._uuid}`) : ""
+            + this._visible != null ? (`, "visible": ${this._visible}`) : "";
     }
 }
