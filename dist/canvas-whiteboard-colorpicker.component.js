@@ -36,7 +36,6 @@ var CanvasWhiteboardColorPickerComponent = (function () {
         gradient.addColorStop(1, "rgb(255,   0,   0)");
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-        //Add white -> transparent -> black
         gradient = this._context.createLinearGradient(0, 0, 0, this._context.canvas.height);
         gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
         gradient.addColorStop(0.5, "rgba(255, 255, 255, 0)");
@@ -59,13 +58,9 @@ var CanvasWhiteboardColorPickerComponent = (function () {
     CanvasWhiteboardColorPickerComponent.prototype._getColor = function (event) {
         var canvasRect = this._context.canvas.getBoundingClientRect();
         var imageData = this._context.getImageData(event.clientX - canvasRect.left, event.clientY - canvasRect.top, 1, 1);
-        var selectedColor = 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
-        console.log(imageData);
-        console.log(selectedColor);
-        return selectedColor;
+        return 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
     };
     CanvasWhiteboardColorPickerComponent.prototype._selectColor = function (event) {
-        console.log(event);
         this.selectedColor = this._getColor(event);
         this.onColorSelected.emit(this.selectedColor);
         this.toggleColorPicker(null);
@@ -91,8 +86,8 @@ CanvasWhiteboardColorPickerComponent = __decorate([
             '(document:mousedown)': '_closeOnExternalClick($event)',
             '(document:touchstart)': '_closeOnExternalClick($event)',
         },
-        template: "\n        <input [style.background]=\"selectedColor\" [hidden]=\"_showColorPicker\" class=\"canvas-whiteboard-colorpicker-input\" (click)=\"toggleColorPicker($event)\"/>\n        <canvas #canvaswhiteboardcolorpicker [hidden]=\"!_showColorPicker\" class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n          (click)=\"_selectColor($event)\"></canvas>\n    ",
-        styles: ["\n        .canvas-whiteboard-colorpicker {\n            position: absolute;\n            top: 0;\n            right: 100%;\n        }\n        .canvas-whiteboard-colorpicker-input {\n            width: 30px;\n            height: 30px;\n        }\n    "]
+        template: "\n        <input [style.background]=\"selectedColor\" [hidden]=\"_showColorPicker\" class=\"canvas-whiteboard-colorpicker-input\" (click)=\"toggleColorPicker($event)\"/>\n        <div [hidden]=\"!_showColorPicker\" class=\"canvas-whiteboard-colorpicker-wrapper\">\n            <canvas #canvaswhiteboardcolorpicker class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n          (click)=\"_selectColor($event)\"></canvas>\n        </div>\n    \n    ",
+        styles: ["\n        .canvas-whiteboard-colorpicker {\n            padding: 4px;\n            background: #000;\n            border: 1px solid #afafaf;\n        }\n        \n        @media (min-width: 401px) { \n            .canvas-whiteboard-colorpicker {\n               position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n\n        .canvas-whiteboard-colorpicker-input {\n            width: 44px;\n            height: 44px;\n            border: 2px solid black;\n            margin: 5px;\n        }\n    "]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef])
 ], CanvasWhiteboardColorPickerComponent);

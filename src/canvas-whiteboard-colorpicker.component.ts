@@ -12,18 +12,32 @@ import {
     },
     template: `
         <input [style.background]="selectedColor" [hidden]="_showColorPicker" class="canvas-whiteboard-colorpicker-input" (click)="toggleColorPicker($event)"/>
-        <canvas #canvaswhiteboardcolorpicker [hidden]="!_showColorPicker" class="canvas-whiteboard-colorpicker" width="284" height="155"
+        <div [hidden]="!_showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
+            <canvas #canvaswhiteboardcolorpicker class="canvas-whiteboard-colorpicker" width="284" height="155"
           (click)="_selectColor($event)"></canvas>
+        </div>
+    
     `,
     styles: [`
         .canvas-whiteboard-colorpicker {
-            position: absolute;
-            top: 0;
-            right: 100%;
+            padding: 4px;
+            background: #000;
+            border: 1px solid #afafaf;
         }
+        
+        @media (min-width: 401px) { 
+            .canvas-whiteboard-colorpicker {
+               position: absolute;
+                top: 0;
+                right: 100%;
+            }
+        }
+
         .canvas-whiteboard-colorpicker-input {
-            width: 30px;
-            height: 30px;
+            width: 44px;
+            height: 44px;
+            border: 2px solid black;
+            margin: 5px;
         }
     `]
 })
@@ -58,17 +72,14 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
         gradient.addColorStop(0.67, "rgb(0,   255,   0)");
         gradient.addColorStop(0.84, "rgb(255, 255,   0)");
         gradient.addColorStop(1, "rgb(255,   0,   0)");
-
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
 
-        //Add white -> transparent -> black
         gradient = this._context.createLinearGradient(0, 0, 0, this._context.canvas.height);
         gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
         gradient.addColorStop(0.5, "rgba(255, 255, 255, 0)");
         gradient.addColorStop(0.5, "rgba(0,     0,   0, 0)");
         gradient.addColorStop(1, "rgba(0,     0,   0, 1)");
-
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
     }
@@ -90,16 +101,13 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
     private _getColor(event: any) {
         let canvasRect = this._context.canvas.getBoundingClientRect();
         let imageData = this._context.getImageData(event.clientX - canvasRect.left, event.clientY - canvasRect.top, 1, 1);
-        let selectedColor = 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
-        console.log(imageData);
-        console.log(selectedColor);
 
-        return selectedColor;
+        return 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
     }
 
     private _selectColor(event: any) {
-        console.log(event);
         this.selectedColor = this._getColor(event);
+
         this.onColorSelected.emit(this.selectedColor);
         this.toggleColorPicker(null);
     }

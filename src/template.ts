@@ -50,11 +50,29 @@ export const DEFAULT_STYLES = `
     border: 1px solid transparent;
     border-radius: 4px;
 }
+@media (max-width: 400px) {
+     .canvas_whiteboard_buttons {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            text-align: center;
+      }
+}
+        
+@media (min-width: 401px) { 
+    .canvas_whiteboard_buttons {
+        position: absolute;
+        right: 0%;
+        color: #fff;
+    }
+}
 
 .canvas_whiteboard_buttons {
-    position: absolute;
-    right: 0%;
-    color: #fff;
+    padding: 5px;
+}
+
+.canvas_whiteboard_buttons > button {
+    margin: 5px;
 }
 
 .canvas_whiteboard_button-draw_animated {
@@ -78,12 +96,9 @@ export const DEFAULT_STYLES = `
 .canvas_wrapper_div {
     width: 100%;
     height: 100%;
-    border: 1px solid #afafaf;
+    border: 0.5px solid #e2e2e2;
 }
 
 .canvas_whiteboard_button-clear {
     padding-top: 5px;
-}
-
-
-`;
+}`;
