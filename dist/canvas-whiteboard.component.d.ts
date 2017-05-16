@@ -1,6 +1,7 @@
 import { EventEmitter, AfterViewInit, ElementRef, OnInit, OnChanges } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges {
+    batchUpdateTimeoutDuration: number;
     imageUrl: string;
     aspectRatio: number;
     drawButtonClass: string;

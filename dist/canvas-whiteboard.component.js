@@ -14,6 +14,8 @@ var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model
 var template_1 = require("./template");
 var CanvasWhiteboardComponent = (function () {
     function CanvasWhiteboardComponent() {
+        //Number of ms to wait before sending out the updates as an array
+        this.batchUpdateTimeoutDuration = 100;
         this.drawButtonText = "";
         this.clearButtonText = "";
         this.undoButtonText = "";
@@ -48,12 +50,8 @@ var CanvasWhiteboardComponent = (function () {
         window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
     };
     CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
-        console.log(this._context.canvas);
-        console.log(this.canvas.nativeElement.parentNode.clientWidth);
-        console.log(this.canvas.nativeElement.parentNode.clientHeight);
         this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
-            console.log(this.aspectRatio);
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
         }
         else {
@@ -319,7 +317,7 @@ var CanvasWhiteboardComponent = (function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
                 _this._batchUpdates = [];
                 _this._updateTimeout = null;
-            }, 100);
+            }, this.batchUpdateTimeoutDuration);
         }
     };
     ;
@@ -419,6 +417,10 @@ var CanvasWhiteboardComponent = (function () {
     };
     return CanvasWhiteboardComponent;
 }());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number)
+], CanvasWhiteboardComponent.prototype, "batchUpdateTimeoutDuration", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", String)

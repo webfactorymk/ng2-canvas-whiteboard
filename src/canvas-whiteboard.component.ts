@@ -18,6 +18,10 @@ import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
     styles: [DEFAULT_STYLES]
 })
 export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges {
+
+    //Number of ms to wait before sending out the updates as an array
+    @Input() batchUpdateTimeoutDuration: number = 100;
+
     @Input() imageUrl: string;
     @Input() aspectRatio: number;
 
@@ -77,12 +81,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     }
 
     private _calculateCanvasWidthAndHeight() {
-        console.log(this._context.canvas);
-        console.log(this.canvas.nativeElement.parentNode.clientWidth);
-        console.log(this.canvas.nativeElement.parentNode.clientHeight);
         this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
-            console.log(this.aspectRatio);
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
         } else {
             this._context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
@@ -363,7 +363,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
                 this.onBatchUpdate.emit(this._batchUpdates);
                 this._batchUpdates = [];
                 this._updateTimeout = null;
-            }, 100);
+            }, this.batchUpdateTimeoutDuration);
         }
     };
 
