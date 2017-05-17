@@ -11,6 +11,11 @@ import {
 import {CanvasWhiteboardUpdate, UPDATE_TYPE} from "./canvas-whiteboard-update.model";
 import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
 
+interface EventPositionPoint {
+    x: number,
+    y: number
+}
+
 @Component({
     selector: 'canvas-whiteboard',
     template: DEFAULT_TEMPLATE,
@@ -81,10 +86,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
     private _initCanvasEventListeners() {
         window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
-        window.addEventListener("touchstart", this._canvasUserEvents.bind(this), false);
-        window.addEventListener("touchmove", this._canvasUserEvents.bind(this), false);
-        window.addEventListener("touchcancel", this._canvasUserEvents.bind(this), false);
-        window.addEventListener("touchend", this._canvasUserEvents.bind(this), false);
+        window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     }
 
     private _calculateCanvasWidthAndHeight() {
@@ -191,8 +193,6 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
     }
 
     undo() {
-        console.log("UNDDO CLICKED");
-        console.log(this._undoStack.length);
         if (!this._undoStack.length || !this.undoButtonEnabled) return;
 
         let updateUUID = this._undoStack.pop();
@@ -260,15 +260,19 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
             return;
         }
 
-        let update: CanvasWhiteboardUpdate;
+        if(event.target == this.canvas.nativeElement) {
+            event.preventDefault();
+        }
 
+        let update: CanvasWhiteboardUpdate;
         let updateType: number;
+        let eventPosition: EventPositionPoint = this._getCanvasEventPosition(event);
 
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                this._lastUUID = parseInt(event.offsetX) + parseInt(event.offsetY) + Math.random().toString(36);
+                this._lastUUID = eventPosition.x + eventPosition.y + Math.random().toString(36);
                 updateType = UPDATE_TYPE.start;
                 break;
             case 'mousemove':
@@ -287,9 +291,18 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
                 break;
         }
 
-        update = new CanvasWhiteboardUpdate(event.offsetX, event.offsetY, updateType, this._strokeColor, this._lastUUID, true);
+        update = new CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this._strokeColor, this._lastUUID, true);
         this._draw(update);
-        this._prepareToSendUpdate(update, event.offsetX, event.offsetY);
+        this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
+    }
+
+    private _getCanvasEventPosition(event: any) {
+        let canvasBoundingRect = this._context.canvas.getBoundingClientRect();
+
+        return {
+            x: event.touches && event.touches[0] ? event.touches[0].clientX - canvasBoundingRect.left : event.clientX - canvasBoundingRect.left,
+            y: event.touches && event.touches[0] ? event.touches[0].clientY - canvasBoundingRect.top : event.clientY - canvasBoundingRect.top
+        }
     }
 
     /**
@@ -315,15 +328,14 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @param event The event that occured.
      */
     private _canvasKeyDown(event: any) {
-        console.log(event);
-        if (event.ctrlKey) {
+        if (event.ctrlKey || event.metaKey) {
             if (event.keyCode === 90 && this.undoButtonEnabled) {
+                event.preventDefault();
                 this.undo();
-                console.log('undo')
             }
             if (event.keyCode === 89 && this.redoButtonEnabled) {
+                event.preventDefault();
                 this.redo();
-                console.log('redo')
             }
         }
     }
@@ -377,8 +389,6 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
             this._context.restore();
         } else if (update.getType() === UPDATE_TYPE.stop && update.getVisible()) {
             this._undoStack.push(update.getUUID());
-            console.log("undo stack");
-            console.log(this._undoStack);
         }
 
         this._lastX = xToDraw;

@@ -51,10 +51,7 @@ var CanvasWhiteboardComponent = (function () {
     };
     CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
         window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
-        window.addEventListener("touchstart", this._canvasUserEvents.bind(this), false);
-        window.addEventListener("touchmove", this._canvasUserEvents.bind(this), false);
-        window.addEventListener("touchcancel", this._canvasUserEvents.bind(this), false);
-        window.addEventListener("touchend", this._canvasUserEvents.bind(this), false);
+        window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     };
     CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
         this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
@@ -155,8 +152,6 @@ var CanvasWhiteboardComponent = (function () {
         this._strokeColor = newStrokeColor;
     };
     CanvasWhiteboardComponent.prototype.undo = function () {
-        console.log("UNDDO CLICKED");
-        console.log(this._undoStack.length);
         if (!this._undoStack.length || !this.undoButtonEnabled)
             return;
         var updateUUID = this._undoStack.pop();
@@ -212,13 +207,17 @@ var CanvasWhiteboardComponent = (function () {
             // Ignore mouse move Events if we're not dragging
             return;
         }
+        if (event.target == this.canvas.nativeElement) {
+            event.preventDefault();
+        }
         var update;
         var updateType;
+        var eventPosition = this._getCanvasEventPosition(event);
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                this._lastUUID = parseInt(event.offsetX) + parseInt(event.offsetY) + Math.random().toString(36);
+                this._lastUUID = eventPosition.x + eventPosition.y + Math.random().toString(36);
                 updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.start;
                 break;
             case 'mousemove':
@@ -236,9 +235,16 @@ var CanvasWhiteboardComponent = (function () {
                 updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.stop;
                 break;
         }
-        update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(event.offsetX, event.offsetY, updateType, this._strokeColor, this._lastUUID, true);
+        update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this._strokeColor, this._lastUUID, true);
         this._draw(update);
-        this._prepareToSendUpdate(update, event.offsetX, event.offsetY);
+        this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
+    };
+    CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (event) {
+        var canvasBoundingRect = this._context.canvas.getBoundingClientRect();
+        return {
+            x: event.touches && event.touches[0] ? event.touches[0].clientX - canvasBoundingRect.left : event.clientX - canvasBoundingRect.left,
+            y: event.touches && event.touches[0] ? event.touches[0].clientY - canvasBoundingRect.top : event.clientY - canvasBoundingRect.top
+        };
     };
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
@@ -261,15 +267,14 @@ var CanvasWhiteboardComponent = (function () {
      * @param event The event that occured.
      */
     CanvasWhiteboardComponent.prototype._canvasKeyDown = function (event) {
-        console.log(event);
-        if (event.ctrlKey) {
+        if (event.ctrlKey || event.metaKey) {
             if (event.keyCode === 90 && this.undoButtonEnabled) {
+                event.preventDefault();
                 this.undo();
-                console.log('undo');
             }
             if (event.keyCode === 89 && this.redoButtonEnabled) {
+                event.preventDefault();
                 this.redo();
-                console.log('redo');
             }
         }
     };
@@ -320,8 +325,6 @@ var CanvasWhiteboardComponent = (function () {
         }
         else if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.stop && update.getVisible()) {
             this._undoStack.push(update.getUUID());
-            console.log("undo stack");
-            console.log(this._undoStack);
         }
         this._lastX = xToDraw;
         this._lastY = yToDraw;

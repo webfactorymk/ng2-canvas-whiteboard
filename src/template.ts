@@ -27,7 +27,8 @@ export const DEFAULT_TEMPLATE = `
     <canvas #canvas
             (mousedown)="_canvasUserEvents($event)" (mouseup)="_canvasUserEvents($event)"
             (mousemove)="_canvasUserEvents($event)" (mouseout)="_canvasUserEvents($event)"
-            (keydown)="_canvasKeyDown($event)">
+            (touchstart)="_canvasUserEvents($event)" (touchmove)="_canvasUserEvents($event)"
+            (touchend)="_canvasUserEvents($event)" (touchcancel)="_canvasUserEvents($event)">
     </canvas>
 </div>
     `;

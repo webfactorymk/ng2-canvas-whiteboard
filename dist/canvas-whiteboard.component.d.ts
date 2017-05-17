@@ -104,6 +104,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      *
      */
     private _canvasUserEvents(event);
+    private _getCanvasEventPosition(event);
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
      * can reverse the mapping and get the same position as the one that
