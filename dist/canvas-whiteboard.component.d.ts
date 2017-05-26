@@ -117,9 +117,10 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     private _prepareToSendUpdate(update, eventX, eventY);
     /**
      * Catches the Key Up events made on the canvas.
-     * If the ctrlKey was held and the keyCode is 90 (z), an undo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
+     *If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
      *
-     * @param event The event that occured.
+     * @param event The event that occurred.
      */
     private _canvasKeyDown(event);
     private _redrawCanvasOnResize(event);

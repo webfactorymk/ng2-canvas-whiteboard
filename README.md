@@ -1,8 +1,15 @@
 # ng2-canvas-whiteboard
 
-Add a canvas component which the user can draw on. The coordinates are drawn as a percentage of the containers width and height.
-To reuse them anywhere, they need to be remapped (multiply the received x and y coordinates with their width and height accordingly)
+Add a canvas component which the user can draw on. 
+<br/>The coordinates are drawn as a percentage of the containers width and height.
+<br/>To reuse them anywhere, they need to be remapped (multiply the received x and y coordinates with their width and height accordingly)
 
+**Features:**<br/> 
+- Supports touch.
+- Supports UNDO/REDO.
+- Implements a color picker.
+- Sends outputs on every action.
+- Contains inputs for multiple modifications.
 
 # Install
 
@@ -48,13 +55,20 @@ In your component, you should add the CanvasWhiteboardComponent as a view provid
 In the html file, you can insert the Canvas Whiteboard
 
 ```html
-<canvas-whiteboard #canvasWhiteboard class=""
-                       [imageUrl]="url"
-                       [aspectRatio]="getAspectRatio()"
+<canvas-whiteboard #canvasWhiteboard
                        [drawButtonClass]="'drawButtonClass'"
+                       [drawButtonText]="'Draw'"
                        [clearButtonClass]="'clearButtonClass'"
+                       [clearButtonText]="'Clear'"
+                       [undoButtonText]="'Undo'"
+                       [undoButtonEnabled]="true"
+                       [redoButtonText]="'Redo'"
+                       [redoButtonEnabled]="true"
+                       [colorPickerEnabled]="true"
                        (onBatchUpdate)="sendBatchUpdate($event)"
-                       (onClear)="clearImage()">                    
+                       (onClear)="onCanvasClear()"
+                       (onUndo)="onCanvasUndo($event)"
+                       (onRedo)="onCanvasRedo($event)">                    
 </canvas-whiteboard>
 ```
 
@@ -65,24 +79,26 @@ When the drawing is started, after 100 ms all the signals in between are added t
 emitted by the **onBatchUpdate** emitter. If received, the user can then manipulate with the sent signals.
 
 # Inputs
+### batchUpdateTimeoutDuration: number (default: 100)
+The time in milliseconds that a batch update should be sent after drawing.
+
 ### imageUrl: string (optional)
 The path to the image. If not specified, the drawings will be placed on the background color of the canvas
 
 ### aspectRatio: number (optional)
 If specified, the canvas will be resized according to this ratio
 
-#### drawButtonClass: string <br/>clearButtonClass: string
-The classes of the draw and clear buttons. Since the buttons do not contain any text, these classes are used in "\<i>"
-tags. <br/>
+#### drawButtonClass: string <br/>clearButtonClass: string <br/>undoButtonClass: string <br/>redoButtonClass: string
+The classes of the draw, clear, undo and redo buttons. These classes are used in "\<i>" tags. <br/>
 Example:  
 ```html
 [drawButtonClass]="'fa fa-pencil fa-2x'"
 [clearButtonClass]="'fa fa-eraser fa-2x canvas_whiteboard_button-clear'"
    ```
-#### drawButtonEnabled: boolean (default: true) <br/>clearButtonEnabled: boolean (default: true)
+#### drawButtonEnabled: boolean (default: true) <br/>clearButtonEnabled: boolean (default: true) <br/>undoButtonEnabled: boolean (default: false)<br/>redoButtonEnabled: boolean (default: false)
 Specifies whether or not the button for drawing or clearing the canvas should be shown.
 
-#### drawButtonText, clearButtonText
+#### drawButtonText, clearButtonText, undoButtonText, redoButtonText
 Specify the text to add to the buttons, default is no text
 ```html
 [drawButtonText]="'Draw'"
@@ -99,6 +115,9 @@ This button can be customized by overriding it's css
 ```
 will add the "Draw" text to the button.
 
+### colorPickerEnabled: boolean (default: false)
+This allows the adding of a colorPicker that the user can choose to draw with and the original colors are kept when redrawing
+
 If using component-only styles, for this to work the viewEncapsulation must be set to None.
 ```typescript
 @Component({
@@ -114,17 +133,33 @@ If using component-only styles, for this to work the viewEncapsulation must be s
  @Output() onClear = new EventEmitter<any>();
  @Output() onBatchUpdate = new EventEmitter<CanvasWhiteboardUpdate[]>();
  @Output() onImageLoaded = new EventEmitter<any>();
+ @Output() onUndo = new EventEmitter<any>();
+ @Output() onRedo = new EventEmitter<any>();
 ```
 **onClear** is emitted when the canvas has been cleared. <br/>
 **onImageLoaded** is emitted if the user specified an image and it has successfully been drawn on the canvas.
+**onUndo** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
+**onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
+
+##Image of canvas
+![CanvasWhiteboard](example/canvas_draw.png)
+
+##Canvas whiteboard color picker (CanvasWhiteboardColorPickerComponent)
+A canvas component that is used to identify and emit selected colors.
+```typescript
+@Input() selectedColor: string (default: "rgb(0,0,0)");
+```
+```typescript
+@Output() onColorSelected = new EventEmitter<string>();
+```
+![CanvasWhiteboardColorpicker](example/canvas_colorpicker.png)
+ 
 
 # Example of a drawn image
 An example of a drawn image and shape on the canvas with additional css for the buttons and a date:
 
-![Image of CanvasWhiteboard](example/canvas_draw_image.png)
+![Image in CanvasWhiteboard](example/canvas_draw_image.png)
 
 ## Current limitations
 
-- There is no undo / redo functionality yet.
-- There is no color picker for drawing yet, the only supported color is **rgb(216, 184, 0)**.
 - There are no pre-made shapes yet, only mouse / touch free drawing.

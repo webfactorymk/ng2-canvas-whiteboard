@@ -156,14 +156,16 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @return Emits a value when the clearing is finished
      */
     private _redrawBackground(callbackFn?: any) {
-        this._context.setTransform(1, 0, 0, 1, 0, 0);
-        this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-        if (this.imageUrl) {
-            this._loadImage(() => {
+        if(this._context) {
+            this._context.setTransform(1, 0, 0, 1, 0, 0);
+            this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+            if (this.imageUrl) {
+                this._loadImage(() => {
+                    callbackFn && callbackFn();
+                });
+            } else {
                 callbackFn && callbackFn();
-            });
-        } else {
-            callbackFn && callbackFn();
+            }
         }
     }
 
@@ -323,9 +325,10 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
     /**
      * Catches the Key Up events made on the canvas.
-     * If the ctrlKey was held and the keyCode is 90 (z), an undo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
+     *If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
      *
-     * @param event The event that occured.
+     * @param event The event that occurred.
      */
     private _canvasKeyDown(event: any) {
         if (event.ctrlKey || event.metaKey) {
@@ -436,7 +439,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      */
     drawMissingUpdates() {
         if (this._updatesNotDrawn.length > 0) {
-            var updatesToDraw = [].concat(this._updatesNotDrawn);
+            let updatesToDraw = [].concat(this._updatesNotDrawn);
             this._updatesNotDrawn = [];
             updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
                 this._draw(update, true);
@@ -471,16 +474,16 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
         if (offsetX > 1) offsetX = 1;
         if (offsetY > 1) offsetY = 1;
 
-        var imageWidth = image.width;
-        var imageHeight = image.height;
-        var radius = Math.min(width / imageWidth, height / imageHeight);
-        var newWidth = imageWidth * radius;
-        var newHeight = imageHeight * radius;
-        var finalDrawX: any;
-        var finalDrawY: any;
-        var finalDrawWidth: any;
-        var finalDrawHeight: any;
-        var aspectRatio = 1;
+        let imageWidth = image.width;
+        let imageHeight = image.height;
+        let radius = Math.min(width / imageWidth, height / imageHeight);
+        let newWidth = imageWidth * radius;
+        let newHeight = imageHeight * radius;
+        let finalDrawX: any;
+        let finalDrawY: any;
+        let finalDrawWidth: any;
+        let finalDrawHeight: any;
+        let aspectRatio = 1;
 
         // decide which gap to fill
         if (newWidth < width) aspectRatio = width / newWidth;

@@ -118,15 +118,17 @@ var CanvasWhiteboardComponent = (function () {
      * @return Emits a value when the clearing is finished
      */
     CanvasWhiteboardComponent.prototype._redrawBackground = function (callbackFn) {
-        this._context.setTransform(1, 0, 0, 1, 0, 0);
-        this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-        if (this.imageUrl) {
-            this._loadImage(function () {
+        if (this._context) {
+            this._context.setTransform(1, 0, 0, 1, 0, 0);
+            this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+            if (this.imageUrl) {
+                this._loadImage(function () {
+                    callbackFn && callbackFn();
+                });
+            }
+            else {
                 callbackFn && callbackFn();
-            });
-        }
-        else {
-            callbackFn && callbackFn();
+            }
         }
     };
     /**
@@ -262,9 +264,10 @@ var CanvasWhiteboardComponent = (function () {
     };
     /**
      * Catches the Key Up events made on the canvas.
-     * If the ctrlKey was held and the keyCode is 90 (z), an undo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
+     *If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
      *
-     * @param event The event that occured.
+     * @param event The event that occurred.
      */
     CanvasWhiteboardComponent.prototype._canvasKeyDown = function (event) {
         if (event.ctrlKey || event.metaKey) {
