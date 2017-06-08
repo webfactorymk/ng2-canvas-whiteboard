@@ -50,11 +50,23 @@ var CanvasWhiteboardUpdate = (function () {
     CanvasWhiteboardUpdate.deserializeJson = function (json) {
         return new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color'], json['uuid'], json['visible']);
     };
-    CanvasWhiteboardUpdate.prototype.serializeToJson = function () {
-        return "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type
-            + this._strokeColor ? (", \"stroke_color\": " + this._strokeColor) : ""
-            + this._uuid ? (", \"uuid\": " + this._uuid) : ""
-            + this._visible != null ? (", \"visible\": " + this._visible) : "";
+    /**
+     * @deprecated Use the stringify() method
+     */
+    CanvasWhiteboardUpdate.prototype.serializeToJson = function (onlyShowCoordinatesAndType) {
+        if (onlyShowCoordinatesAndType === void 0) { onlyShowCoordinatesAndType = false; }
+        return this.stringify(onlyShowCoordinatesAndType);
+    };
+    CanvasWhiteboardUpdate.prototype.stringify = function (onlyShowCoordinatesAndType) {
+        if (onlyShowCoordinatesAndType === void 0) { onlyShowCoordinatesAndType = false; }
+        var serializedUpdate = "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type;
+        if (!onlyShowCoordinatesAndType) {
+            serializedUpdate += this._strokeColor ? (", \"stroke_color\": " + this._strokeColor) : "";
+            serializedUpdate += this._uuid ? (", \"uuid\": " + this._uuid) : "";
+            serializedUpdate += this._visible != null ? (", \"visible\": " + this._visible) : "";
+        }
+        serializedUpdate += " }";
+        return serializedUpdate;
     };
     return CanvasWhiteboardUpdate;
 }());

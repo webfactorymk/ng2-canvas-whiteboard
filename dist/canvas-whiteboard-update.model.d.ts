@@ -23,5 +23,9 @@ export declare class CanvasWhiteboardUpdate {
     setVisible(visible: boolean): void;
     getVisible(): boolean;
     static deserializeJson(json: any): CanvasWhiteboardUpdate;
-    serializeToJson(): string;
+    /**
+     * @deprecated Use the stringify() method
+     */
+    serializeToJson(onlyShowCoordinatesAndType?: boolean): string;
+    stringify(onlyShowCoordinatesAndType?: boolean): string;
 }

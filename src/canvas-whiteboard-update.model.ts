@@ -69,10 +69,23 @@ export class CanvasWhiteboardUpdate {
         return new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color'], json['uuid'], json['visible']);
     }
 
-    serializeToJson() {
-        return `{ "x": ${this._x.toFixed(3)}, "y": ${this._y.toFixed(3)}, "type": ${this._type}`
-        + this._strokeColor ? (`, "stroke_color": ${this._strokeColor}`) : ""
-            + this._uuid ? (`, "uuid": ${this._uuid}`) : ""
-            + this._visible != null ? (`, "visible": ${this._visible}`) : "";
+    /**
+     * @deprecated Use the stringify() method
+     */
+    serializeToJson(onlyShowCoordinatesAndType: boolean = false): string {
+        return this.stringify(onlyShowCoordinatesAndType);
+    }
+
+    stringify(onlyShowCoordinatesAndType: boolean = false): string {
+        let serializedUpdate = "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type;
+
+        if(!onlyShowCoordinatesAndType) {
+            serializedUpdate += this._strokeColor ? (", \"stroke_color\": " + this._strokeColor) : "";
+            serializedUpdate += this._uuid ? (", \"uuid\": " + this._uuid ) : "";
+            serializedUpdate += this._visible != null ? (", \"visible\": " + this._visible ) : "";
+        }
+        serializedUpdate += " }";
+
+        return serializedUpdate;
     }
 }
