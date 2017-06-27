@@ -8,14 +8,17 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     clearButtonClass: string;
     undoButtonClass: string;
     redoButtonClass: string;
+    saveDataButtonClass: string;
     drawButtonText: string;
     clearButtonText: string;
     undoButtonText: string;
     redoButtonText: string;
+    saveDataButtonText: string;
     drawButtonEnabled: boolean;
     clearButtonEnabled: boolean;
     undoButtonEnabled: boolean;
     redoButtonEnabled: boolean;
+    saveDataButtonEnabled: boolean;
     colorPickerEnabled: boolean;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
@@ -23,8 +26,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     onBatchUpdate: EventEmitter<CanvasWhiteboardUpdate[]>;
     onImageLoaded: EventEmitter<any>;
     canvas: ElementRef;
+    context: CanvasRenderingContext2D;
     private _strokeColor;
-    private _context;
     private _imageElement;
     private _shouldDraw;
     private _canDraw;
@@ -170,4 +173,36 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @param {number} offsetY The offsetY if the image size is larger than the canvas (aspect Ratio)
      */
     private _drawImage(context, image, x, y, width, height, offsetX, offsetY);
+    /**
+     * The HTMLCanvasElement.toDataURL() method returns a data URI containing a representation of the image in the format specified by the type parameter (defaults to PNG).
+     * The returned image is in a resolution of 96 dpi.
+     * If the height or width of the canvas is 0, the string "data:," is returned.
+     * If the requested type is not image/png, but the returned value starts with data:image/png, then the requested type is not supported.
+     * Chrome also supports the image/webp type.
+     *
+     * @param {string} returnedDataType A DOMString indicating the image format. The default format type is image/png.
+     * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
+     If this argument is anything else, the default value for image quality is used. The default value is 0.92. Other arguments are ignored.
+     */
+    generateCanvasDataUrl(returnedDataType?: string, returnedDataQuality?: number): string;
+    /**
+     * Generate a Blob object representing the content drawn on the canvas.
+     * This file may be cached on the disk or stored in memory at the discretion of the user agent.
+     * If type is not specified, the image type is image/png. The created image is in a resolution of 96dpi.
+     * The third argument is used with image/jpeg images to specify the quality of the output.
+     *
+     * @param {any} callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
+     * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
+     If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
+     */
+    generateCanvasBlob(callbackFn: any, returnedDataType?: string, returnedDataQuality?: number): void;
+    /**
+     * Generate a canvas image representation and download it locally
+     * The name of the image is canvas_drawing_ + the current local Date and Time the image was created
+     *
+     * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     */
+    downloadCanvasImage(returnedDataType?: string): void;
+    private _generateDataTypeString(returnedDataType);
 }

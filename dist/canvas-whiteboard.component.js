@@ -20,10 +20,12 @@ var CanvasWhiteboardComponent = (function () {
         this.clearButtonText = "";
         this.undoButtonText = "";
         this.redoButtonText = "";
+        this.saveDataButtonText = "";
         this.drawButtonEnabled = true;
         this.clearButtonEnabled = true;
         this.undoButtonEnabled = false;
         this.redoButtonEnabled = false;
+        this.saveDataButtonEnabled = false;
         this.colorPickerEnabled = false;
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
@@ -46,7 +48,7 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype.ngOnInit = function () {
         this._initCanvasEventListeners();
-        this._context = this.canvas.nativeElement.getContext("2d");
+        this.context = this.canvas.nativeElement.getContext("2d");
         this._calculateCanvasWidthAndHeight();
     };
     CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
@@ -54,12 +56,12 @@ var CanvasWhiteboardComponent = (function () {
         window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     };
     CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
-        this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
+        this.context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
-            this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
+            this.context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
         }
         else {
-            this._context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
+            this.context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
         }
     };
     /**
@@ -87,9 +89,9 @@ var CanvasWhiteboardComponent = (function () {
         this._canDraw = false;
         this._imageElement = new Image();
         this._imageElement.addEventListener("load", function () {
-            _this._context.save();
-            _this._drawImage(_this._context, _this._imageElement, 0, 0, _this._context.canvas.width, _this._context.canvas.height, 0.5, 0.5);
-            _this._context.restore();
+            _this.context.save();
+            _this._drawImage(_this.context, _this._imageElement, 0, 0, _this.context.canvas.width, _this.context.canvas.height, 0.5, 0.5);
+            _this.context.restore();
             _this.drawMissingUpdates();
             _this._canDraw = true;
             callbackFn && callbackFn();
@@ -118,9 +120,9 @@ var CanvasWhiteboardComponent = (function () {
      * @return Emits a value when the clearing is finished
      */
     CanvasWhiteboardComponent.prototype._redrawBackground = function (callbackFn) {
-        if (this._context) {
-            this._context.setTransform(1, 0, 0, 1, 0, 0);
-            this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+        if (this.context) {
+            this.context.setTransform(1, 0, 0, 1, 0, 0);
+            this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             if (this.imageUrl) {
                 this._loadImage(function () {
                     callbackFn && callbackFn();
@@ -242,7 +244,7 @@ var CanvasWhiteboardComponent = (function () {
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     };
     CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (event) {
-        var canvasBoundingRect = this._context.canvas.getBoundingClientRect();
+        var canvasBoundingRect = this.context.canvas.getBoundingClientRect();
         return {
             x: event.touches && event.touches[0] ? event.touches[0].clientX - canvasBoundingRect.left : event.clientX - canvasBoundingRect.left,
             y: event.touches && event.touches[0] ? event.touches[0].clientY - canvasBoundingRect.top : event.clientY - canvasBoundingRect.top
@@ -258,8 +260,8 @@ var CanvasWhiteboardComponent = (function () {
      * @param {number} eventY The offsetY that needs to be mapped
      */
     CanvasWhiteboardComponent.prototype._prepareToSendUpdate = function (update, eventX, eventY) {
-        update.setX(eventX / this._context.canvas.width);
-        update.setY(eventY / this._context.canvas.height);
+        update.setX(eventX / this.context.canvas.width);
+        update.setY(eventY / this.context.canvas.height);
         this.sendUpdate(update);
     };
     /**
@@ -278,6 +280,10 @@ var CanvasWhiteboardComponent = (function () {
             if (event.keyCode === 89 && this.redoButtonEnabled) {
                 event.preventDefault();
                 this.redo();
+            }
+            if (event.keyCode === 83 || event.keyCode === 115) {
+                event.preventDefault();
+                this.downloadCanvasImage();
             }
         }
     };
@@ -307,24 +313,24 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype._draw = function (update, mappedCoordinates) {
         this._drawHistory.push(update);
-        var xToDraw = (mappedCoordinates) ? (update.getX() * this._context.canvas.width) : update.getX();
-        var yToDraw = (mappedCoordinates) ? (update.getY() * this._context.canvas.height) : update.getY();
+        var xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
+        var yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
         if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
-            this._context.save();
-            this._context.beginPath();
-            this._context.lineWidth = 2;
+            this.context.save();
+            this.context.beginPath();
+            this.context.lineWidth = 2;
             if (update.getVisible()) {
-                this._context.strokeStyle = update.getStrokeColor() || this._strokeColor;
+                this.context.strokeStyle = update.getStrokeColor() || this._strokeColor;
             }
             else {
-                this._context.strokeStyle = "rgba(0,0,0,0)";
+                this.context.strokeStyle = "rgba(0,0,0,0)";
             }
-            this._context.lineJoin = "round";
-            this._context.moveTo(this._lastX, this._lastY);
-            this._context.lineTo(xToDraw, yToDraw);
-            this._context.closePath();
-            this._context.stroke();
-            this._context.restore();
+            this.context.lineJoin = "round";
+            this.context.moveTo(this._lastX, this._lastY);
+            this.context.lineTo(xToDraw, yToDraw);
+            this.context.closePath();
+            this.context.stroke();
+            this.context.restore();
         }
         else if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.stop && update.getVisible()) {
             this._undoStack.push(update.getUUID());
@@ -446,6 +452,71 @@ var CanvasWhiteboardComponent = (function () {
         // fill the image in destination rectangle
         context.drawImage(image, finalDrawX, finalDrawY, finalDrawWidth, finalDrawHeight, x, y, width, height);
     };
+    /**
+     * The HTMLCanvasElement.toDataURL() method returns a data URI containing a representation of the image in the format specified by the type parameter (defaults to PNG).
+     * The returned image is in a resolution of 96 dpi.
+     * If the height or width of the canvas is 0, the string "data:," is returned.
+     * If the requested type is not image/png, but the returned value starts with data:image/png, then the requested type is not supported.
+     * Chrome also supports the image/webp type.
+     *
+     * @param {string} returnedDataType A DOMString indicating the image format. The default format type is image/png.
+     * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
+     If this argument is anything else, the default value for image quality is used. The default value is 0.92. Other arguments are ignored.
+     */
+    CanvasWhiteboardComponent.prototype.generateCanvasDataUrl = function (returnedDataType, returnedDataQuality) {
+        if (returnedDataType === void 0) { returnedDataType = "image/png"; }
+        if (returnedDataQuality === void 0) { returnedDataQuality = 1; }
+        return this.context.canvas.toDataURL(returnedDataType, returnedDataQuality);
+    };
+    /**
+     * Generate a Blob object representing the content drawn on the canvas.
+     * This file may be cached on the disk or stored in memory at the discretion of the user agent.
+     * If type is not specified, the image type is image/png. The created image is in a resolution of 96dpi.
+     * The third argument is used with image/jpeg images to specify the quality of the output.
+     *
+     * @param {any} callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
+     * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
+     If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
+     */
+    CanvasWhiteboardComponent.prototype.generateCanvasBlob = function (callbackFn, returnedDataType, returnedDataQuality) {
+        if (returnedDataType === void 0) { returnedDataType = "image/png"; }
+        if (returnedDataQuality === void 0) { returnedDataQuality = 1; }
+        this.context.canvas.toBlob(function (blob) {
+            callbackFn && callbackFn(blob);
+        }, returnedDataType, returnedDataQuality);
+    };
+    /**
+     * Generate a canvas image representation and download it locally
+     * The name of the image is canvas_drawing_ + the current local Date and Time the image was created
+     *
+     * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     */
+    CanvasWhiteboardComponent.prototype.downloadCanvasImage = function (returnedDataType) {
+        var _this = this;
+        if (returnedDataType === void 0) { returnedDataType = "image/png"; }
+        if (window.navigator.msSaveOrOpenBlob === undefined) {
+            var downloadLink = document.createElement('a');
+            downloadLink.setAttribute('href', this.generateCanvasDataUrl(returnedDataType));
+            console.log(this._generateDataTypeString(returnedDataType));
+            downloadLink.setAttribute('download', "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+        else {
+            // IE-specific code
+            this.generateCanvasBlob(function (blob) {
+                window.navigator.msSaveOrOpenBlob(blob, "canvas_drawing_" + new Date().valueOf() + _this._generateDataTypeString(returnedDataType));
+            }, returnedDataType);
+        }
+    };
+    CanvasWhiteboardComponent.prototype._generateDataTypeString = function (returnedDataType) {
+        if (returnedDataType) {
+            return "." + returnedDataType.split('/')[1];
+        }
+        return "";
+    };
     return CanvasWhiteboardComponent;
 }());
 __decorate([
@@ -479,6 +550,10 @@ __decorate([
 __decorate([
     core_1.Input(),
     __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "saveDataButtonClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
 ], CanvasWhiteboardComponent.prototype, "drawButtonText", void 0);
 __decorate([
     core_1.Input(),
@@ -492,6 +567,10 @@ __decorate([
     core_1.Input(),
     __metadata("design:type", String)
 ], CanvasWhiteboardComponent.prototype, "redoButtonText", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], CanvasWhiteboardComponent.prototype, "saveDataButtonText", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
@@ -508,6 +587,10 @@ __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
 ], CanvasWhiteboardComponent.prototype, "redoButtonEnabled", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], CanvasWhiteboardComponent.prototype, "saveDataButtonEnabled", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)

@@ -33,16 +33,19 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
     @Input() clearButtonClass: string;
     @Input() undoButtonClass: string;
     @Input() redoButtonClass: string;
+    @Input() saveDataButtonClass: string;
 
     @Input() drawButtonText: string = "";
     @Input() clearButtonText: string = "";
     @Input() undoButtonText: string = "";
     @Input() redoButtonText: string = "";
+    @Input() saveDataButtonText: string = "";
 
     @Input() drawButtonEnabled: boolean = true;
     @Input() clearButtonEnabled: boolean = true;
     @Input() undoButtonEnabled: boolean = false;
     @Input() redoButtonEnabled: boolean = false;
+    @Input() saveDataButtonEnabled: boolean = false;
 
     @Input() colorPickerEnabled: boolean = false;
 
@@ -54,8 +57,9 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
     @ViewChild('canvas') canvas: ElementRef;
 
+    context: CanvasRenderingContext2D;
+
     private _strokeColor: string = "rgb(216, 184, 0)";
-    private _context: CanvasRenderingContext2D;
     private _imageElement: HTMLImageElement;
 
     private _shouldDraw = false;
@@ -80,7 +84,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      */
     ngOnInit() {
         this._initCanvasEventListeners();
-        this._context = this.canvas.nativeElement.getContext("2d");
+        this.context = this.canvas.nativeElement.getContext("2d");
         this._calculateCanvasWidthAndHeight();
     }
 
@@ -90,11 +94,11 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
     }
 
     private _calculateCanvasWidthAndHeight() {
-        this._context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
+        this.context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
-            this._context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
+            this.context.canvas.height = this.canvas.nativeElement.parentNode.clientWidth * this.aspectRatio;
         } else {
-            this._context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
+            this.context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
         }
     }
 
@@ -122,9 +126,9 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
         this._canDraw = false;
         this._imageElement = new Image();
         this._imageElement.addEventListener("load", () => {
-            this._context.save();
-            this._drawImage(this._context, this._imageElement, 0, 0, this._context.canvas.width, this._context.canvas.height, 0.5, 0.5);
-            this._context.restore();
+            this.context.save();
+            this._drawImage(this.context, this._imageElement, 0, 0, this.context.canvas.width, this.context.canvas.height, 0.5, 0.5);
+            this.context.restore();
             this.drawMissingUpdates();
             this._canDraw = true;
             callbackFn && callbackFn();
@@ -156,9 +160,9 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @return Emits a value when the clearing is finished
      */
     private _redrawBackground(callbackFn?: any) {
-        if(this._context) {
-            this._context.setTransform(1, 0, 0, 1, 0, 0);
-            this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+        if (this.context) {
+            this.context.setTransform(1, 0, 0, 1, 0, 0);
+            this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             if (this.imageUrl) {
                 this._loadImage(() => {
                     callbackFn && callbackFn();
@@ -262,7 +266,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
             return;
         }
 
-        if(event.target == this.canvas.nativeElement) {
+        if (event.target == this.canvas.nativeElement) {
             event.preventDefault();
         }
 
@@ -299,7 +303,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
     }
 
     private _getCanvasEventPosition(event: any) {
-        let canvasBoundingRect = this._context.canvas.getBoundingClientRect();
+        let canvasBoundingRect = this.context.canvas.getBoundingClientRect();
 
         return {
             x: event.touches && event.touches[0] ? event.touches[0].clientX - canvasBoundingRect.left : event.clientX - canvasBoundingRect.left,
@@ -317,8 +321,8 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @param {number} eventY The offsetY that needs to be mapped
      */
     private _prepareToSendUpdate(update: CanvasWhiteboardUpdate, eventX: number, eventY: number) {
-        update.setX(eventX / this._context.canvas.width);
-        update.setY(eventY / this._context.canvas.height);
+        update.setX(eventX / this.context.canvas.width);
+        update.setY(eventY / this.context.canvas.height);
         this.sendUpdate(update);
     }
 
@@ -339,6 +343,10 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
             if (event.keyCode === 89 && this.redoButtonEnabled) {
                 event.preventDefault();
                 this.redo();
+            }
+            if (event.keyCode === 83 || event.keyCode === 115) {
+                event.preventDefault();
+                this.downloadCanvasImage();
             }
         }
     }
@@ -372,24 +380,24 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
     private _draw(update: CanvasWhiteboardUpdate, mappedCoordinates?: boolean) {
         this._drawHistory.push(update);
 
-        let xToDraw = (mappedCoordinates) ? (update.getX() * this._context.canvas.width) : update.getX();
-        let yToDraw = (mappedCoordinates) ? (update.getY() * this._context.canvas.height) : update.getY();
+        let xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
+        let yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
 
         if (update.getType() === UPDATE_TYPE.drag) {
-            this._context.save();
-            this._context.beginPath();
-            this._context.lineWidth = 2;
+            this.context.save();
+            this.context.beginPath();
+            this.context.lineWidth = 2;
             if (update.getVisible()) {
-                this._context.strokeStyle = update.getStrokeColor() || this._strokeColor;
+                this.context.strokeStyle = update.getStrokeColor() || this._strokeColor;
             } else {
-                this._context.strokeStyle = "rgba(0,0,0,0)";
+                this.context.strokeStyle = "rgba(0,0,0,0)";
             }
-            this._context.lineJoin = "round";
-            this._context.moveTo(this._lastX, this._lastY);
-            this._context.lineTo(xToDraw, yToDraw);
-            this._context.closePath();
-            this._context.stroke();
-            this._context.restore();
+            this.context.lineJoin = "round";
+            this.context.moveTo(this._lastX, this._lastY);
+            this.context.lineTo(xToDraw, yToDraw);
+            this.context.closePath();
+            this.context.stroke();
+            this.context.restore();
         } else if (update.getType() === UPDATE_TYPE.stop && update.getVisible()) {
             this._undoStack.push(update.getUUID());
         }
@@ -506,5 +514,68 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
         // fill the image in destination rectangle
         context.drawImage(image, finalDrawX, finalDrawY, finalDrawWidth, finalDrawHeight, x, y, width, height);
+    }
+
+    /**
+     * The HTMLCanvasElement.toDataURL() method returns a data URI containing a representation of the image in the format specified by the type parameter (defaults to PNG).
+     * The returned image is in a resolution of 96 dpi.
+     * If the height or width of the canvas is 0, the string "data:," is returned.
+     * If the requested type is not image/png, but the returned value starts with data:image/png, then the requested type is not supported.
+     * Chrome also supports the image/webp type.
+     *
+     * @param {string} returnedDataType A DOMString indicating the image format. The default format type is image/png.
+     * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
+     If this argument is anything else, the default value for image quality is used. The default value is 0.92. Other arguments are ignored.
+     */
+    generateCanvasDataUrl(returnedDataType: string = "image/png", returnedDataQuality: number = 1): string {
+        return this.context.canvas.toDataURL(returnedDataType, returnedDataQuality);
+    }
+
+    /**
+     * Generate a Blob object representing the content drawn on the canvas.
+     * This file may be cached on the disk or stored in memory at the discretion of the user agent.
+     * If type is not specified, the image type is image/png. The created image is in a resolution of 96dpi.
+     * The third argument is used with image/jpeg images to specify the quality of the output.
+     *
+     * @param {any} callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
+     * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
+     If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
+     */
+    generateCanvasBlob(callbackFn: any, returnedDataType: string = "image/png", returnedDataQuality: number = 1) {
+        this.context.canvas.toBlob((blob: Blob) => {
+            callbackFn && callbackFn(blob);
+        }, returnedDataType, returnedDataQuality);
+    }
+
+    /**
+     * Generate a canvas image representation and download it locally
+     * The name of the image is canvas_drawing_ + the current local Date and Time the image was created
+     *
+     * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     */
+    downloadCanvasImage(returnedDataType: string = "image/png") {
+        if (window.navigator.msSaveOrOpenBlob === undefined) {
+            let downloadLink = document.createElement('a');
+            downloadLink.setAttribute('href', this.generateCanvasDataUrl(returnedDataType));
+            console.log(this._generateDataTypeString(returnedDataType));
+            downloadLink.setAttribute('download', "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        } else {
+            // IE-specific code
+            this.generateCanvasBlob((blob: Blob) => {
+                window.navigator.msSaveOrOpenBlob(blob, "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
+            }, returnedDataType);
+        }
+    }
+
+    private _generateDataTypeString(returnedDataType: string) {
+        if (returnedDataType) {
+            return "." + returnedDataType.split('/')[1];
+        }
+
+        return "";
     }
 }

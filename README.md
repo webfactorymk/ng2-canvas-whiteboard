@@ -10,6 +10,7 @@ Add a canvas component which the user can draw on.
 - Implements a color picker.
 - Sends outputs on every action.
 - Contains inputs for multiple modifications.
+- Save drawn images
 
 # Install
 
@@ -56,19 +57,21 @@ In the html file, you can insert the Canvas Whiteboard
 
 ```html
 <canvas-whiteboard #canvasWhiteboard
-                       [drawButtonClass]="'drawButtonClass'"
-                       [drawButtonText]="'Draw'"
-                       [clearButtonClass]="'clearButtonClass'"
-                       [clearButtonText]="'Clear'"
-                       [undoButtonText]="'Undo'"
-                       [undoButtonEnabled]="true"
-                       [redoButtonText]="'Redo'"
-                       [redoButtonEnabled]="true"
-                       [colorPickerEnabled]="true"
-                       (onBatchUpdate)="sendBatchUpdate($event)"
-                       (onClear)="onCanvasClear()"
-                       (onUndo)="onCanvasUndo($event)"
-                       (onRedo)="onCanvasRedo($event)">                    
+                     [drawButtonClass]="'drawButtonClass'"
+                     [drawButtonText]="'Draw'"
+                     [clearButtonClass]="'clearButtonClass'"
+                     [clearButtonText]="'Clear'"
+                     [undoButtonText]="'Undo'"
+                     [undoButtonEnabled]="true"
+                     [redoButtonText]="'Redo'"
+                     [redoButtonEnabled]="true"
+                     [colorPickerEnabled]="true"
+                     [saveDataButtonEnabled]="true"
+                     [saveDataButtonText]="'Save'"
+                     (onBatchUpdate)="sendBatchUpdate($event)"
+                     (onClear)="onCanvasClear()"
+                     (onUndo)="onCanvasUndo($event)"
+                     (onRedo)="onCanvasRedo($event)">
 </canvas-whiteboard>
 ```
 
@@ -88,17 +91,17 @@ The path to the image. If not specified, the drawings will be placed on the back
 ### aspectRatio: number (optional)
 If specified, the canvas will be resized according to this ratio
 
-#### drawButtonClass: string <br/>clearButtonClass: string <br/>undoButtonClass: string <br/>redoButtonClass: string
+#### drawButtonClass: string <br/>clearButtonClass: string <br/>undoButtonClass: string <br/>redoButtonClass: string<br/>saveDataButtonClass: string
 The classes of the draw, clear, undo and redo buttons. These classes are used in "\<i>" tags. <br/>
 Example:  
 ```html
 [drawButtonClass]="'fa fa-pencil fa-2x'"
 [clearButtonClass]="'fa fa-eraser fa-2x canvas_whiteboard_button-clear'"
    ```
-#### drawButtonEnabled: boolean (default: true) <br/>clearButtonEnabled: boolean (default: true) <br/>undoButtonEnabled: boolean (default: false)<br/>redoButtonEnabled: boolean (default: false)
+#### drawButtonEnabled: boolean (default: true) <br/>clearButtonEnabled: boolean (default: true) <br/>undoButtonEnabled: boolean (default: false)<br/>redoButtonEnabled: boolean (default: false)<br/>saveDataButtonEnabled: boolean (default: false)
 Specifies whether or not the button for drawing or clearing the canvas should be shown.
 
-#### drawButtonText, clearButtonText, undoButtonText, redoButtonText
+#### drawButtonText, clearButtonText, undoButtonText, redoButtonText, saveDataButtonText
 Specify the text to add to the buttons, default is no text
 ```html
 [drawButtonText]="'Draw'"
@@ -141,6 +144,40 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 **onUndo** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
 **onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
 
+##Saving drawn canvas as an image 
+In order to save drawn images you can either click the Save button in the canvas, use the short Ctrl/Command + s key or get a reference of the canvas and save programmatically.
+
+Example, save an image whenever an undo action was made:
+
+HTML: Create a canvas view reference with some name (ex: #canvasWhiteboard)
+```html
+<canvas-whiteboard #canvasWhiteboard>
+</canvas-whiteboard>
+```
+```typescript
+import {CanvasWhiteboardComponent} from 'ng2-canvas-whiteboard';
+
+export class AppComponent {
+
+  @ViewChild('canvasWhiteboard') canvasWhiteboard: CanvasWhiteboardComponent;
+
+  onCanvasUndo(updateUUID: string) {
+    console.log(`UNDO with uuid: ${updateUUID}`);
+    
+    console.log(this.canvasWhiteboard.generateCanvasDataUrl("image/jpeg", 0.3));
+     
+    this.canvasWhiteboard.generateCanvasBlob((blob: any) => {
+       console.log(blob);
+    }, "image/png");
+    
+    this.canvasWhiteboard.downloadCanvasImage();
+    
+    //If you need the context of the canvas
+    let context = this.canvasWhiteboard.context;
+  }
+}
+
+```
 ##Image of canvas
 ![CanvasWhiteboard](example/canvas_draw.png)
 
