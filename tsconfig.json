@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
+    "skipLibCheck": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
@@ -16,7 +17,10 @@
   "files": [
     "./src/ng2-canvas-whiteboard.ts"
   ],
-
+  "exclude": [
+    "build",
+    "node_modules"
+  ],
   "angularCompilerOptions": {
     "genDir": "../aot",
     "skipMetadataEmit": false

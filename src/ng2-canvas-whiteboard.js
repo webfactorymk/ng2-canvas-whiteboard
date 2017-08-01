@@ -9,7 +9,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var canvas_whiteboard_component_1 = require("./canvas-whiteboard.component");
 var common_1 = require("@angular/common");
-var platform_browser_1 = require("@angular/platform-browser");
 var canvas_whiteboard_colorpicker_component_1 = require("./canvas-whiteboard-colorpicker.component");
 var canvas_whiteboard_component_2 = require("./canvas-whiteboard.component");
 exports.CanvasWhiteboardComponent = canvas_whiteboard_component_2.CanvasWhiteboardComponent;
@@ -23,14 +22,13 @@ var CanvasWhiteboardModule = (function () {
 CanvasWhiteboardModule = __decorate([
     core_1.NgModule({
         imports: [
-            common_1.CommonModule,
-            platform_browser_1.BrowserModule
+            common_1.CommonModule
         ],
         declarations: [
             canvas_whiteboard_component_1.CanvasWhiteboardComponent,
             canvas_whiteboard_colorpicker_component_1.CanvasWhiteboardColorPickerComponent
         ],
-        exports: [canvas_whiteboard_component_1.CanvasWhiteboardComponent]
+        exports: [canvas_whiteboard_component_1.CanvasWhiteboardComponent, canvas_whiteboard_colorpicker_component_1.CanvasWhiteboardColorPickerComponent]
     })
 ], CanvasWhiteboardModule);
 exports.CanvasWhiteboardModule = CanvasWhiteboardModule;

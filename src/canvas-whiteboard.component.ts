@@ -59,7 +59,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
     context: CanvasRenderingContext2D;
 
-    private _strokeColor: string = "rgb(216, 184, 0)";
+    strokeColor: string = "rgb(216, 184, 0)";
     private _imageElement: HTMLImageElement;
 
     private _shouldDraw = false;
@@ -195,7 +195,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @param {string} newStrokeColor The new stroke color
      */
     changeColor(newStrokeColor: string) {
-        this._strokeColor = newStrokeColor;
+        this.strokeColor = newStrokeColor;
     }
 
     undo() {
@@ -255,7 +255,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * an CanvasWhiteboardUpdate object of type "stop" will be drawn and then sent as an update to all receiving ends.
      *
      */
-    private _canvasUserEvents(event: any) {
+    canvasUserEvents(event: any) {
         if (!this._shouldDraw || !this._canDraw) {
             //Ignore all if we didn't click the _draw! button or the image did not load
             return;
@@ -297,7 +297,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
                 break;
         }
 
-        update = new CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this._strokeColor, this._lastUUID, true);
+        update = new CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
         this._draw(update);
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     }
@@ -388,7 +388,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
             this.context.beginPath();
             this.context.lineWidth = 2;
             if (update.getVisible()) {
-                this.context.strokeStyle = update.getStrokeColor() || this._strokeColor;
+                this.context.strokeStyle = update.getStrokeColor() || this.strokeColor;
             } else {
                 this.context.strokeStyle = "rgba(0,0,0,0)";
             }

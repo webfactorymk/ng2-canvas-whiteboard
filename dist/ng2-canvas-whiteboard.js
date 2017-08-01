@@ -25,8 +25,8 @@ CanvasWhiteboardModule = __decorate([
             common_1.CommonModule
         ],
         declarations: [
-            canvas_whiteboard_component_1.CanvasWhiteboardComponent,
-            canvas_whiteboard_colorpicker_component_1.CanvasWhiteboardColorPickerComponent
+            canvas_whiteboard_colorpicker_component_1.CanvasWhiteboardColorPickerComponent,
+            canvas_whiteboard_component_1.CanvasWhiteboardComponent
         ],
         exports: [canvas_whiteboard_component_1.CanvasWhiteboardComponent]
     })

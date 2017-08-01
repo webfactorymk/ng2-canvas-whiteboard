@@ -7,14 +7,14 @@ import {
 @Component({
     selector: 'canvas-whiteboard-colorpicker',
     host: {
-        '(document:mousedown)': '_closeOnExternalClick($event)',
-        '(document:touchstart)': '_closeOnExternalClick($event)',
+        '(document:mousedown)': 'closeOnExternalClick($event)',
+        '(document:touchstart)': 'closeOnExternalClick($event)',
     },
     template: `
-        <input [style.background]="selectedColor" [hidden]="_showColorPicker" class="canvas-whiteboard-colorpicker-input" (click)="toggleColorPicker($event)"/>
-        <div [hidden]="!_showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
+        <input [style.background]="selectedColor" [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input" (click)="toggleColorPicker($event)"/>
+        <div [hidden]="!showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
             <canvas #canvaswhiteboardcolorpicker class="canvas-whiteboard-colorpicker" width="284" height="155"
-          (click)="_selectColor($event)"></canvas>
+          (click)="selectColor($event)"></canvas>
         </div>
     
     `,
@@ -46,7 +46,7 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
     @Input() selectedColor: string = "rgb(0,0,0)";
     @ViewChild('canvaswhiteboardcolorpicker') canvas: ElementRef;
 
-    private _showColorPicker: boolean = false;
+    showColorPicker: boolean = false;
     private _context: CanvasRenderingContext2D;
 
     @Output() onColorSelected = new EventEmitter<string>();
@@ -84,9 +84,9 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
     }
 
-    private _closeOnExternalClick(event) {
-        if (!this._elementRef.nativeElement.contains(event.target) && this._showColorPicker) {
-            this._showColorPicker = false;
+    closeOnExternalClick(event) {
+        if (!this._elementRef.nativeElement.contains(event.target) && this.showColorPicker) {
+            this.showColorPicker = false;
         }
     }
 
@@ -95,7 +95,7 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
             event.preventDefault();
         }
 
-        this._showColorPicker = !this._showColorPicker;
+        this.showColorPicker = !this.showColorPicker;
     }
 
     private _getColor(event: any) {
@@ -105,7 +105,7 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
         return 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
     }
 
-    private _selectColor(event: any) {
+    selectColor(event: any) {
         this.selectedColor = this._getColor(event);
 
         this.onColorSelected.emit(this.selectedColor);

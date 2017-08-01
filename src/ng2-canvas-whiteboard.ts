@@ -11,8 +11,8 @@ export {CanvasWhiteboardUpdate} from "./canvas-whiteboard-update.model";
         CommonModule
     ],
     declarations: [
-        CanvasWhiteboardComponent,
-        CanvasWhiteboardColorPickerComponent
+        CanvasWhiteboardColorPickerComponent,
+        CanvasWhiteboardComponent
     ],
     exports: [CanvasWhiteboardComponent]
 })

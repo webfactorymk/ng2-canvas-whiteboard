@@ -32,7 +32,7 @@ var CanvasWhiteboardComponent = (function () {
         this.onRedo = new core_1.EventEmitter();
         this.onBatchUpdate = new core_1.EventEmitter();
         this.onImageLoaded = new core_1.EventEmitter();
-        this._strokeColor = "rgb(216, 184, 0)";
+        this.strokeColor = "rgb(216, 184, 0)";
         this._shouldDraw = false;
         this._canDraw = true;
         this._clientDragging = false;
@@ -153,7 +153,7 @@ var CanvasWhiteboardComponent = (function () {
      * @param {string} newStrokeColor The new stroke color
      */
     CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
-        this._strokeColor = newStrokeColor;
+        this.strokeColor = newStrokeColor;
     };
     CanvasWhiteboardComponent.prototype.undo = function () {
         if (!this._undoStack.length || !this.undoButtonEnabled)
@@ -202,7 +202,7 @@ var CanvasWhiteboardComponent = (function () {
      * an CanvasWhiteboardUpdate object of type "stop" will be drawn and then sent as an update to all receiving ends.
      *
      */
-    CanvasWhiteboardComponent.prototype._canvasUserEvents = function (event) {
+    CanvasWhiteboardComponent.prototype.canvasUserEvents = function (event) {
         if (!this._shouldDraw || !this._canDraw) {
             //Ignore all if we didn't click the _draw! button or the image did not load
             return;
@@ -239,7 +239,7 @@ var CanvasWhiteboardComponent = (function () {
                 updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.stop;
                 break;
         }
-        update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this._strokeColor, this._lastUUID, true);
+        update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
         this._draw(update);
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     };
@@ -320,7 +320,7 @@ var CanvasWhiteboardComponent = (function () {
             this.context.beginPath();
             this.context.lineWidth = 2;
             if (update.getVisible()) {
-                this.context.strokeStyle = update.getStrokeColor() || this._strokeColor;
+                this.context.strokeStyle = update.getStrokeColor() || this.strokeColor;
             }
             else {
                 this.context.strokeStyle = "rgba(0,0,0,0)";

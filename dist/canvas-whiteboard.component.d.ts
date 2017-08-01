@@ -27,7 +27,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     onImageLoaded: EventEmitter<any>;
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
-    private _strokeColor;
+    strokeColor: string;
     private _imageElement;
     private _shouldDraw;
     private _canDraw;
@@ -106,7 +106,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * an CanvasWhiteboardUpdate object of type "stop" will be drawn and then sent as an update to all receiving ends.
      *
      */
-    private _canvasUserEvents(event);
+    canvasUserEvents(event: any): void;
     private _getCanvasEventPosition(event);
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends

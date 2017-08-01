@@ -1,7 +1,7 @@
 export const DEFAULT_TEMPLATE = `
 <div class="canvas_wrapper_div">
      <span class="canvas_whiteboard_buttons">
-         <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled" [selectedColor]="_strokeColor" (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
+         <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled" [selectedColor]="strokeColor" (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
          <button *ngIf="drawButtonEnabled" (click)="toggleShouldDraw()"
                  [class.canvas_whiteboard_button-draw_animated]="getShouldDraw()"
                  class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">
@@ -29,10 +29,10 @@ export const DEFAULT_TEMPLATE = `
          </button>
      </span>
     <canvas #canvas
-            (mousedown)="_canvasUserEvents($event)" (mouseup)="_canvasUserEvents($event)"
-            (mousemove)="_canvasUserEvents($event)" (mouseout)="_canvasUserEvents($event)"
-            (touchstart)="_canvasUserEvents($event)" (touchmove)="_canvasUserEvents($event)"
-            (touchend)="_canvasUserEvents($event)" (touchcancel)="_canvasUserEvents($event)">
+            (mousedown)="canvasUserEvents($event)" (mouseup)="canvasUserEvents($event)"
+            (mousemove)="canvasUserEvents($event)" (mouseout)="canvasUserEvents($event)"
+            (touchstart)="canvasUserEvents($event)" (touchmove)="canvasUserEvents($event)"
+            (touchend)="canvasUserEvents($event)" (touchcancel)="canvasUserEvents($event)">
     </canvas>
 </div>
     `;
