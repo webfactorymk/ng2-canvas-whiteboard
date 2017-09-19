@@ -80,8 +80,8 @@ export class CanvasWhiteboardUpdate {
         let serializedUpdate = "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type;
 
         if(!onlyShowCoordinatesAndType) {
-            serializedUpdate += this._strokeColor ? (", \"stroke_color\": " + this._strokeColor) : "";
-            serializedUpdate += this._uuid ? (", \"uuid\": " + this._uuid ) : "";
+            serializedUpdate += this._strokeColor ? (", \"stroke_color\": " + JSON.stringify(this._strokeColor)) : "";
+            serializedUpdate += this._uuid ? (", \"uuid\": " + JSON.stringify(this._uuid)) : "";
             serializedUpdate += this._visible != null ? (", \"visible\": " + this._visible ) : "";
         }
         serializedUpdate += " }";
