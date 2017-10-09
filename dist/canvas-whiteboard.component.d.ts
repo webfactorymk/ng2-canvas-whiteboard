@@ -63,7 +63,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * Clears all content on the canvas.
      * @return Emits a value when the clearing is finished
      */
-    clearCanvas(): void;
+    clearCanvas(shouldEmitValue?: boolean): void;
     private _removeCanvasData(callbackFn?);
     /**
      * Clears the canvas and redraws the image if the url exists.
@@ -87,9 +87,9 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @param {string} newStrokeColor The new stroke color
      */
     changeColor(newStrokeColor: string): void;
-    undo(): void;
+    undo(shouldEmitValue?: boolean): void;
     private _undoCanvas(updateUUID);
-    redo(): void;
+    redo(shouldEmitValue?: boolean): void;
     private _redoCanvas(updateUUID);
     /**
      * Catches the Mouse and Touch events made on the canvas.

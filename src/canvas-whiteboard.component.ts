@@ -141,10 +141,12 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * Clears all content on the canvas.
      * @return Emits a value when the clearing is finished
      */
-    clearCanvas() {
+    clearCanvas(shouldEmitValue: boolean = false) {
         this._removeCanvasData();
         this._redoStack = [];
-        this.onClear.emit(true);
+
+        if (shouldEmitValue)
+            this.onClear.emit(true);
     }
 
     private _removeCanvasData(callbackFn?: any) {
@@ -198,13 +200,14 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
         this.strokeColor = newStrokeColor;
     }
 
-    undo() {
+    undo(shouldEmitValue: boolean = false) {
         if (!this._undoStack.length || !this.undoButtonEnabled) return;
 
         let updateUUID = this._undoStack.pop();
         this._undoCanvas(updateUUID);
 
-        this.onUndo.emit(updateUUID);
+        if (shouldEmitValue)
+            this.onUndo.emit(updateUUID);
     }
 
     private _undoCanvas(updateUUID: string) {
@@ -219,13 +222,14 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
         this._redrawHistory();
     }
 
-    redo() {
+    redo(shouldEmitValue: boolean = false) {
         if (!this._redoStack.length || !this.redoButtonEnabled) return;
 
         let updateUUID = this._redoStack.pop();
         this._redoCanvas(updateUUID);
 
-        this.onRedo.emit(updateUUID);
+        if (shouldEmitValue)
+            this.onRedo.emit(updateUUID);
     }
 
     private _redoCanvas(updateUUID: string) {

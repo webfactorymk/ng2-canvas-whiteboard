@@ -1,13 +1,4 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
@@ -103,10 +94,12 @@ var CanvasWhiteboardComponent = (function () {
      * Clears all content on the canvas.
      * @return Emits a value when the clearing is finished
      */
-    CanvasWhiteboardComponent.prototype.clearCanvas = function () {
+    CanvasWhiteboardComponent.prototype.clearCanvas = function (shouldEmitValue) {
+        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
         this._removeCanvasData();
         this._redoStack = [];
-        this.onClear.emit(true);
+        if (shouldEmitValue)
+            this.onClear.emit(true);
     };
     CanvasWhiteboardComponent.prototype._removeCanvasData = function (callbackFn) {
         this._clientDragging = false;
@@ -155,12 +148,14 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
         this.strokeColor = newStrokeColor;
     };
-    CanvasWhiteboardComponent.prototype.undo = function () {
+    CanvasWhiteboardComponent.prototype.undo = function (shouldEmitValue) {
+        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
         if (!this._undoStack.length || !this.undoButtonEnabled)
             return;
         var updateUUID = this._undoStack.pop();
         this._undoCanvas(updateUUID);
-        this.onUndo.emit(updateUUID);
+        if (shouldEmitValue)
+            this.onUndo.emit(updateUUID);
     };
     CanvasWhiteboardComponent.prototype._undoCanvas = function (updateUUID) {
         this._redoStack.push(updateUUID);
@@ -171,12 +166,14 @@ var CanvasWhiteboardComponent = (function () {
         });
         this._redrawHistory();
     };
-    CanvasWhiteboardComponent.prototype.redo = function () {
+    CanvasWhiteboardComponent.prototype.redo = function (shouldEmitValue) {
+        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
         if (!this._redoStack.length || !this.redoButtonEnabled)
             return;
         var updateUUID = this._redoStack.pop();
         this._redoCanvas(updateUUID);
-        this.onRedo.emit(updateUUID);
+        if (shouldEmitValue)
+            this.onRedo.emit(updateUUID);
     };
     CanvasWhiteboardComponent.prototype._redoCanvas = function (updateUUID) {
         this._undoStack.push(updateUUID);
@@ -519,112 +516,41 @@ var CanvasWhiteboardComponent = (function () {
     };
     return CanvasWhiteboardComponent;
 }());
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Number)
-], CanvasWhiteboardComponent.prototype, "batchUpdateTimeoutDuration", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "imageUrl", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Number)
-], CanvasWhiteboardComponent.prototype, "aspectRatio", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "drawButtonClass", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "clearButtonClass", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "undoButtonClass", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "redoButtonClass", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "saveDataButtonClass", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "drawButtonText", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "clearButtonText", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "undoButtonText", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "redoButtonText", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], CanvasWhiteboardComponent.prototype, "saveDataButtonText", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Boolean)
-], CanvasWhiteboardComponent.prototype, "drawButtonEnabled", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Boolean)
-], CanvasWhiteboardComponent.prototype, "clearButtonEnabled", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Boolean)
-], CanvasWhiteboardComponent.prototype, "undoButtonEnabled", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Boolean)
-], CanvasWhiteboardComponent.prototype, "redoButtonEnabled", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Boolean)
-], CanvasWhiteboardComponent.prototype, "saveDataButtonEnabled", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Boolean)
-], CanvasWhiteboardComponent.prototype, "colorPickerEnabled", void 0);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", Object)
-], CanvasWhiteboardComponent.prototype, "onClear", void 0);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", Object)
-], CanvasWhiteboardComponent.prototype, "onUndo", void 0);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", Object)
-], CanvasWhiteboardComponent.prototype, "onRedo", void 0);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", Object)
-], CanvasWhiteboardComponent.prototype, "onBatchUpdate", void 0);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", Object)
-], CanvasWhiteboardComponent.prototype, "onImageLoaded", void 0);
-__decorate([
-    core_1.ViewChild('canvas'),
-    __metadata("design:type", core_1.ElementRef)
-], CanvasWhiteboardComponent.prototype, "canvas", void 0);
-CanvasWhiteboardComponent = __decorate([
-    core_1.Component({
-        selector: 'canvas-whiteboard',
-        template: template_1.DEFAULT_TEMPLATE,
-        styles: [template_1.DEFAULT_STYLES]
-    })
-], CanvasWhiteboardComponent);
+CanvasWhiteboardComponent.decorators = [
+    { type: core_1.Component, args: [{
+                selector: 'canvas-whiteboard',
+                template: template_1.DEFAULT_TEMPLATE,
+                styles: [template_1.DEFAULT_STYLES]
+            },] },
+];
+/** @nocollapse */
+CanvasWhiteboardComponent.ctorParameters = function () { return []; };
+CanvasWhiteboardComponent.propDecorators = {
+    'batchUpdateTimeoutDuration': [{ type: core_1.Input },],
+    'imageUrl': [{ type: core_1.Input },],
+    'aspectRatio': [{ type: core_1.Input },],
+    'drawButtonClass': [{ type: core_1.Input },],
+    'clearButtonClass': [{ type: core_1.Input },],
+    'undoButtonClass': [{ type: core_1.Input },],
+    'redoButtonClass': [{ type: core_1.Input },],
+    'saveDataButtonClass': [{ type: core_1.Input },],
+    'drawButtonText': [{ type: core_1.Input },],
+    'clearButtonText': [{ type: core_1.Input },],
+    'undoButtonText': [{ type: core_1.Input },],
+    'redoButtonText': [{ type: core_1.Input },],
+    'saveDataButtonText': [{ type: core_1.Input },],
+    'drawButtonEnabled': [{ type: core_1.Input },],
+    'clearButtonEnabled': [{ type: core_1.Input },],
+    'undoButtonEnabled': [{ type: core_1.Input },],
+    'redoButtonEnabled': [{ type: core_1.Input },],
+    'saveDataButtonEnabled': [{ type: core_1.Input },],
+    'colorPickerEnabled': [{ type: core_1.Input },],
+    'onClear': [{ type: core_1.Output },],
+    'onUndo': [{ type: core_1.Output },],
+    'onRedo': [{ type: core_1.Output },],
+    'onBatchUpdate': [{ type: core_1.Output },],
+    'onImageLoaded': [{ type: core_1.Output },],
+    'canvas': [{ type: core_1.ViewChild, args: ['canvas',] },],
+};
 exports.CanvasWhiteboardComponent = CanvasWhiteboardComponent;
 //# sourceMappingURL=canvas-whiteboard.component.js.map
