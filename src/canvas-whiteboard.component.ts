@@ -298,6 +298,8 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
             case 'mouseout':
                 this._clientDragging = false;
                 updateType = UPDATE_TYPE.stop;
+                eventPosition.x = this._lastX;
+                eventPosition.y = this._lastY;
                 break;
         }
 

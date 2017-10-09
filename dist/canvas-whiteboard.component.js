@@ -234,6 +234,8 @@ var CanvasWhiteboardComponent = (function () {
             case 'mouseout':
                 this._clientDragging = false;
                 updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.stop;
+                eventPosition.x = this._lastX;
+                eventPosition.y = this._lastY;
                 break;
         }
         update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);

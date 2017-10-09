@@ -1,6 +1,6 @@
 {
   "name": "ng2-canvas-whiteboard",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "A Canvas component for Angular2 which supports free drawing.",
   "main": "index.js",
   "scripts": {
