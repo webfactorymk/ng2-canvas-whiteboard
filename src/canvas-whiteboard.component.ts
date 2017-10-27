@@ -49,6 +49,9 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
     @Input() colorPickerEnabled: boolean = false;
 
+    @Input() lineWidth: number = 2;
+    @Input() strokeColor: string = "rgb(216, 184, 0)";
+
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
     @Output() onRedo = new EventEmitter<any>();
@@ -59,16 +62,15 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
     context: CanvasRenderingContext2D;
 
-    strokeColor: string = "rgb(216, 184, 0)";
     private _imageElement: HTMLImageElement;
 
     private _shouldDraw = false;
     private _canDraw = true;
 
-    private _lastX: number;
-    private _lastUUID: string;
-    private _lastY: number;
     private _clientDragging = false;
+
+    private _lastUUID: string;
+    private _lastPositionForUUID: Object = {};
 
     private _undoStack: string[] = []; //Stores the value of start and count for each continuous stroke
     private _redoStack: string[] = [];
@@ -298,8 +300,6 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
             case 'mouseout':
                 this._clientDragging = false;
                 updateType = UPDATE_TYPE.stop;
-                eventPosition.x = this._lastX;
-                eventPosition.y = this._lastY;
                 break;
         }
 
@@ -308,12 +308,18 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     }
 
-    private _getCanvasEventPosition(event: any) {
+    private _getCanvasEventPosition(eventData: any) {
         let canvasBoundingRect = this.context.canvas.getBoundingClientRect();
 
+        let hasTouches = (eventData.touches && eventData.touches.length) ? eventData.touches[0] : null;
+        if (!hasTouches)
+            hasTouches = (eventData.changedTouches && eventData.changedTouches.length) ? eventData.changedTouches[0] : null;
+
+        let event = hasTouches ? hasTouches : eventData;
+
         return {
-            x: event.touches && event.touches[0] ? event.touches[0].clientX - canvasBoundingRect.left : event.clientX - canvasBoundingRect.left,
-            y: event.touches && event.touches[0] ? event.touches[0].clientY - canvasBoundingRect.top : event.clientY - canvasBoundingRect.top
+            x: event.clientX - canvasBoundingRect.left,
+            y: event.clientY - canvasBoundingRect.top
         }
     }
 
@@ -363,7 +369,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
     }
 
     private _redrawHistory() {
-        let updatesToDraw = this._drawHistory;
+        let updatesToDraw = [].concat(this._drawHistory);
 
         this._removeCanvasData(() => {
             updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
@@ -390,26 +396,37 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
         let yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
 
         if (update.getType() === UPDATE_TYPE.drag) {
+            let lastPosition = this._lastPositionForUUID[update.getUUID()];
+
             this.context.save();
             this.context.beginPath();
-            this.context.lineWidth = 2;
+            this.context.lineWidth = this.lineWidth;
+
             if (update.getVisible()) {
                 this.context.strokeStyle = update.getStrokeColor() || this.strokeColor;
             } else {
                 this.context.strokeStyle = "rgba(0,0,0,0)";
             }
             this.context.lineJoin = "round";
-            this.context.moveTo(this._lastX, this._lastY);
+
+            this.context.moveTo(lastPosition.x, lastPosition.y);
+
             this.context.lineTo(xToDraw, yToDraw);
             this.context.closePath();
             this.context.stroke();
             this.context.restore();
         } else if (update.getType() === UPDATE_TYPE.stop && update.getVisible()) {
             this._undoStack.push(update.getUUID());
+            delete this._lastPositionForUUID[update.getUUID()];
+
         }
 
-        this._lastX = xToDraw;
-        this._lastY = yToDraw;
+        if (update.getType() === UPDATE_TYPE.start || update.getType() === UPDATE_TYPE.drag) {
+            this._lastPositionForUUID[update.getUUID()] = {
+                x: xToDraw,
+                y: yToDraw
+            };
+        }
     }
 
     /**

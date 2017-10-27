@@ -18,15 +18,17 @@ var CanvasWhiteboardComponent = (function () {
         this.redoButtonEnabled = false;
         this.saveDataButtonEnabled = false;
         this.colorPickerEnabled = false;
+        this.lineWidth = 2;
+        this.strokeColor = "rgb(216, 184, 0)";
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onRedo = new core_1.EventEmitter();
         this.onBatchUpdate = new core_1.EventEmitter();
         this.onImageLoaded = new core_1.EventEmitter();
-        this.strokeColor = "rgb(216, 184, 0)";
         this._shouldDraw = false;
         this._canDraw = true;
         this._clientDragging = false;
+        this._lastPositionForUUID = {};
         this._undoStack = []; //Stores the value of start and count for each continuous stroke
         this._redoStack = [];
         this._drawHistory = [];
@@ -234,19 +236,21 @@ var CanvasWhiteboardComponent = (function () {
             case 'mouseout':
                 this._clientDragging = false;
                 updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.stop;
-                eventPosition.x = this._lastX;
-                eventPosition.y = this._lastY;
                 break;
         }
         update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
         this._draw(update);
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     };
-    CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (event) {
+    CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (eventData) {
         var canvasBoundingRect = this.context.canvas.getBoundingClientRect();
+        var hasTouches = (eventData.touches && eventData.touches.length) ? eventData.touches[0] : null;
+        if (!hasTouches)
+            hasTouches = (eventData.changedTouches && eventData.changedTouches.length) ? eventData.changedTouches[0] : null;
+        var event = hasTouches ? hasTouches : eventData;
         return {
-            x: event.touches && event.touches[0] ? event.touches[0].clientX - canvasBoundingRect.left : event.clientX - canvasBoundingRect.left,
-            y: event.touches && event.touches[0] ? event.touches[0].clientY - canvasBoundingRect.top : event.clientY - canvasBoundingRect.top
+            x: event.clientX - canvasBoundingRect.left,
+            y: event.clientY - canvasBoundingRect.top
         };
     };
     /**
@@ -292,7 +296,7 @@ var CanvasWhiteboardComponent = (function () {
     };
     CanvasWhiteboardComponent.prototype._redrawHistory = function () {
         var _this = this;
-        var updatesToDraw = this._drawHistory;
+        var updatesToDraw = [].concat(this._drawHistory);
         this._removeCanvasData(function () {
             updatesToDraw.forEach(function (update) {
                 _this._draw(update, true);
@@ -315,9 +319,10 @@ var CanvasWhiteboardComponent = (function () {
         var xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
         var yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
         if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
+            var lastPosition = this._lastPositionForUUID[update.getUUID()];
             this.context.save();
             this.context.beginPath();
-            this.context.lineWidth = 2;
+            this.context.lineWidth = this.lineWidth;
             if (update.getVisible()) {
                 this.context.strokeStyle = update.getStrokeColor() || this.strokeColor;
             }
@@ -325,7 +330,7 @@ var CanvasWhiteboardComponent = (function () {
                 this.context.strokeStyle = "rgba(0,0,0,0)";
             }
             this.context.lineJoin = "round";
-            this.context.moveTo(this._lastX, this._lastY);
+            this.context.moveTo(lastPosition.x, lastPosition.y);
             this.context.lineTo(xToDraw, yToDraw);
             this.context.closePath();
             this.context.stroke();
@@ -333,9 +338,14 @@ var CanvasWhiteboardComponent = (function () {
         }
         else if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.stop && update.getVisible()) {
             this._undoStack.push(update.getUUID());
+            delete this._lastPositionForUUID[update.getUUID()];
         }
-        this._lastX = xToDraw;
-        this._lastY = yToDraw;
+        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.start || update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
+            this._lastPositionForUUID[update.getUUID()] = {
+                x: xToDraw,
+                y: yToDraw
+            };
+        }
     };
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
@@ -547,6 +557,8 @@ CanvasWhiteboardComponent.propDecorators = {
     'redoButtonEnabled': [{ type: core_1.Input },],
     'saveDataButtonEnabled': [{ type: core_1.Input },],
     'colorPickerEnabled': [{ type: core_1.Input },],
+    'lineWidth': [{ type: core_1.Input },],
+    'strokeColor': [{ type: core_1.Input },],
     'onClear': [{ type: core_1.Output },],
     'onUndo': [{ type: core_1.Output },],
     'onRedo': [{ type: core_1.Output },],

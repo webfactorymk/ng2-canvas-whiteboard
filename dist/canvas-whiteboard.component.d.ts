@@ -20,6 +20,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     redoButtonEnabled: boolean;
     saveDataButtonEnabled: boolean;
     colorPickerEnabled: boolean;
+    lineWidth: number;
+    strokeColor: string;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -27,14 +29,12 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     onImageLoaded: EventEmitter<any>;
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
-    strokeColor: string;
     private _imageElement;
     private _shouldDraw;
     private _canDraw;
-    private _lastX;
-    private _lastUUID;
-    private _lastY;
     private _clientDragging;
+    private _lastUUID;
+    private _lastPositionForUUID;
     private _undoStack;
     private _redoStack;
     private _drawHistory;
@@ -107,7 +107,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      *
      */
     canvasUserEvents(event: any): void;
-    private _getCanvasEventPosition(event);
+    private _getCanvasEventPosition(eventData);
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
      * can reverse the mapping and get the same position as the one that
