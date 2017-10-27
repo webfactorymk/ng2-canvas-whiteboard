@@ -108,6 +108,9 @@ Specify the text to add to the buttons, default is no text
 [clearButtonText]="'Clear'"
 ```
 
+##Use the options: CanvasWhiteboardOptions to send the inputs
+
+
 ### To add text to the buttons via css
 Each button has its on class (example: Draw button -> .canvas_whiteboard_button-draw)<br/>
 This button can be customized by overriding it's css
@@ -143,6 +146,21 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 **onImageLoaded** is emitted if the user specified an image and it has successfully been drawn on the canvas.
 **onUndo** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
 **onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
+
+#Canvas Whiteboard Service
+Even though there are event emitters for the canvases' actions, there is also a canvas whiteboard service
+which the user can listen for new canvas actions, and also send actions for the canvas to complete.
+
+For this, the user must inject the CanvasWhiteboardService into the components constructor.
+
+```typescript
+export class AppComponent implements OnInit, AfterViewInit {
+  constructor(private _canvasWhiteboardService: CanvasWhiteboardService) {}
+ }
+```
+
+After doing this, he can subscribe to the observables that will notify him when a change has been made.
+There are also functions which he can use that notify the canvas that is listening to the same events
 
 ##Saving drawn canvas as an image 
 In order to save drawn images you can either click the Save button in the canvas, use the short Ctrl/Command + s key or get a reference of the canvas and save programmatically.

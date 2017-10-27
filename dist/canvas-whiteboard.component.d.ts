@@ -1,6 +1,32 @@
-import { EventEmitter, ElementRef, OnInit, OnChanges } from '@angular/core';
+import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
-export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
+import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
+export interface CanvasWhiteboardOptions {
+    batchUpdateTimeoutDuration?: number;
+    imageUrl?: string;
+    aspectRatio?: number;
+    strokeColor?: string;
+    lineWidth?: number;
+    drawButtonEnabled?: boolean;
+    drawButtonClass?: string;
+    drawButtonText?: string;
+    clearButtonEnabled?: boolean;
+    clearButtonClass?: string;
+    clearButtonText?: string;
+    undoButtonEnabled?: boolean;
+    undoButtonClass?: string;
+    undoButtonText?: string;
+    redoButtonEnabled?: boolean;
+    redoButtonClass?: string;
+    redoButtonText?: string;
+    saveDataButtonEnabled?: boolean;
+    saveDataButtonClass?: string;
+    saveDataButtonText?: string;
+    colorPickerEnabled?: boolean;
+}
+export declare class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
+    private _canvasWhiteboardService;
+    options: CanvasWhiteboardOptions;
     batchUpdateTimeoutDuration: number;
     imageUrl: string;
     aspectRatio: number;
@@ -20,6 +46,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     redoButtonEnabled: boolean;
     saveDataButtonEnabled: boolean;
     colorPickerEnabled: boolean;
+    lineWidth: number;
+    strokeColor: string;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -27,26 +55,28 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     onImageLoaded: EventEmitter<any>;
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
-    strokeColor: string;
     private _imageElement;
     private _shouldDraw;
     private _canDraw;
-    private _lastX;
-    private _lastUUID;
-    private _lastY;
     private _clientDragging;
+    private _lastUUID;
+    private _lastPositionForUUID;
     private _undoStack;
     private _redoStack;
     private _drawHistory;
     private _batchUpdates;
     private _updatesNotDrawn;
     private _updateTimeout;
+    private _whiteboardServiceSubscriptions;
+    constructor(_canvasWhiteboardService: CanvasWhiteboardService);
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
      */
     ngOnInit(): void;
+    private _initInputsFromOptions(options);
     private _initCanvasEventListeners();
+    private _initCanvasServiceObservables();
     private _calculateCanvasWidthAndHeight();
     /**
      * If an image exists and it's url changes, we need to redraw the new image on the canvas.
@@ -60,10 +90,14 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      */
     private _loadImage(callbackFn?);
     /**
-     * Clears all content on the canvas.
-     * @return Emits a value when the clearing is finished
+     * Sends a notification that the canvas needs to be cleared.
+     * The service will pick up the notification and clear the canvas.
      */
-    clearCanvas(shouldEmitValue?: boolean): void;
+    clearCanvasLocal(): void;
+    /**
+     * Clears all content on the canvas.
+     */
+    clearCanvas(): void;
     private _removeCanvasData(callbackFn?);
     /**
      * Clears the canvas and redraws the image if the url exists.
@@ -87,9 +121,11 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @param {string} newStrokeColor The new stroke color
      */
     changeColor(newStrokeColor: string): void;
-    undo(shouldEmitValue?: boolean): void;
+    undoLocal(): void;
+    undo(): void;
     private _undoCanvas(updateUUID);
-    redo(shouldEmitValue?: boolean): void;
+    redoLocal(): void;
+    redo(): void;
     private _redoCanvas(updateUUID);
     /**
      * Catches the Mouse and Touch events made on the canvas.
@@ -107,7 +143,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      *
      */
     canvasUserEvents(event: any): void;
-    private _getCanvasEventPosition(event);
+    private _getCanvasEventPosition(eventData);
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
      * can reverse the mapping and get the same position as the one that
@@ -121,12 +157,13 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
-     *If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 83 (s) or 115(S), a save action will be performed
      *
      * @param event The event that occurred.
      */
     private _canvasKeyDown(event);
-    private _redrawCanvasOnResize(event);
+    private _redrawCanvasOnResize();
     private _redrawHistory();
     /**
      * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
@@ -148,7 +185,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * @param {CanvasWhiteboardUpdate} update The update object.
      * @return Emits an Array of Updates when the batch.
      */
-    sendUpdate(update: CanvasWhiteboardUpdate): void;
+    private _prepareUpdateForBatchDispatch(update);
     /**
      * Draws an Array of Updates on the canvas.
      *
@@ -159,7 +196,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * Draw any missing updates that were received before the image was loaded
      *
      */
-    drawMissingUpdates(): void;
+    private _drawMissingUpdates();
     /**
      * Draws an image on the canvas
      *
@@ -191,7 +228,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      * If type is not specified, the image type is image/png. The created image is in a resolution of 96dpi.
      * The third argument is used with image/jpeg images to specify the quality of the output.
      *
-     * @param {any} callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
+     * @param callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
      * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
      If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
@@ -205,4 +242,6 @@ export declare class CanvasWhiteboardComponent implements OnInit, OnChanges {
      */
     downloadCanvasImage(returnedDataType?: string): void;
     private _generateDataTypeString(returnedDataType);
+    private _unsubscribe(subscription);
+    ngOnDestroy(): void;
 }

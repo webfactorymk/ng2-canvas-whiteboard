@@ -9,17 +9,17 @@ export const DEFAULT_TEMPLATE = `
                    {{drawButtonText}}
         </button>
         
-        <button *ngIf="clearButtonEnabled" (click)="clearCanvas(true)" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-clear">
+        <button *ngIf="clearButtonEnabled" (click)="clearCanvasLocal()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-clear">
             <i [class]="clearButtonClass" aria-hidden="true"></i>
                     {{clearButtonText}}
         </button>
         
-         <button *ngIf="undoButtonEnabled" (click)="undo(true)" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-undo">
+         <button *ngIf="undoButtonEnabled" (click)="undoLocal()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-undo">
              <i [class]="undoButtonClass" aria-hidden="true"></i>
                     {{undoButtonText}} 
          </button>
          
-         <button *ngIf="redoButtonEnabled" (click)="redo(true)" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-redo">
+         <button *ngIf="redoButtonEnabled" (click)="redoLocal()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-redo">
              <i [class]="redoButtonClass" aria-hidden="true"></i>
                     {{redoButtonText}}
          </button> 

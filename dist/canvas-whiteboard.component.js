@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
 var template_1 = require("./template");
+var canvas_whiteboard_service_1 = require("./canvas-whiteboard.service");
 var CanvasWhiteboardComponent = (function () {
-    function CanvasWhiteboardComponent() {
+    function CanvasWhiteboardComponent(_canvasWhiteboardService) {
+        this._canvasWhiteboardService = _canvasWhiteboardService;
         //Number of ms to wait before sending out the updates as an array
         this.batchUpdateTimeoutDuration = 100;
         this.drawButtonText = "";
@@ -18,33 +20,95 @@ var CanvasWhiteboardComponent = (function () {
         this.redoButtonEnabled = false;
         this.saveDataButtonEnabled = false;
         this.colorPickerEnabled = false;
+        this.lineWidth = 2;
+        this.strokeColor = "rgb(216, 184, 0)";
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onRedo = new core_1.EventEmitter();
         this.onBatchUpdate = new core_1.EventEmitter();
         this.onImageLoaded = new core_1.EventEmitter();
-        this.strokeColor = "rgb(216, 184, 0)";
         this._shouldDraw = false;
         this._canDraw = true;
         this._clientDragging = false;
+        this._lastPositionForUUID = {};
         this._undoStack = []; //Stores the value of start and count for each continuous stroke
         this._redoStack = [];
         this._drawHistory = [];
         this._batchUpdates = [];
         this._updatesNotDrawn = [];
+        this._whiteboardServiceSubscriptions = [];
     }
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
      */
     CanvasWhiteboardComponent.prototype.ngOnInit = function () {
+        this._initInputsFromOptions(this.options);
         this._initCanvasEventListeners();
+        this._initCanvasServiceObservables();
         this.context = this.canvas.nativeElement.getContext("2d");
         this._calculateCanvasWidthAndHeight();
+    };
+    CanvasWhiteboardComponent.prototype._initInputsFromOptions = function (options) {
+        if (options) {
+            if (options.batchUpdateTimeoutDuration)
+                this.batchUpdateTimeoutDuration = options.batchUpdateTimeoutDuration;
+            if (options.imageUrl)
+                this.imageUrl = options.imageUrl;
+            if (options.aspectRatio)
+                this.aspectRatio = options.aspectRatio;
+            if (options.drawButtonClass)
+                this.drawButtonClass = options.drawButtonClass;
+            if (options.clearButtonClass)
+                this.clearButtonClass = options.clearButtonClass;
+            if (options.undoButtonClass)
+                this.undoButtonClass = options.undoButtonClass;
+            if (options.redoButtonClass)
+                this.redoButtonClass = options.redoButtonClass;
+            if (options.saveDataButtonClass)
+                this.saveDataButtonClass = options.saveDataButtonClass;
+            if (options.drawButtonText)
+                this.drawButtonText = options.drawButtonText;
+            if (options.clearButtonText)
+                this.clearButtonText = options.clearButtonText;
+            if (options.undoButtonText)
+                this.undoButtonText = options.undoButtonText;
+            if (options.redoButtonText)
+                this.redoButtonText = options.redoButtonText;
+            if (options.saveDataButtonText)
+                this.saveDataButtonText = options.saveDataButtonText;
+            if (options.drawButtonEnabled)
+                this.drawButtonEnabled = options.drawButtonEnabled;
+            if (options.clearButtonEnabled)
+                this.clearButtonEnabled = options.clearButtonEnabled;
+            if (options.undoButtonEnabled)
+                this.undoButtonEnabled = options.undoButtonEnabled;
+            if (options.redoButtonEnabled)
+                this.redoButtonEnabled = options.redoButtonEnabled;
+            if (options.saveDataButtonEnabled)
+                this.saveDataButtonEnabled = options.saveDataButtonEnabled;
+            if (options.colorPickerEnabled)
+                this.colorPickerEnabled = options.colorPickerEnabled;
+            if (options.lineWidth)
+                this.lineWidth = options.lineWidth;
+            if (options.strokeColor)
+                this.strokeColor = options.strokeColor;
+        }
     };
     CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
         window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
         window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
+    };
+    CanvasWhiteboardComponent.prototype._initCanvasServiceObservables = function () {
+        var _this = this;
+        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasDrawSubject$
+            .subscribe(function (updates) { return _this.drawUpdates(updates); }));
+        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasClearSubject$
+            .subscribe(function (value) { return _this.clearCanvas(); }));
+        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasUndoSubject$
+            .subscribe(function (value) { return _this.undo(); }));
+        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasRedoSubject$
+            .subscribe(function (value) { return _this.redo(); }));
     };
     CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
         this.context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
@@ -68,6 +132,9 @@ var CanvasWhiteboardComponent = (function () {
                 this._redrawBackground();
             }
         }
+        if (changes.options && changes.options.currentValue != changes.options.previousValue) {
+            this._initInputsFromOptions(changes.options.currentValue);
+        }
     };
     /**
      * Load an image and draw it on the canvas (if an image exists)
@@ -83,7 +150,7 @@ var CanvasWhiteboardComponent = (function () {
             _this.context.save();
             _this._drawImage(_this.context, _this._imageElement, 0, 0, _this.context.canvas.width, _this.context.canvas.height, 0.5, 0.5);
             _this.context.restore();
-            _this.drawMissingUpdates();
+            _this._drawMissingUpdates();
             _this._canDraw = true;
             callbackFn && callbackFn();
             _this.onImageLoaded.emit(true);
@@ -91,15 +158,19 @@ var CanvasWhiteboardComponent = (function () {
         this._imageElement.src = this.imageUrl;
     };
     /**
-     * Clears all content on the canvas.
-     * @return Emits a value when the clearing is finished
+     * Sends a notification that the canvas needs to be cleared.
+     * The service will pick up the notification and clear the canvas.
      */
-    CanvasWhiteboardComponent.prototype.clearCanvas = function (shouldEmitValue) {
-        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
+    CanvasWhiteboardComponent.prototype.clearCanvasLocal = function () {
+        this.onClear.emit(true);
+        this._canvasWhiteboardService.clearCanvas();
+    };
+    /**
+     * Clears all content on the canvas.
+     */
+    CanvasWhiteboardComponent.prototype.clearCanvas = function () {
         this._removeCanvasData();
         this._redoStack = [];
-        if (shouldEmitValue)
-            this.onClear.emit(true);
     };
     CanvasWhiteboardComponent.prototype._removeCanvasData = function (callbackFn) {
         this._clientDragging = false;
@@ -117,9 +188,7 @@ var CanvasWhiteboardComponent = (function () {
             this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             if (this.imageUrl) {
-                this._loadImage(function () {
-                    callbackFn && callbackFn();
-                });
+                this._loadImage(callbackFn);
             }
             else {
                 callbackFn && callbackFn();
@@ -148,14 +217,15 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
         this.strokeColor = newStrokeColor;
     };
-    CanvasWhiteboardComponent.prototype.undo = function (shouldEmitValue) {
-        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
-        if (!this._undoStack.length || !this.undoButtonEnabled)
+    CanvasWhiteboardComponent.prototype.undoLocal = function () {
+        this.onUndo.emit();
+        this._canvasWhiteboardService.undoCanvas();
+    };
+    CanvasWhiteboardComponent.prototype.undo = function () {
+        if (!this._undoStack.length)
             return;
         var updateUUID = this._undoStack.pop();
         this._undoCanvas(updateUUID);
-        if (shouldEmitValue)
-            this.onUndo.emit(updateUUID);
     };
     CanvasWhiteboardComponent.prototype._undoCanvas = function (updateUUID) {
         this._redoStack.push(updateUUID);
@@ -166,14 +236,15 @@ var CanvasWhiteboardComponent = (function () {
         });
         this._redrawHistory();
     };
-    CanvasWhiteboardComponent.prototype.redo = function (shouldEmitValue) {
-        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
-        if (!this._redoStack.length || !this.redoButtonEnabled)
+    CanvasWhiteboardComponent.prototype.redoLocal = function () {
+        this.onRedo.emit();
+        this._canvasWhiteboardService.redoCanvas();
+    };
+    CanvasWhiteboardComponent.prototype.redo = function () {
+        if (!this._redoStack.length)
             return;
         var updateUUID = this._redoStack.pop();
         this._redoCanvas(updateUUID);
-        if (shouldEmitValue)
-            this.onRedo.emit(updateUUID);
     };
     CanvasWhiteboardComponent.prototype._redoCanvas = function (updateUUID) {
         this._undoStack.push(updateUUID);
@@ -234,19 +305,20 @@ var CanvasWhiteboardComponent = (function () {
             case 'mouseout':
                 this._clientDragging = false;
                 updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.stop;
-                eventPosition.x = this._lastX;
-                eventPosition.y = this._lastY;
                 break;
         }
         update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
-        this._draw(update);
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     };
-    CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (event) {
+    CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (eventData) {
         var canvasBoundingRect = this.context.canvas.getBoundingClientRect();
+        var hasTouches = (eventData.touches && eventData.touches.length) ? eventData.touches[0] : null;
+        if (!hasTouches)
+            hasTouches = (eventData.changedTouches && eventData.changedTouches.length) ? eventData.changedTouches[0] : null;
+        var event = hasTouches ? hasTouches : eventData;
         return {
-            x: event.touches && event.touches[0] ? event.touches[0].clientX - canvasBoundingRect.left : event.clientX - canvasBoundingRect.left,
-            y: event.touches && event.touches[0] ? event.touches[0].clientY - canvasBoundingRect.top : event.clientY - canvasBoundingRect.top
+            x: event.clientX - canvasBoundingRect.left,
+            y: event.clientY - canvasBoundingRect.top
         };
     };
     /**
@@ -261,12 +333,13 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype._prepareToSendUpdate = function (update, eventX, eventY) {
         update.setX(eventX / this.context.canvas.width);
         update.setY(eventY / this.context.canvas.height);
-        this.sendUpdate(update);
+        this._prepareUpdateForBatchDispatch(update);
     };
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
-     *If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 83 (s) or 115(S), a save action will be performed
      *
      * @param event The event that occurred.
      */
@@ -286,13 +359,13 @@ var CanvasWhiteboardComponent = (function () {
             }
         }
     };
-    CanvasWhiteboardComponent.prototype._redrawCanvasOnResize = function (event) {
+    CanvasWhiteboardComponent.prototype._redrawCanvasOnResize = function () {
         this._calculateCanvasWidthAndHeight();
         this._redrawHistory();
     };
     CanvasWhiteboardComponent.prototype._redrawHistory = function () {
         var _this = this;
-        var updatesToDraw = this._drawHistory;
+        var updatesToDraw = [].concat(this._drawHistory);
         this._removeCanvasData(function () {
             updatesToDraw.forEach(function (update) {
                 _this._draw(update, true);
@@ -315,9 +388,10 @@ var CanvasWhiteboardComponent = (function () {
         var xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
         var yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
         if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
+            var lastPosition = this._lastPositionForUUID[update.getUUID()];
             this.context.save();
             this.context.beginPath();
-            this.context.lineWidth = 2;
+            this.context.lineWidth = this.lineWidth;
             if (update.getVisible()) {
                 this.context.strokeStyle = update.getStrokeColor() || this.strokeColor;
             }
@@ -325,7 +399,7 @@ var CanvasWhiteboardComponent = (function () {
                 this.context.strokeStyle = "rgba(0,0,0,0)";
             }
             this.context.lineJoin = "round";
-            this.context.moveTo(this._lastX, this._lastY);
+            this.context.moveTo(lastPosition.x, lastPosition.y);
             this.context.lineTo(xToDraw, yToDraw);
             this.context.closePath();
             this.context.stroke();
@@ -333,9 +407,14 @@ var CanvasWhiteboardComponent = (function () {
         }
         else if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.stop && update.getVisible()) {
             this._undoStack.push(update.getUUID());
+            delete this._lastPositionForUUID[update.getUUID()];
         }
-        this._lastX = xToDraw;
-        this._lastY = yToDraw;
+        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.start || update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
+            this._lastPositionForUUID[update.getUUID()] = {
+                x: xToDraw,
+                y: yToDraw
+            };
+        }
     };
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
@@ -345,12 +424,13 @@ var CanvasWhiteboardComponent = (function () {
      * @param {CanvasWhiteboardUpdate} update The update object.
      * @return Emits an Array of Updates when the batch.
      */
-    CanvasWhiteboardComponent.prototype.sendUpdate = function (update) {
+    CanvasWhiteboardComponent.prototype._prepareUpdateForBatchDispatch = function (update) {
         var _this = this;
         this._batchUpdates.push(update);
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
+                _this._canvasWhiteboardService.drawCanvas(_this._batchUpdates);
                 _this._batchUpdates = [];
                 _this._updateTimeout = null;
             }, this.batchUpdateTimeoutDuration);
@@ -365,7 +445,7 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype.drawUpdates = function (updates) {
         var _this = this;
         if (this._canDraw) {
-            this.drawMissingUpdates();
+            this._drawMissingUpdates();
             updates.forEach(function (update) {
                 _this._draw(update, true);
             });
@@ -379,7 +459,7 @@ var CanvasWhiteboardComponent = (function () {
      * Draw any missing updates that were received before the image was loaded
      *
      */
-    CanvasWhiteboardComponent.prototype.drawMissingUpdates = function () {
+    CanvasWhiteboardComponent.prototype._drawMissingUpdates = function () {
         var _this = this;
         if (this._updatesNotDrawn.length > 0) {
             var updatesToDraw = [].concat(this._updatesNotDrawn);
@@ -473,7 +553,7 @@ var CanvasWhiteboardComponent = (function () {
      * If type is not specified, the image type is image/png. The created image is in a resolution of 96dpi.
      * The third argument is used with image/jpeg images to specify the quality of the output.
      *
-     * @param {any} callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
+     * @param callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
      * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
      If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
@@ -516,6 +596,14 @@ var CanvasWhiteboardComponent = (function () {
         }
         return "";
     };
+    CanvasWhiteboardComponent.prototype._unsubscribe = function (subscription) {
+        if (subscription)
+            subscription.unsubscribe();
+    };
+    CanvasWhiteboardComponent.prototype.ngOnDestroy = function () {
+        var _this = this;
+        this._whiteboardServiceSubscriptions.forEach(function (subscription) { return _this._unsubscribe(subscription); });
+    };
     return CanvasWhiteboardComponent;
 }());
 CanvasWhiteboardComponent.decorators = [
@@ -526,8 +614,11 @@ CanvasWhiteboardComponent.decorators = [
             },] },
 ];
 /** @nocollapse */
-CanvasWhiteboardComponent.ctorParameters = function () { return []; };
+CanvasWhiteboardComponent.ctorParameters = function () { return [
+    { type: canvas_whiteboard_service_1.CanvasWhiteboardService, },
+]; };
 CanvasWhiteboardComponent.propDecorators = {
+    'options': [{ type: core_1.Input },],
     'batchUpdateTimeoutDuration': [{ type: core_1.Input },],
     'imageUrl': [{ type: core_1.Input },],
     'aspectRatio': [{ type: core_1.Input },],
@@ -547,6 +638,8 @@ CanvasWhiteboardComponent.propDecorators = {
     'redoButtonEnabled': [{ type: core_1.Input },],
     'saveDataButtonEnabled': [{ type: core_1.Input },],
     'colorPickerEnabled': [{ type: core_1.Input },],
+    'lineWidth': [{ type: core_1.Input },],
+    'strokeColor': [{ type: core_1.Input },],
     'onClear': [{ type: core_1.Output },],
     'onUndo': [{ type: core_1.Output },],
     'onRedo': [{ type: core_1.Output },],
