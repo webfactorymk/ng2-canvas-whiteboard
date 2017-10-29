@@ -603,11 +603,12 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
     }
 
 
-
+    // get base64 format data from canvas
     public toDataURL(returnedDataType: string = "image/png", returnedDataQuality: number = 1): string {
         return this.context.canvas.toDataURL(returnedDataType, returnedDataQuality);
     }
 
+    // set base64 format data to canvas
     public fromDataURL(imageUrl){
         this._canDraw = false;
         this._imageElement = new Image();
