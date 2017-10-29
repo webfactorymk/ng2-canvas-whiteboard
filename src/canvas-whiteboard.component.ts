@@ -8,8 +8,8 @@ import {
     OnInit,
     OnChanges
 } from '@angular/core';
-import {CanvasWhiteboardUpdate, UPDATE_TYPE} from "./canvas-whiteboard-update.model";
-import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
+import { CanvasWhiteboardUpdate, UPDATE_TYPE } from "./canvas-whiteboard-update.model";
+import { DEFAULT_TEMPLATE, DEFAULT_STYLES } from "./template";
 
 interface EventPositionPoint {
     x: number,
@@ -601,4 +601,26 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges {
 
         return "";
     }
+
+
+
+    public toDataURL(returnedDataType: string = "image/png", returnedDataQuality: number = 1): string {
+        return this.context.canvas.toDataURL(returnedDataType, returnedDataQuality);
+    }
+
+    public fromDataURL(imageUrl){
+        this._canDraw = false;
+        this._imageElement = new Image();
+        this._imageElement.addEventListener("load", () => {
+            this.context.save();
+            this._drawImage(this.context, this._imageElement, 0, 0, this.context.canvas.width, this.context.canvas.height, 0.5, 0.5);
+            this.context.restore();
+            this.drawMissingUpdates();
+            this._canDraw = true;
+            this.onImageLoaded.emit(true);
+        });
+        this._imageElement.src = imageUrl;
+    }
+
+
 }
