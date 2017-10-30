@@ -75,6 +75,38 @@ In the html file, you can insert the Canvas Whiteboard
 </canvas-whiteboard>
 ```
 
+If there is too much overhead with inputs, you can just specify the [options] input, and specify the options from the typescript code
+
+Example:
+```html
+<canvas-whiteboard #canvasWhiteboard
+                   [options]="canvasOptions"
+                   (onBatchUpdate)="onCanvasDraw($event)"
+                   (onClear)="onCanvasClear()"
+                   (onUndo)="onCanvasUndo($event)"
+                   (onRedo)="onCanvasRedo($event)">
+</canvas-whiteboard>
+```
+Code:
+```typescript
+  canvasOptions: CanvasWhiteboardOptions = {
+    drawButtonEnabled: true,
+    drawButtonClass: "drawButtonClass",
+    drawButtonText: "Draw",
+    clearButtonEnabled: true,
+    clearButtonClass: "clearButtonClass",
+    clearButtonText: "Clear",
+    undoButtonText: "Undo",
+    undoButtonEnabled: true,
+    redoButtonText: "Redo",
+    redoButtonEnabled: true,
+    colorPickerEnabled: true,
+    saveDataButtonEnabled: true,
+    saveDataButtonText: "Save"
+  };
+```
+
+
 # Drawing on the canvas
 
 The canvas drawing is triggered when the user touches the canvas, draws (moves the mouse or finger) and then stops drawing.
@@ -107,6 +139,9 @@ Specify the text to add to the buttons, default is no text
 [drawButtonText]="'Draw'"
 [clearButtonText]="'Clear'"
 ```
+
+##Use the options: CanvasWhiteboardOptions to send the inputs
+
 
 ### To add text to the buttons via css
 Each button has its on class (example: Draw button -> .canvas_whiteboard_button-draw)<br/>
@@ -144,8 +179,39 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 **onUndo** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
 **onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
 
-##Saving drawn canvas as an image 
-In order to save drawn images you can either click the Save button in the canvas, use the short Ctrl/Command + s key or get a reference of the canvas and save programmatically.
+#Canvas Whiteboard Service
+The ```CanvasWhiteboardService``` will be used by the canvas to listen to outside events.
+The event emitters and ViewChild functionality will remain the same but with this service 
+we can notify the canvas when it should invoke a specific action
+
+Example:
+```typescript
+export class AppComponent {
+  constructor(private _canvasWhiteboardService: CanvasWhiteboardService) {}
+ 
+  public receiveNewMessage(newMessage: any): void {
+     switch (newMessage.type) {
+       case VCDataMessageType.canvas_draw:
+         let updates = newMessage.data.map(updateJSON => CanvasWhiteboardUpdate.deserializeJson(JSON.parse(updateJSON)));
+         this._canvasWhiteboardService.drawCanvas(updates);
+         break;
+       case VCDataMessageType.canvas_clear:
+         this._canvasWhiteboardService.clearCanvas();
+         break;
+       case VCDataMessageType.canvas_undo:
+         this._canvasWhiteboardService.undoCanvas();
+         break;
+       case VCDataMessageType.canvas_redo:
+         this._canvasWhiteboardService.redoCanvas();
+         break;
+     }
+  }
+}   
+```
+
+##Saving drawn canvas as an image
+In order to save drawn images you can either click the Save button in the canvas, 
+use the short Ctrl/Command + s key or get a reference of the canvas and save programmatically.
 
 Example, save an image whenever an undo action was made:
 
@@ -200,3 +266,13 @@ An example of a drawn image and shape on the canvas with additional css for the 
 ## Current limitations
 
 - There are no pre-made shapes yet, only mouse / touch free drawing.
+- If there are problems with the sizing of the parent container, the canvas size will not be the wanted size.
+It may sometimes be width: 0, height: 0.
+If this is the case you may want to call a resize event for the window for the size to be recalculated.
+```typescript
+    if (this.isCanvasOpened) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 1);
+    }
+```

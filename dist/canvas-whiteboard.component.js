@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
 var template_1 = require("./template");
+var canvas_whiteboard_service_1 = require("./canvas-whiteboard.service");
 var CanvasWhiteboardComponent = (function () {
-    function CanvasWhiteboardComponent() {
+    function CanvasWhiteboardComponent(_canvasWhiteboardService) {
+        this._canvasWhiteboardService = _canvasWhiteboardService;
         //Number of ms to wait before sending out the updates as an array
         this.batchUpdateTimeoutDuration = 100;
         this.drawButtonText = "";
@@ -34,20 +36,106 @@ var CanvasWhiteboardComponent = (function () {
         this._drawHistory = [];
         this._batchUpdates = [];
         this._updatesNotDrawn = [];
+        this._canvasWhiteboardServiceSubscriptions = [];
     }
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
      */
     CanvasWhiteboardComponent.prototype.ngOnInit = function () {
+        this._initInputsFromOptions(this.options);
         this._initCanvasEventListeners();
+        this._initCanvasServiceObservables();
         this.context = this.canvas.nativeElement.getContext("2d");
         this._calculateCanvasWidthAndHeight();
     };
+    /**
+     * Recalculate the width and height of the canvas after the view has been fully initialized
+     */
+    CanvasWhiteboardComponent.prototype.ngAfterViewInit = function () {
+        this._calculateCanvasWidthAndHeight();
+    };
+    /**
+     * This method reads the options which are helpful since they can be really long when specified in HTML
+     * This method is also called everytime the options object changes
+     * @param {CanvasWhiteboardOptions} options
+     * @private
+     */
+    CanvasWhiteboardComponent.prototype._initInputsFromOptions = function (options) {
+        if (options) {
+            if (options.batchUpdateTimeoutDuration)
+                this.batchUpdateTimeoutDuration = options.batchUpdateTimeoutDuration;
+            if (options.imageUrl)
+                this.imageUrl = options.imageUrl;
+            if (options.aspectRatio)
+                this.aspectRatio = options.aspectRatio;
+            if (options.drawButtonClass)
+                this.drawButtonClass = options.drawButtonClass;
+            if (options.clearButtonClass)
+                this.clearButtonClass = options.clearButtonClass;
+            if (options.undoButtonClass)
+                this.undoButtonClass = options.undoButtonClass;
+            if (options.redoButtonClass)
+                this.redoButtonClass = options.redoButtonClass;
+            if (options.saveDataButtonClass)
+                this.saveDataButtonClass = options.saveDataButtonClass;
+            if (options.drawButtonText)
+                this.drawButtonText = options.drawButtonText;
+            if (options.clearButtonText)
+                this.clearButtonText = options.clearButtonText;
+            if (options.undoButtonText)
+                this.undoButtonText = options.undoButtonText;
+            if (options.redoButtonText)
+                this.redoButtonText = options.redoButtonText;
+            if (options.saveDataButtonText)
+                this.saveDataButtonText = options.saveDataButtonText;
+            if (options.drawButtonEnabled)
+                this.drawButtonEnabled = options.drawButtonEnabled;
+            if (options.clearButtonEnabled)
+                this.clearButtonEnabled = options.clearButtonEnabled;
+            if (options.undoButtonEnabled)
+                this.undoButtonEnabled = options.undoButtonEnabled;
+            if (options.redoButtonEnabled)
+                this.redoButtonEnabled = options.redoButtonEnabled;
+            if (options.saveDataButtonEnabled)
+                this.saveDataButtonEnabled = options.saveDataButtonEnabled;
+            if (options.colorPickerEnabled)
+                this.colorPickerEnabled = options.colorPickerEnabled;
+            if (options.lineWidth)
+                this.lineWidth = options.lineWidth;
+            if (options.strokeColor)
+                this.strokeColor = options.strokeColor;
+        }
+    };
+    /**
+     * Init global window listeners like resize and keydown
+     * @private
+     */
     CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
         window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
         window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     };
+    /**
+     * Subscribes to new signals in the canvas whiteboard service and executes methods accordingly
+     * Because of circular publishing and subscribing, the canvas methods do not use the service when
+     * local actions are completed (Ex. clicking undo from the button inside this component)
+     * @private
+     */
+    CanvasWhiteboardComponent.prototype._initCanvasServiceObservables = function () {
+        var _this = this;
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasDrawSubject$
+            .subscribe(function (updates) { return _this.drawUpdates(updates); }));
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasClearSubject$
+            .subscribe(function () { return _this.clearCanvas(); }));
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasUndoSubject$
+            .subscribe(function () { return _this.undo(); }));
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasRedoSubject$
+            .subscribe(function () { return _this.redo(); }));
+    };
+    /**
+     * Calculate the canvas width and height from it's parent container width and height (use aspect ratio if needed)
+     * @private
+     */
     CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
         this.context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
@@ -70,6 +158,9 @@ var CanvasWhiteboardComponent = (function () {
                 this._redrawBackground();
             }
         }
+        if (changes.options && changes.options.currentValue != changes.options.previousValue) {
+            this._initInputsFromOptions(changes.options.currentValue);
+        }
     };
     /**
      * Load an image and draw it on the canvas (if an image exists)
@@ -85,7 +176,7 @@ var CanvasWhiteboardComponent = (function () {
             _this.context.save();
             _this._drawImage(_this.context, _this._imageElement, 0, 0, _this.context.canvas.width, _this.context.canvas.height, 0.5, 0.5);
             _this.context.restore();
-            _this.drawMissingUpdates();
+            _this._drawMissingUpdates();
             _this._canDraw = true;
             callbackFn && callbackFn();
             _this.onImageLoaded.emit(true);
@@ -93,16 +184,27 @@ var CanvasWhiteboardComponent = (function () {
         this._imageElement.src = this.imageUrl;
     };
     /**
-     * Clears all content on the canvas.
-     * @return Emits a value when the clearing is finished
+     * Sends a notification after clearing the canvas
+     * This method should only be called from the clear button in this component since it will emit an clear event
+     * If the client calls this method he may create a circular clear action which may cause danger.
      */
-    CanvasWhiteboardComponent.prototype.clearCanvas = function (shouldEmitValue) {
-        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
+    CanvasWhiteboardComponent.prototype.clearCanvasLocal = function () {
+        this.clearCanvas();
+        this.onClear.emit(true);
+    };
+    /**
+     * Clears all content on the canvas.
+     */
+    CanvasWhiteboardComponent.prototype.clearCanvas = function () {
         this._removeCanvasData();
         this._redoStack = [];
-        if (shouldEmitValue)
-            this.onClear.emit(true);
     };
+    /**
+     * This method resets the state of the canvas and redraws it.
+     * It calls a callback function after redrawing
+     * @param callbackFn
+     * @private
+     */
     CanvasWhiteboardComponent.prototype._removeCanvasData = function (callbackFn) {
         this._clientDragging = false;
         this._drawHistory = [];
@@ -119,9 +221,7 @@ var CanvasWhiteboardComponent = (function () {
             this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             if (this.imageUrl) {
-                this._loadImage(function () {
-                    callbackFn && callbackFn();
-                });
+                this._loadImage(callbackFn);
             }
             else {
                 callbackFn && callbackFn();
@@ -141,6 +241,13 @@ var CanvasWhiteboardComponent = (function () {
         this._shouldDraw = !this._shouldDraw;
     };
     /**
+     * Set if drawing is enabled from the client using the canvas
+     * @param {boolean} shouldDraw
+     */
+    CanvasWhiteboardComponent.prototype.setShouldDraw = function (shouldDraw) {
+        this._shouldDraw = shouldDraw;
+    };
+    /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
      * This method is public so that anyone can access the canvas and change the stroke color
@@ -150,15 +257,32 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
         this.strokeColor = newStrokeColor;
     };
-    CanvasWhiteboardComponent.prototype.undo = function (shouldEmitValue) {
-        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
-        if (!this._undoStack.length || !this.undoButtonEnabled)
+    /**
+     * This method is invoked by the undo button on the canvas screen
+     * It calls the global undo method and emits a notification after undoing.
+     * This method should only be called from the undo button in this component since it will emit an undo event
+     * If the client calls this method he may create a circular undo action which may cause danger.
+     */
+    CanvasWhiteboardComponent.prototype.undoLocal = function () {
+        this.undo();
+        this.onUndo.emit();
+    };
+    /**
+     * This methods selects the last uuid prepares it for undoing (making the whole update sequence invisible)
+     * This method can be called if the canvas component is a ViewChild of some other component.
+     * This method will work even if the undo button has been disabled
+     */
+    CanvasWhiteboardComponent.prototype.undo = function () {
+        if (!this._undoStack.length)
             return;
         var updateUUID = this._undoStack.pop();
         this._undoCanvas(updateUUID);
-        if (shouldEmitValue)
-            this.onUndo.emit(updateUUID);
     };
+    /**
+     * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
+     * @param {string} updateUUID
+     * @private
+     */
     CanvasWhiteboardComponent.prototype._undoCanvas = function (updateUUID) {
         this._redoStack.push(updateUUID);
         this._drawHistory.forEach(function (update) {
@@ -168,15 +292,32 @@ var CanvasWhiteboardComponent = (function () {
         });
         this._redrawHistory();
     };
-    CanvasWhiteboardComponent.prototype.redo = function (shouldEmitValue) {
-        if (shouldEmitValue === void 0) { shouldEmitValue = false; }
-        if (!this._redoStack.length || !this.redoButtonEnabled)
+    /**
+     * This method is invoked by the redo button on the canvas screen
+     * It calls the global redo method and emits a notification after redoing
+     * This method should only be called from the redo button in this component since it will emit an redo event
+     * If the client calls this method he may create a circular redo action which may cause danger.
+     */
+    CanvasWhiteboardComponent.prototype.redoLocal = function () {
+        this.redo();
+        this.onRedo.emit();
+    };
+    /**
+     * This methods selects the last uuid prepares it for redoing (making the whole update sequence visible)
+     * This method can be called if the canvas component is a ViewChild of some other component.
+     * This method will work even if the redo button has been disabled
+     */
+    CanvasWhiteboardComponent.prototype.redo = function () {
+        if (!this._redoStack.length)
             return;
         var updateUUID = this._redoStack.pop();
         this._redoCanvas(updateUUID);
-        if (shouldEmitValue)
-            this.onRedo.emit(updateUUID);
     };
+    /**
+     * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid visible
+     * @param {string} updateUUID
+     * @private
+     */
     CanvasWhiteboardComponent.prototype._redoCanvas = function (updateUUID) {
         this._undoStack.push(updateUUID);
         this._drawHistory.forEach(function (update) {
@@ -242,6 +383,15 @@ var CanvasWhiteboardComponent = (function () {
         this._draw(update);
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     };
+    /**
+     * Get the coordinates (x,y) from a given event
+     * If it is a touch event, get the touch positions
+     * If we released the touch, the position will be placed in the changedTouches object
+     * If it is not a touch event, use the original mouse event received
+     * @param eventData
+     * @return {EventPositionPoint}
+     * @private
+     */
     CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (eventData) {
         var canvasBoundingRect = this.context.canvas.getBoundingClientRect();
         var hasTouches = (eventData.touches && eventData.touches.length) ? eventData.touches[0] : null;
@@ -265,12 +415,13 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype._prepareToSendUpdate = function (update, eventX, eventY) {
         update.setX(eventX / this.context.canvas.width);
         update.setY(eventY / this.context.canvas.height);
-        this.sendUpdate(update);
+        this._prepareUpdateForBatchDispatch(update);
     };
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
-     *If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
+     * If the ctrlKey or commandKey(macOS) was held and the keyCode is 83 (s) or 115(S), a save action will be performed
      *
      * @param event The event that occurred.
      */
@@ -290,10 +441,18 @@ var CanvasWhiteboardComponent = (function () {
             }
         }
     };
-    CanvasWhiteboardComponent.prototype._redrawCanvasOnResize = function (event) {
+    /**
+     * On window resize, recalculate the canvas dimensions and redraw the history
+     * @private
+     */
+    CanvasWhiteboardComponent.prototype._redrawCanvasOnResize = function () {
         this._calculateCanvasWidthAndHeight();
         this._redrawHistory();
     };
+    /**
+     * Redraw the saved history after resetting the canvas state
+     * @private
+     */
     CanvasWhiteboardComponent.prototype._redrawHistory = function () {
         var _this = this;
         var updatesToDraw = [].concat(this._drawHistory);
@@ -355,7 +514,7 @@ var CanvasWhiteboardComponent = (function () {
      * @param {CanvasWhiteboardUpdate} update The update object.
      * @return Emits an Array of Updates when the batch.
      */
-    CanvasWhiteboardComponent.prototype.sendUpdate = function (update) {
+    CanvasWhiteboardComponent.prototype._prepareUpdateForBatchDispatch = function (update) {
         var _this = this;
         this._batchUpdates.push(update);
         if (!this._updateTimeout) {
@@ -375,7 +534,7 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype.drawUpdates = function (updates) {
         var _this = this;
         if (this._canDraw) {
-            this.drawMissingUpdates();
+            this._drawMissingUpdates();
             updates.forEach(function (update) {
                 _this._draw(update, true);
             });
@@ -389,10 +548,10 @@ var CanvasWhiteboardComponent = (function () {
      * Draw any missing updates that were received before the image was loaded
      *
      */
-    CanvasWhiteboardComponent.prototype.drawMissingUpdates = function () {
+    CanvasWhiteboardComponent.prototype._drawMissingUpdates = function () {
         var _this = this;
         if (this._updatesNotDrawn.length > 0) {
-            var updatesToDraw = [].concat(this._updatesNotDrawn);
+            var updatesToDraw = this._updatesNotDrawn;
             this._updatesNotDrawn = [];
             updatesToDraw.forEach(function (update) {
                 _this._draw(update, true);
@@ -483,7 +642,7 @@ var CanvasWhiteboardComponent = (function () {
      * If type is not specified, the image type is image/png. The created image is in a resolution of 96dpi.
      * The third argument is used with image/jpeg images to specify the quality of the output.
      *
-     * @param {any} callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
+     * @param callbackFn The function that should be executed when the blob is created. Should accept a parameter Blob (for the result).
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
      * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
      If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
@@ -526,6 +685,22 @@ var CanvasWhiteboardComponent = (function () {
         }
         return "";
     };
+    /**
+     * Unsubscribe from a given subscription if it is active
+     * @param {Subscription} subscription
+     * @private
+     */
+    CanvasWhiteboardComponent.prototype._unsubscribe = function (subscription) {
+        if (subscription)
+            subscription.unsubscribe();
+    };
+    /**
+     * Unsubscribe from the service observables
+     */
+    CanvasWhiteboardComponent.prototype.ngOnDestroy = function () {
+        var _this = this;
+        this._canvasWhiteboardServiceSubscriptions.forEach(function (subscription) { return _this._unsubscribe(subscription); });
+    };
     return CanvasWhiteboardComponent;
 }());
 CanvasWhiteboardComponent.decorators = [
@@ -536,8 +711,11 @@ CanvasWhiteboardComponent.decorators = [
             },] },
 ];
 /** @nocollapse */
-CanvasWhiteboardComponent.ctorParameters = function () { return []; };
+CanvasWhiteboardComponent.ctorParameters = function () { return [
+    { type: canvas_whiteboard_service_1.CanvasWhiteboardService, },
+]; };
 CanvasWhiteboardComponent.propDecorators = {
+    'options': [{ type: core_1.Input },],
     'batchUpdateTimeoutDuration': [{ type: core_1.Input },],
     'imageUrl': [{ type: core_1.Input },],
     'aspectRatio': [{ type: core_1.Input },],
