@@ -15,14 +15,14 @@ var CanvasWhiteboardService = (function () {
     CanvasWhiteboardService.prototype.drawCanvas = function (updates) {
         this._canvasDrawSubject.next(updates);
     };
-    CanvasWhiteboardService.prototype.clearCanvas = function (shouldEmitValue) {
-        this._canvasClearSubject.next(shouldEmitValue);
+    CanvasWhiteboardService.prototype.clearCanvas = function () {
+        this._canvasClearSubject.next();
     };
-    CanvasWhiteboardService.prototype.undoCanvas = function (uuid) {
-        this._canvasUndoSubject.next(uuid);
+    CanvasWhiteboardService.prototype.undoCanvas = function () {
+        this._canvasUndoSubject.next();
     };
-    CanvasWhiteboardService.prototype.redoCanvas = function (uuid) {
-        this._canvasRedoSubject.next(uuid);
+    CanvasWhiteboardService.prototype.redoCanvas = function () {
+        this._canvasRedoSubject.next();
     };
     return CanvasWhiteboardService;
 }());

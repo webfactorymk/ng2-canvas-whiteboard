@@ -6,7 +6,7 @@ import {
     ViewChild,
     ElementRef,
     OnInit,
-    OnChanges, OnDestroy
+    OnChanges, OnDestroy, AfterViewInit
 } from '@angular/core';
 import {CanvasWhiteboardUpdate, UPDATE_TYPE} from "./canvas-whiteboard-update.model";
 import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
@@ -55,7 +55,7 @@ export interface CanvasWhiteboardOptions {
     template: DEFAULT_TEMPLATE,
     styles: [DEFAULT_STYLES]
 })
-export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
+export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     @Input() options: CanvasWhiteboardOptions;
 
     //Number of ms to wait before sending out the updates as an array
@@ -115,10 +115,9 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
 
     private _updateTimeout: any;
 
-    private _whiteboardServiceSubscriptions: Subscription[] = [];
+    private _canvasWhiteboardServiceSubscriptions: Subscription[] = [];
 
     constructor(private _canvasWhiteboardService: CanvasWhiteboardService) {
-
     }
 
     /**
@@ -133,6 +132,19 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         this._calculateCanvasWidthAndHeight();
     }
 
+    /**
+     * Recalculate the width and height of the canvas after the view has been fully initialized
+     */
+    ngAfterViewInit(): void {
+        this._calculateCanvasWidthAndHeight();
+    }
+
+    /**
+     * This method reads the options which are helpful since they can be really long when specified in HTML
+     * This method is also called everytime the options object changes
+     * @param {CanvasWhiteboardOptions} options
+     * @private
+     */
     private _initInputsFromOptions(options: CanvasWhiteboardOptions) {
         if (options) {
             if (options.batchUpdateTimeoutDuration) this.batchUpdateTimeoutDuration = options.batchUpdateTimeoutDuration;
@@ -166,22 +178,36 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         }
     }
 
+    /**
+     * Init global window listeners like resize and keydown
+     * @private
+     */
     private _initCanvasEventListeners(): void {
         window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
         window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     }
 
+    /**
+     * Subscribes to new signals in the canvas whiteboard service and executes methods accordingly
+     * Because of circular publishing and subscribing, the canvas methods do not use the service when
+     * local actions are completed (Ex. clicking undo from the button inside this component)
+     * @private
+     */
     private _initCanvasServiceObservables(): void {
-        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasDrawSubject$
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasDrawSubject$
             .subscribe(updates => this.drawUpdates(updates)));
-        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasClearSubject$
-            .subscribe(value => this.clearCanvas()));
-        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasUndoSubject$
-            .subscribe(value => this.undo()));
-        this._whiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasRedoSubject$
-            .subscribe(value => this.redo()));
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasClearSubject$
+            .subscribe(() => this.clearCanvas()));
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasUndoSubject$
+            .subscribe(() => this.undo()));
+        this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasRedoSubject$
+            .subscribe(() => this.redo()));
     }
 
+    /**
+     * Calculate the canvas width and height from it's parent container width and height (use aspect ratio if needed)
+     * @private
+     */
     private _calculateCanvasWidthAndHeight(): void {
         this.context.canvas.width = this.canvas.nativeElement.parentNode.clientWidth;
         if (this.aspectRatio) {
@@ -231,12 +257,13 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     /**
-     * Sends a notification that the canvas needs to be cleared.
-     * The service will pick up the notification and clear the canvas.
+     * Sends a notification after clearing the canvas
+     * This method should only be called from the clear button in this component since it will emit an clear event
+     * If the client calls this method he may create a circular clear action which may cause danger.
      */
     clearCanvasLocal() {
+        this.clearCanvas();
         this.onClear.emit(true);
-        this._canvasWhiteboardService.clearCanvas();
     }
 
     /**
@@ -247,6 +274,12 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         this._redoStack = [];
     }
 
+    /**
+     * This method resets the state of the canvas and redraws it.
+     * It calls a callback function after redrawing
+     * @param callbackFn
+     * @private
+     */
     private _removeCanvasData(callbackFn?: any) {
         this._clientDragging = false;
         this._drawHistory = [];
@@ -286,6 +319,14 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     /**
+     * Set if drawing is enabled from the client using the canvas
+     * @param {boolean} shouldDraw
+     */
+    setShouldDraw(shouldDraw: boolean) {
+        this._shouldDraw = shouldDraw;
+    }
+
+    /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
      * This method is public so that anyone can access the canvas and change the stroke color
@@ -296,11 +337,22 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         this.strokeColor = newStrokeColor;
     }
 
+    /**
+     * This method is invoked by the undo button on the canvas screen
+     * It calls the global undo method and emits a notification after undoing.
+     * This method should only be called from the undo button in this component since it will emit an undo event
+     * If the client calls this method he may create a circular undo action which may cause danger.
+     */
     undoLocal() {
+        this.undo();
         this.onUndo.emit();
-        this._canvasWhiteboardService.undoCanvas();
     }
 
+    /**
+     * This methods selects the last uuid prepares it for undoing (making the whole update sequence invisible)
+     * This method can be called if the canvas component is a ViewChild of some other component.
+     * This method will work even if the undo button has been disabled
+     */
     undo() {
         if (!this._undoStack.length) return;
 
@@ -308,6 +360,11 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         this._undoCanvas(updateUUID);
     }
 
+    /**
+     * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
+     * @param {string} updateUUID
+     * @private
+     */
     private _undoCanvas(updateUUID: string) {
         this._redoStack.push(updateUUID);
 
@@ -320,11 +377,22 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         this._redrawHistory();
     }
 
+    /**
+     * This method is invoked by the redo button on the canvas screen
+     * It calls the global redo method and emits a notification after redoing
+     * This method should only be called from the redo button in this component since it will emit an redo event
+     * If the client calls this method he may create a circular redo action which may cause danger.
+     */
     redoLocal() {
+        this.redo();
         this.onRedo.emit();
-        this._canvasWhiteboardService.redoCanvas();
     }
 
+    /**
+     * This methods selects the last uuid prepares it for redoing (making the whole update sequence visible)
+     * This method can be called if the canvas component is a ViewChild of some other component.
+     * This method will work even if the redo button has been disabled
+     */
     redo() {
         if (!this._redoStack.length) return;
 
@@ -332,6 +400,11 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         this._redoCanvas(updateUUID);
     }
 
+    /**
+     * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid visible
+     * @param {string} updateUUID
+     * @private
+     */
     private _redoCanvas(updateUUID: string) {
         this._undoStack.push(updateUUID);
 
@@ -402,9 +475,19 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         }
 
         update = new CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
+        this._draw(update);
         this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
     }
 
+    /**
+     * Get the coordinates (x,y) from a given event
+     * If it is a touch event, get the touch positions
+     * If we released the touch, the position will be placed in the changedTouches object
+     * If it is not a touch event, use the original mouse event received
+     * @param eventData
+     * @return {EventPositionPoint}
+     * @private
+     */
     private _getCanvasEventPosition(eventData: any) {
         let canvasBoundingRect = this.context.canvas.getBoundingClientRect();
 
@@ -461,13 +544,21 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         }
     }
 
+    /**
+     * On window resize, recalculate the canvas dimensions and redraw the history
+     * @private
+     */
     private _redrawCanvasOnResize() {
         this._calculateCanvasWidthAndHeight();
         this._redrawHistory();
     }
 
+    /**
+     * Redraw the saved history after resetting the canvas state
+     * @private
+     */
     private _redrawHistory() {
-        let updatesToDraw = [].concat(this._drawHistory);
+        let updatesToDraw = this._drawHistory;
 
         this._removeCanvasData(() => {
             updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
@@ -538,7 +629,6 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(() => {
                 this.onBatchUpdate.emit(this._batchUpdates);
-                this._canvasWhiteboardService.drawCanvas(this._batchUpdates);
                 this._batchUpdates = [];
                 this._updateTimeout = null;
             }, this.batchUpdateTimeoutDuration);
@@ -567,7 +657,7 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
      */
     private _drawMissingUpdates() {
         if (this._updatesNotDrawn.length > 0) {
-            let updatesToDraw = [].concat(this._updatesNotDrawn);
+            let updatesToDraw = this._updatesNotDrawn;
             this._updatesNotDrawn = [];
 
             updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
@@ -700,11 +790,19 @@ export class CanvasWhiteboardComponent implements OnInit, OnChanges, OnDestroy {
         return "";
     }
 
-    private _unsubscribe(subscription: Subscription) {
+    /**
+     * Unsubscribe from a given subscription if it is active
+     * @param {Subscription} subscription
+     * @private
+     */
+    private _unsubscribe(subscription: Subscription): void {
         if (subscription) subscription.unsubscribe();
     }
 
+    /**
+     * Unsubscribe from the service observables
+     */
     ngOnDestroy(): void {
-        this._whiteboardServiceSubscriptions.forEach(subscription => this._unsubscribe(subscription));
+        this._canvasWhiteboardServiceSubscriptions.forEach(subscription => this._unsubscribe(subscription));
     }
 }

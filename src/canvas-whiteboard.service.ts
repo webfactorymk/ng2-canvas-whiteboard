@@ -19,15 +19,15 @@ export class CanvasWhiteboardService {
         this._canvasDrawSubject.next(updates);
     }
 
-    public clearCanvas(shouldEmitValue?: boolean): void {
-        this._canvasClearSubject.next(shouldEmitValue);
+    public clearCanvas(): void {
+        this._canvasClearSubject.next();
     }
 
-    public undoCanvas(uuid?: string): void {
-        this._canvasUndoSubject.next(uuid);
+    public undoCanvas(): void {
+        this._canvasUndoSubject.next();
     }
 
-    public redoCanvas(uuid?: string): void {
-        this._canvasRedoSubject.next(uuid);
+    public redoCanvas(): void {
+        this._canvasRedoSubject.next();
     }
 }

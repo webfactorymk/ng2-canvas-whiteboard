@@ -148,22 +148,38 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 **onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
 
 #Canvas Whiteboard Service
-Even though there are event emitters for the canvases' actions, there is also a canvas whiteboard service
-which the user can listen for new canvas actions, and also send actions for the canvas to complete.
+The ```CanvasWhiteboardService``` will be used by the canvas to listen to outside events.
+The event emitters and ViewChild functionality will remain the same but with this service 
+we can notify the canvas when it should invoke a specific action
 
-For this, the user must inject the CanvasWhiteboardService into the components constructor.
-
+Example:
 ```typescript
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent {
   constructor(private _canvasWhiteboardService: CanvasWhiteboardService) {}
- }
+ 
+  public receiveNewMessage(newMessage: any): void {
+     switch (newMessage.type) {
+       case VCDataMessageType.canvas_draw:
+         let updates = newMessage.data.map(updateJSON => CanvasWhiteboardUpdate.deserializeJson(JSON.parse(updateJSON)));
+         this._canvasWhiteboardService.drawCanvas(updates);
+         break;
+       case VCDataMessageType.canvas_clear:
+         this._canvasWhiteboardService.clearCanvas();
+         break;
+       case VCDataMessageType.canvas_undo:
+         this._canvasWhiteboardService.undoCanvas();
+         break;
+       case VCDataMessageType.canvas_redo:
+         this._canvasWhiteboardService.redoCanvas();
+         break;
+     }
+  }
+}   
 ```
 
-After doing this, he can subscribe to the observables that will notify him when a change has been made.
-There are also functions which he can use that notify the canvas that is listening to the same events
-
-##Saving drawn canvas as an image 
-In order to save drawn images you can either click the Save button in the canvas, use the short Ctrl/Command + s key or get a reference of the canvas and save programmatically.
+##Saving drawn canvas as an image
+In order to save drawn images you can either click the Save button in the canvas, 
+use the short Ctrl/Command + s key or get a reference of the canvas and save programmatically.
 
 Example, save an image whenever an undo action was made:
 
@@ -218,3 +234,14 @@ An example of a drawn image and shape on the canvas with additional css for the 
 ## Current limitations
 
 - There are no pre-made shapes yet, only mouse / touch free drawing.
+- If there are problems with the sizing of the parent container, the canvas size will not be the wanted size.
+It may sometimes be width: 0, height: 0.
+
+If this is the case you may want to call a resize event for the window for the size to be recalculated.
+```typescript
+    if (this.isCanvasOpened) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 1);
+    }
+```

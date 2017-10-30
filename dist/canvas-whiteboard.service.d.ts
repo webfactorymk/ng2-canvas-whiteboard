@@ -10,7 +10,7 @@ export declare class CanvasWhiteboardService {
     private _canvasRedoSubject;
     canvasRedoSubject$: Observable<any>;
     drawCanvas(updates: CanvasWhiteboardUpdate[]): void;
-    clearCanvas(shouldEmitValue?: boolean): void;
-    undoCanvas(uuid?: string): void;
-    redoCanvas(uuid?: string): void;
+    clearCanvas(): void;
+    undoCanvas(): void;
+    redoCanvas(): void;
 }
