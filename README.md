@@ -179,7 +179,7 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 **onUndo** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
 **onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
 
-#Canvas Whiteboard Service
+# Canvas Whiteboard Service
 The ```CanvasWhiteboardService``` will be used by the canvas to listen to outside events.
 The event emitters and ViewChild functionality will remain the same but with this service 
 we can notify the canvas when it should invoke a specific action
@@ -209,7 +209,7 @@ export class AppComponent {
 }   
 ```
 
-##Saving drawn canvas as an image
+## Saving drawn canvas as an image
 In order to save drawn images you can either click the Save button in the canvas, 
 use the short Ctrl/Command + s key or get a reference of the canvas and save programmatically.
 
@@ -244,10 +244,10 @@ export class AppComponent {
 }
 
 ```
-##Image of canvas
+## Image of canvas
 ![CanvasWhiteboard](example/canvas_draw.png)
 
-##Canvas whiteboard color picker (CanvasWhiteboardColorPickerComponent)
+## Canvas whiteboard color picker (CanvasWhiteboardColorPickerComponent)
 A canvas component that is used to identify and emit selected colors.
 ```typescript
 @Input() selectedColor: string (default: "rgb(0,0,0)");
