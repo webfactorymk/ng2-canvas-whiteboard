@@ -1,10 +1,4 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var CanvasWhiteboardColorPickerComponent = (function () {
@@ -41,7 +35,7 @@ var CanvasWhiteboardColorPickerComponent = (function () {
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
     };
-    CanvasWhiteboardColorPickerComponent.prototype._closeOnExternalClick = function (event) {
+    CanvasWhiteboardColorPickerComponent.prototype.closeOnExternalClick = function (event) {
         if (!this._elementRef.nativeElement.contains(event.target) && this.showColorPicker) {
             this.showColorPicker = false;
         }
@@ -64,24 +58,25 @@ var CanvasWhiteboardColorPickerComponent = (function () {
     };
     return CanvasWhiteboardColorPickerComponent;
 }());
-__decorate([
-    core_1.Input()
-], CanvasWhiteboardColorPickerComponent.prototype, "selectedColor", void 0);
-__decorate([
-    core_1.ViewChild('canvaswhiteboardcolorpicker')
-], CanvasWhiteboardColorPickerComponent.prototype, "canvas", void 0);
-__decorate([
-    core_1.Output()
-], CanvasWhiteboardColorPickerComponent.prototype, "onColorSelected", void 0);
-CanvasWhiteboardColorPickerComponent = __decorate([
-    core_1.Component({
-        selector: 'canvas-whiteboard-colorpicker',
-        host: {
-            '(document:mousedown)': '_closeOnExternalClick($event)',
-            '(document:touchstart)': '_closeOnExternalClick($event)',
-        },
-        template: "\n        <input [style.background]=\"selectedColor\" [hidden]=\"showColorPicker\" class=\"canvas-whiteboard-colorpicker-input\" (click)=\"toggleColorPicker($event)\"/>\n        <div [hidden]=\"!showColorPicker\" class=\"canvas-whiteboard-colorpicker-wrapper\">\n            <canvas #canvaswhiteboardcolorpicker class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n          (click)=\"selectColor($event)\"></canvas>\n        </div>\n    \n    ",
-        styles: ["\n        .canvas-whiteboard-colorpicker {\n            padding: 4px;\n            background: #000;\n            border: 1px solid #afafaf;\n        }\n        \n        @media (min-width: 401px) { \n            .canvas-whiteboard-colorpicker {\n               position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n\n        .canvas-whiteboard-colorpicker-input {\n            width: 44px;\n            height: 44px;\n            border: 2px solid black;\n            margin: 5px;\n        }\n    "]
-    })
-], CanvasWhiteboardColorPickerComponent);
+CanvasWhiteboardColorPickerComponent.decorators = [
+    { type: core_1.Component, args: [{
+                selector: 'canvas-whiteboard-colorpicker',
+                host: {
+                    '(document:mousedown)': 'closeOnExternalClick($event)',
+                    '(document:touchstart)': 'closeOnExternalClick($event)',
+                },
+                template: "\n        <input [style.background]=\"selectedColor\" [hidden]=\"showColorPicker\" class=\"canvas-whiteboard-colorpicker-input\" (click)=\"toggleColorPicker($event)\"/>\n        <div [hidden]=\"!showColorPicker\" class=\"canvas-whiteboard-colorpicker-wrapper\">\n            <canvas #canvaswhiteboardcolorpicker class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n          (click)=\"selectColor($event)\"></canvas>\n        </div>\n    \n    ",
+                styles: ["\n        .canvas-whiteboard-colorpicker {\n            padding: 4px;\n            background: #000;\n            border: 1px solid #afafaf;\n        }\n        \n        @media (min-width: 401px) { \n            .canvas-whiteboard-colorpicker {\n               position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n\n        .canvas-whiteboard-colorpicker-input {\n            width: 44px;\n            height: 44px;\n            border: 2px solid black;\n            margin: 5px;\n        }\n    "]
+            },] },
+];
+/** @nocollapse */
+CanvasWhiteboardColorPickerComponent.ctorParameters = function () { return [
+    { type: core_1.ElementRef, },
+]; };
+CanvasWhiteboardColorPickerComponent.propDecorators = {
+    'selectedColor': [{ type: core_1.Input },],
+    'canvas': [{ type: core_1.ViewChild, args: ['canvaswhiteboardcolorpicker',] },],
+    'onColorSelected': [{ type: core_1.Output },],
+};
 exports.CanvasWhiteboardColorPickerComponent = CanvasWhiteboardColorPickerComponent;
+//# sourceMappingURL=canvas-whiteboard-colorpicker.component.js.map
