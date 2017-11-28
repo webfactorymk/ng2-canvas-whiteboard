@@ -23,6 +23,7 @@ export interface CanvasWhiteboardOptions {
     saveDataButtonClass?: string;
     saveDataButtonText?: string;
     colorPickerEnabled?: boolean;
+    shouldDownloadDrawing?: boolean;
 }
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private _canvasWhiteboardService;
@@ -45,6 +46,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     undoButtonEnabled: boolean;
     redoButtonEnabled: boolean;
     saveDataButtonEnabled: boolean;
+    shouldDownloadDrawing: boolean;
     colorPickerEnabled: boolean;
     lineWidth: number;
     strokeColor: string;
@@ -53,6 +55,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     onRedo: EventEmitter<any>;
     onBatchUpdate: EventEmitter<CanvasWhiteboardUpdate[]>;
     onImageLoaded: EventEmitter<any>;
+    onSave: EventEmitter<string | Blob>;
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
     private _imageElement;
@@ -81,10 +84,14 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     /**
      * This method reads the options which are helpful since they can be really long when specified in HTML
      * This method is also called everytime the options object changes
+     * For security reasons we must check each item on its own since if we iterate the keys
+     * we may be injected with malicious values
+     *
      * @param {CanvasWhiteboardOptions} options
      * @private
      */
     private _initInputsFromOptions(options);
+    private _isNullOrUndefined(property);
     /**
      * Init global window listeners like resize and keydown
      * @private
@@ -322,10 +329,35 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     /**
      * Generate a canvas image representation and download it locally
      * The name of the image is canvas_drawing_ + the current local Date and Time the image was created
+     * Methods for standalone creation of the images in this method are left here for backwards compatibility
      *
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     * @param {string | Blob} downloadData The created string or Blob (IE).
      */
-    downloadCanvasImage(returnedDataType?: string): void;
+    downloadCanvasImage(returnedDataType?: string, downloadData?: string | Blob): void;
+    /**
+     * Save the canvas blob (IE) locally
+     * @param {Blob} blob
+     * @param {string} returnedDataType
+     * @private
+     */
+    private _saveCanvasBlob(blob, returnedDataType?);
+    /**
+     * This method generates a canvas url string or a canvas blob with the presented data type
+     * A callback function is then invoked since the blob creation must be done via a callback
+     *
+     * @param callback
+     * @param {string} returnedDataType
+     * @param returnedDataQuality
+     */
+    generateCanvasData(callback: any, returnedDataType?: string, returnedDataQuality?: number): void;
+    /**
+     * Local method to invoke saving of the canvas data when clicked on the canvas Save button
+     * This method will emit the generated data with the specified Event Emitter
+     *
+     * @param {string} returnedDataType
+     */
+    saveLocal(returnedDataType?: string): void;
     private _generateDataTypeString(returnedDataType);
     /**
      * Unsubscribe from a given subscription if it is active

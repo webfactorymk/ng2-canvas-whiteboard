@@ -48,6 +48,8 @@ export interface CanvasWhiteboardOptions {
     saveDataButtonText?: string
 
     colorPickerEnabled?: boolean
+
+    shouldDownloadDrawing?: boolean
 }
 
 @Component({
@@ -82,6 +84,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() redoButtonEnabled: boolean = false;
     @Input() saveDataButtonEnabled: boolean = false;
 
+    @Input() shouldDownloadDrawing: boolean = true;
+
     @Input() colorPickerEnabled: boolean = false;
 
     @Input() lineWidth: number = 2;
@@ -92,6 +96,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Output() onRedo = new EventEmitter<any>();
     @Output() onBatchUpdate = new EventEmitter<CanvasWhiteboardUpdate[]>();
     @Output() onImageLoaded = new EventEmitter<any>();
+    @Output() onSave = new EventEmitter<string | Blob>();
 
     @ViewChild('canvas') canvas: ElementRef;
 
@@ -142,40 +147,41 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     /**
      * This method reads the options which are helpful since they can be really long when specified in HTML
      * This method is also called everytime the options object changes
+     * For security reasons we must check each item on its own since if we iterate the keys
+     * we may be injected with malicious values
+     *
      * @param {CanvasWhiteboardOptions} options
      * @private
      */
     private _initInputsFromOptions(options: CanvasWhiteboardOptions) {
         if (options) {
-            if (options.batchUpdateTimeoutDuration) this.batchUpdateTimeoutDuration = options.batchUpdateTimeoutDuration;
-
-            if (options.imageUrl) this.imageUrl = options.imageUrl;
-            if (options.aspectRatio) this.aspectRatio = options.aspectRatio;
-
-            if (options.drawButtonClass) this.drawButtonClass = options.drawButtonClass;
-            if (options.clearButtonClass) this.clearButtonClass = options.clearButtonClass;
-            if (options.undoButtonClass) this.undoButtonClass = options.undoButtonClass;
-            if (options.redoButtonClass) this.redoButtonClass = options.redoButtonClass;
-            if (options.saveDataButtonClass) this.saveDataButtonClass = options.saveDataButtonClass;
-
-            if (options.drawButtonText) this.drawButtonText = options.drawButtonText;
-            if (options.clearButtonText) this.clearButtonText = options.clearButtonText;
-            if (options.undoButtonText) this.undoButtonText = options.undoButtonText;
-            if (options.redoButtonText) this.redoButtonText = options.redoButtonText;
-            if (options.saveDataButtonText) this.saveDataButtonText = options.saveDataButtonText;
-
-            if (options.drawButtonEnabled) this.drawButtonEnabled = options.drawButtonEnabled;
-            if (options.clearButtonEnabled) this.clearButtonEnabled = options.clearButtonEnabled;
-            if (options.undoButtonEnabled) this.undoButtonEnabled = options.undoButtonEnabled;
-            if (options.redoButtonEnabled) this.redoButtonEnabled = options.redoButtonEnabled;
-            if (options.saveDataButtonEnabled) this.saveDataButtonEnabled = options.saveDataButtonEnabled;
-
-            if (options.colorPickerEnabled) this.colorPickerEnabled = options.colorPickerEnabled;
-
-            if (options.lineWidth) this.lineWidth = options.lineWidth;
-
-            if (options.strokeColor) this.strokeColor = options.strokeColor;
+            if (!this._isNullOrUndefined(options.batchUpdateTimeoutDuration)) this.batchUpdateTimeoutDuration = options.batchUpdateTimeoutDuration;
+            if (!this._isNullOrUndefined(options.imageUrl)) this.imageUrl = options.imageUrl;
+            if (!this._isNullOrUndefined(options.aspectRatio)) this.aspectRatio = options.aspectRatio;
+            if (!this._isNullOrUndefined(options.drawButtonClass)) this.drawButtonClass = options.drawButtonClass;
+            if (!this._isNullOrUndefined(options.clearButtonClass)) this.clearButtonClass = options.clearButtonClass;
+            if (!this._isNullOrUndefined(options.undoButtonClass)) this.undoButtonClass = options.undoButtonClass;
+            if (!this._isNullOrUndefined(options.redoButtonClass)) this.redoButtonClass = options.redoButtonClass;
+            if (!this._isNullOrUndefined(options.saveDataButtonClass)) this.saveDataButtonClass = options.saveDataButtonClass;
+            if (!this._isNullOrUndefined(options.drawButtonText)) this.drawButtonText = options.drawButtonText;
+            if (!this._isNullOrUndefined(options.clearButtonText)) this.clearButtonText = options.clearButtonText;
+            if (!this._isNullOrUndefined(options.undoButtonText)) this.undoButtonText = options.undoButtonText;
+            if (!this._isNullOrUndefined(options.redoButtonText)) this.redoButtonText = options.redoButtonText;
+            if (!this._isNullOrUndefined(options.saveDataButtonText)) this.saveDataButtonText = options.saveDataButtonText;
+            if (!this._isNullOrUndefined(options.drawButtonEnabled)) this.drawButtonEnabled = options.drawButtonEnabled;
+            if (!this._isNullOrUndefined(options.clearButtonEnabled)) this.clearButtonEnabled = options.clearButtonEnabled;
+            if (!this._isNullOrUndefined(options.undoButtonEnabled)) this.undoButtonEnabled = options.undoButtonEnabled;
+            if (!this._isNullOrUndefined(options.redoButtonEnabled)) this.redoButtonEnabled = options.redoButtonEnabled;
+            if (!this._isNullOrUndefined(options.saveDataButtonEnabled)) this.saveDataButtonEnabled = options.saveDataButtonEnabled;
+            if (!this._isNullOrUndefined(options.colorPickerEnabled)) this.colorPickerEnabled = options.colorPickerEnabled;
+            if (!this._isNullOrUndefined(options.lineWidth)) this.lineWidth = options.lineWidth;
+            if (!this._isNullOrUndefined(options.strokeColor)) this.strokeColor = options.strokeColor;
+            if (!this._isNullOrUndefined(options.shouldDownloadDrawing)) this.shouldDownloadDrawing = options.shouldDownloadDrawing;
         }
+    }
+
+    private _isNullOrUndefined(property: any): boolean {
+        return property == null || property == undefined;
     }
 
     /**
@@ -220,7 +226,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     /**
      * If an image exists and it's url changes, we need to redraw the new image on the canvas.
      */
-    ngOnChanges(changes: any) {
+    ngOnChanges(changes: any): void {
         if (changes.imageUrl && changes.imageUrl.currentValue != changes.imageUrl.previousValue) {
             if (changes.imageUrl.currentValue != null) {
                 this._loadImage();
@@ -241,7 +247,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param callbackFn A function that is called after the image loading is finished
      * @return Emits a value when the image has been loaded.
      */
-    private _loadImage(callbackFn?: any) {
+    private _loadImage(callbackFn?: any): void {
         this._canDraw = false;
         this._imageElement = new Image();
         this._imageElement.addEventListener("load", () => {
@@ -261,7 +267,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * This method should only be called from the clear button in this component since it will emit an clear event
      * If the client calls this method he may create a circular clear action which may cause danger.
      */
-    clearCanvasLocal() {
+    clearCanvasLocal(): void {
         this.clearCanvas();
         this.onClear.emit(true);
     }
@@ -269,7 +275,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     /**
      * Clears all content on the canvas.
      */
-    clearCanvas() {
+    clearCanvas(): void {
         this._removeCanvasData();
         this._redoStack = [];
     }
@@ -280,7 +286,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param callbackFn
      * @private
      */
-    private _removeCanvasData(callbackFn?: any) {
+    private _removeCanvasData(callbackFn?: any): void {
         this._clientDragging = false;
         this._drawHistory = [];
         this._undoStack = [];
@@ -292,7 +298,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param callbackFn A function that is called after the background is redrawn
      * @return Emits a value when the clearing is finished
      */
-    private _redrawBackground(callbackFn?: any) {
+    private _redrawBackground(callbackFn?: any): void {
         if (this.context) {
             this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
@@ -307,14 +313,14 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     /**
      * Returns a value of whether the user clicked the draw button on the canvas.
      */
-    getShouldDraw() {
+    getShouldDraw(): boolean {
         return this._shouldDraw;
     }
 
     /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
-    toggleShouldDraw() {
+    toggleShouldDraw(): void {
         this._shouldDraw = !this._shouldDraw;
     }
 
@@ -322,7 +328,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * Set if drawing is enabled from the client using the canvas
      * @param {boolean} shouldDraw
      */
-    setShouldDraw(shouldDraw: boolean) {
+    setShouldDraw(shouldDraw: boolean): void {
         this._shouldDraw = shouldDraw;
     }
 
@@ -333,7 +339,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      *
      * @param {string} newStrokeColor The new stroke color
      */
-    changeColor(newStrokeColor: string) {
+    changeColor(newStrokeColor: string): void {
         this.strokeColor = newStrokeColor;
     }
 
@@ -343,7 +349,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * This method should only be called from the undo button in this component since it will emit an undo event
      * If the client calls this method he may create a circular undo action which may cause danger.
      */
-    undoLocal() {
+    undoLocal(): void {
         this.undo();
         this.onUndo.emit();
     }
@@ -353,7 +359,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the undo button has been disabled
      */
-    undo() {
+    undo(): void {
         if (!this._undoStack.length) return;
 
         let updateUUID = this._undoStack.pop();
@@ -365,7 +371,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {string} updateUUID
      * @private
      */
-    private _undoCanvas(updateUUID: string) {
+    private _undoCanvas(updateUUID: string): void {
         this._redoStack.push(updateUUID);
 
         this._drawHistory.forEach((update: CanvasWhiteboardUpdate) => {
@@ -383,7 +389,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * This method should only be called from the redo button in this component since it will emit an redo event
      * If the client calls this method he may create a circular redo action which may cause danger.
      */
-    redoLocal() {
+    redoLocal(): void {
         this.redo();
         this.onRedo.emit();
     }
@@ -393,7 +399,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the redo button has been disabled
      */
-    redo() {
+    redo(): void {
         if (!this._redoStack.length) return;
 
         let updateUUID = this._redoStack.pop();
@@ -405,7 +411,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {string} updateUUID
      * @private
      */
-    private _redoCanvas(updateUUID: string) {
+    private _redoCanvas(updateUUID: string): void {
         this._undoStack.push(updateUUID);
 
         this._drawHistory.forEach((update: CanvasWhiteboardUpdate) => {
@@ -432,7 +438,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * an CanvasWhiteboardUpdate object of type "stop" will be drawn and then sent as an update to all receiving ends.
      *
      */
-    canvasUserEvents(event: any) {
+    canvasUserEvents(event: any): void {
         if (!this._shouldDraw || !this._canDraw) {
             //Ignore all if we didn't click the _draw! button or the image did not load
             return;
@@ -488,7 +494,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @return {EventPositionPoint}
      * @private
      */
-    private _getCanvasEventPosition(eventData: any) {
+    private _getCanvasEventPosition(eventData: any): EventPositionPoint {
         let canvasBoundingRect = this.context.canvas.getBoundingClientRect();
 
         let hasTouches = (eventData.touches && eventData.touches.length) ? eventData.touches[0] : null;
@@ -512,7 +518,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {number} eventX The offsetX that needs to be mapped
      * @param {number} eventY The offsetY that needs to be mapped
      */
-    private _prepareToSendUpdate(update: CanvasWhiteboardUpdate, eventX: number, eventY: number) {
+    private _prepareToSendUpdate(update: CanvasWhiteboardUpdate, eventX: number, eventY: number): void {
         update.setX(eventX / this.context.canvas.width);
         update.setY(eventY / this.context.canvas.height);
         this._prepareUpdateForBatchDispatch(update);
@@ -527,7 +533,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      *
      * @param event The event that occurred.
      */
-    private _canvasKeyDown(event: any) {
+    private _canvasKeyDown(event: any): void {
         if (event.ctrlKey || event.metaKey) {
             if (event.keyCode === 90 && this.undoButtonEnabled) {
                 event.preventDefault();
@@ -539,7 +545,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             }
             if (event.keyCode === 83 || event.keyCode === 115) {
                 event.preventDefault();
-                this.downloadCanvasImage();
+                this.saveLocal();
             }
         }
     }
@@ -548,7 +554,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * On window resize, recalculate the canvas dimensions and redraw the history
      * @private
      */
-    private _redrawCanvasOnResize() {
+    private _redrawCanvasOnResize(): void {
         this._calculateCanvasWidthAndHeight();
         this._redrawHistory();
     }
@@ -557,7 +563,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * Redraw the saved history after resetting the canvas state
      * @private
      */
-    private _redrawHistory() {
+    private _redrawHistory(): void {
         let updatesToDraw = [].concat(this._drawHistory);
 
         this._removeCanvasData(() => {
@@ -625,7 +631,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {CanvasWhiteboardUpdate} update The update object.
      * @return Emits an Array of Updates when the batch.
      */
-    private _prepareUpdateForBatchDispatch(update: CanvasWhiteboardUpdate) {
+    private _prepareUpdateForBatchDispatch(update: CanvasWhiteboardUpdate): void {
         this._batchUpdates.push(update);
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(() => {
@@ -641,7 +647,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      *
      * @param {CanvasWhiteboardUpdate[]} updates The array with Updates.
      */
-    drawUpdates(updates: CanvasWhiteboardUpdate[]) {
+    drawUpdates(updates: CanvasWhiteboardUpdate[]): void {
         if (this._canDraw) {
             this._drawMissingUpdates();
             updates.forEach((update: CanvasWhiteboardUpdate) => {
@@ -656,7 +662,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * Draw any missing updates that were received before the image was loaded
      *
      */
-    private _drawMissingUpdates() {
+    private _drawMissingUpdates(): void {
         if (this._updatesNotDrawn.length > 0) {
             let updatesToDraw = this._updatesNotDrawn;
             this._updatesNotDrawn = [];
@@ -754,33 +760,78 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {number} returnedDataQuality A Number between 0 and 1 indicating image quality if the requested type is image/jpeg or image/webp.
      If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
      */
-    generateCanvasBlob(callbackFn: any, returnedDataType: string = "image/png", returnedDataQuality: number = 1) {
+    generateCanvasBlob(callbackFn: any, returnedDataType: string = "image/png", returnedDataQuality: number = 1): void {
         this.context.canvas.toBlob((blob: Blob) => {
-            callbackFn && callbackFn(blob);
+            callbackFn && callbackFn(blob, returnedDataType);
         }, returnedDataType, returnedDataQuality);
     }
 
     /**
      * Generate a canvas image representation and download it locally
      * The name of the image is canvas_drawing_ + the current local Date and Time the image was created
+     * Methods for standalone creation of the images in this method are left here for backwards compatibility
      *
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     * @param {string | Blob} downloadData The created string or Blob (IE).
      */
-    downloadCanvasImage(returnedDataType: string = "image/png") {
+    downloadCanvasImage(returnedDataType: string = "image/png", downloadData?: string | Blob): void {
         if (window.navigator.msSaveOrOpenBlob === undefined) {
             let downloadLink = document.createElement('a');
-            downloadLink.setAttribute('href', this.generateCanvasDataUrl(returnedDataType));
-            console.log(this._generateDataTypeString(returnedDataType));
+            downloadLink.setAttribute('href', downloadData ? <string>downloadData : this.generateCanvasDataUrl(returnedDataType));
             downloadLink.setAttribute('download', "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
         } else {
             // IE-specific code
-            this.generateCanvasBlob((blob: Blob) => {
-                window.navigator.msSaveOrOpenBlob(blob, "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
-            }, returnedDataType);
+            if (downloadData) {
+                this._saveCanvasBlob(<Blob>downloadData, returnedDataType);
+            } else {
+                this.generateCanvasBlob(this._saveCanvasBlob.bind(this), returnedDataType);
+            }
         }
+    }
+
+    /**
+     * Save the canvas blob (IE) locally
+     * @param {Blob} blob
+     * @param {string} returnedDataType
+     * @private
+     */
+    private _saveCanvasBlob(blob: Blob, returnedDataType: string = "image/png"): void {
+        window.navigator.msSaveOrOpenBlob(blob, "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
+    }
+
+    /**
+     * This method generates a canvas url string or a canvas blob with the presented data type
+     * A callback function is then invoked since the blob creation must be done via a callback
+     *
+     * @param callback
+     * @param {string} returnedDataType
+     * @param returnedDataQuality
+     */
+    generateCanvasData(callback: any, returnedDataType: string = "image/png", returnedDataQuality: number = 1): void {
+        if (window.navigator.msSaveOrOpenBlob === undefined) {
+            callback && callback(this.generateCanvasDataUrl(returnedDataType, returnedDataQuality))
+        } else {
+            this.generateCanvasBlob(callback, returnedDataType, returnedDataQuality);
+        }
+    }
+
+    /**
+     * Local method to invoke saving of the canvas data when clicked on the canvas Save button
+     * This method will emit the generated data with the specified Event Emitter
+     *
+     * @param {string} returnedDataType
+     */
+    saveLocal(returnedDataType: string = "image/png"): void {
+        this.generateCanvasData((generatedData: string | Blob) => {
+            this.onSave.emit(generatedData);
+
+            if (this.shouldDownloadDrawing) {
+                this.downloadCanvasImage(returnedDataType, generatedData);
+            }
+        });
     }
 
     private _generateDataTypeString(returnedDataType: string): string {

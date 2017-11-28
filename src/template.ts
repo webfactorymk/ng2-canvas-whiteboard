@@ -23,7 +23,7 @@ export const DEFAULT_TEMPLATE = `
              <i [class]="redoButtonClass" aria-hidden="true"></i>
                     {{redoButtonText}}
          </button> 
-         <button *ngIf="saveDataButtonEnabled" (click)="downloadCanvasImage()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-save">
+         <button *ngIf="saveDataButtonEnabled" (click)="saveLocal()" type="button" class="canvas_whiteboard_button canvas_whiteboard_button-save">
              <i [class]="saveDataButtonClass" aria-hidden="true"></i>
                     {{saveDataButtonText}}
          </button>

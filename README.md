@@ -68,6 +68,9 @@ In the html file, you can insert the Canvas Whiteboard
                      [colorPickerEnabled]="true"
                      [saveDataButtonEnabled]="true"
                      [saveDataButtonText]="'Save'"
+                     [lineWidth]="5"
+                     [strokeColor]="'rgb(0,0,0)'"
+                     [shouldDownloadDrawing]="true"
                      (onBatchUpdate)="sendBatchUpdate($event)"
                      (onClear)="onCanvasClear()"
                      (onUndo)="onCanvasUndo($event)"
@@ -102,7 +105,10 @@ Code:
     redoButtonEnabled: true,
     colorPickerEnabled: true,
     saveDataButtonEnabled: true,
-    saveDataButtonText: "Save"
+    saveDataButtonText: "Save",
+    lineWidth: 5,
+    strokeColor: "rgb(0,0,0)",
+    shouldDownloadDrawing: true
   };
 ```
 
@@ -141,7 +147,36 @@ Specify the text to add to the buttons, default is no text
 ```
 
 ##Use the options: CanvasWhiteboardOptions to send the inputs
+Changes to this object will be detected by the canvas in the OnChange listener and will be changed accordingly
+```typescript
+  //Component
+  canvasOptions: CanvasWhiteboardOptions = {
+      drawButtonEnabled: true,
+      drawButtonClass: 'drawButtonClass',
+      drawButtonText: 'Draw',
+      clearButtonEnabled: true,
+      clearButtonClass: 'clearButtonClass',
+      clearButtonText: 'Clear',
+      undoButtonText: 'Undo',
+      undoButtonEnabled: true,
+      redoButtonText: 'Redo',
+      redoButtonEnabled: true,
+      colorPickerEnabled: true,
+      saveDataButtonEnabled: true,
+      saveDataButtonText: 'Save',
+      lineWidth: 4
+  };
 
+   //View
+  <canvas-whiteboard #canvasWhiteboard
+                       [options]="canvasOptions"
+                       (onBatchUpdate)="onCanvasDraw($event)"
+                       (onClear)="onCanvasClear()"
+                       (onUndo)="onCanvasUndo($event)"
+                       (onRedo)="onCanvasRedo($event)"
+                       (onSave)="onCanvasSave($event)">
+  </canvas-whiteboard>
+```
 
 ### To add text to the buttons via css
 Each button has its on class (example: Draw button -> .canvas_whiteboard_button-draw)<br/>
@@ -155,6 +190,15 @@ will add the "Draw" text to the button.
 
 ### colorPickerEnabled: boolean (default: false)
 This allows the adding of a colorPicker that the user can choose to draw with and the original colors are kept when redrawing
+
+### lineWidth: number (default: 2)
+This input controls the drawing pencil size
+
+### strokeColor: string (default: "rgb(216, 184, 0)")
+This input control the color of the brush
+
+### shouldDownloadDrawing: boolean (default: true)
+This input control if the image created when clicking the save button should be downloaded right away.
 
 If using component-only styles, for this to work the viewEncapsulation must be set to None.
 ```typescript
@@ -173,11 +217,13 @@ If using component-only styles, for this to work the viewEncapsulation must be s
  @Output() onImageLoaded = new EventEmitter<any>();
  @Output() onUndo = new EventEmitter<any>();
  @Output() onRedo = new EventEmitter<any>();
+ @Output() onSave = new EventEmitter<string | Blob>();
 ```
 **onClear** is emitted when the canvas has been cleared. <br/>
 **onImageLoaded** is emitted if the user specified an image and it has successfully been drawn on the canvas.
 **onUndo** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
 **onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
+**onSave** is emitted when the canvas has done a SAVE function, emits a Data URL or a Blob (IE). <br/>
 
 # Canvas Whiteboard Service
 The ```CanvasWhiteboardService``` will be used by the canvas to listen to outside events.
@@ -230,13 +276,23 @@ export class AppComponent {
   onCanvasUndo(updateUUID: string) {
     console.log(`UNDO with uuid: ${updateUUID}`);
     
-    console.log(this.canvasWhiteboard.generateCanvasDataUrl("image/jpeg", 0.3));
+    //Returns base64 string representation of the canvas
+    let generatedString = this.canvasWhiteboard.generateCanvasDataUrl("image/jpeg", 0.3);
      
+    //Generates a IE canvas blob using a callbak method
     this.canvasWhiteboard.generateCanvasBlob((blob: any) => {
        console.log(blob);
     }, "image/png");
     
-    this.canvasWhiteboard.downloadCanvasImage();
+    //This method uses both of the above method and returns either string or blob
+    //using a callback method
+    this.canvasWhiteboard.generateCanvasData((generatedData: string | Blob) => {
+        console.log(generatedData);
+    }, "image/png", 1);
+    
+    //This method downloads the image using either existing data if it exists
+    //or creates it locally
+    this.canvasWhiteboard.downloadCanvasImage("image/png", existingData?);
     
     //If you need the context of the canvas
     let context = this.canvasWhiteboard.context;

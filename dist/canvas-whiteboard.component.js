@@ -19,6 +19,7 @@ var CanvasWhiteboardComponent = (function () {
         this.undoButtonEnabled = false;
         this.redoButtonEnabled = false;
         this.saveDataButtonEnabled = false;
+        this.shouldDownloadDrawing = true;
         this.colorPickerEnabled = false;
         this.lineWidth = 2;
         this.strokeColor = "rgb(216, 184, 0)";
@@ -27,6 +28,7 @@ var CanvasWhiteboardComponent = (function () {
         this.onRedo = new core_1.EventEmitter();
         this.onBatchUpdate = new core_1.EventEmitter();
         this.onImageLoaded = new core_1.EventEmitter();
+        this.onSave = new core_1.EventEmitter();
         this._shouldDraw = false;
         this._canDraw = true;
         this._clientDragging = false;
@@ -58,54 +60,62 @@ var CanvasWhiteboardComponent = (function () {
     /**
      * This method reads the options which are helpful since they can be really long when specified in HTML
      * This method is also called everytime the options object changes
+     * For security reasons we must check each item on its own since if we iterate the keys
+     * we may be injected with malicious values
+     *
      * @param {CanvasWhiteboardOptions} options
      * @private
      */
     CanvasWhiteboardComponent.prototype._initInputsFromOptions = function (options) {
         if (options) {
-            if (options.batchUpdateTimeoutDuration)
+            if (!this._isNullOrUndefined(options.batchUpdateTimeoutDuration))
                 this.batchUpdateTimeoutDuration = options.batchUpdateTimeoutDuration;
-            if (options.imageUrl)
+            if (!this._isNullOrUndefined(options.imageUrl))
                 this.imageUrl = options.imageUrl;
-            if (options.aspectRatio)
+            if (!this._isNullOrUndefined(options.aspectRatio))
                 this.aspectRatio = options.aspectRatio;
-            if (options.drawButtonClass)
+            if (!this._isNullOrUndefined(options.drawButtonClass))
                 this.drawButtonClass = options.drawButtonClass;
-            if (options.clearButtonClass)
+            if (!this._isNullOrUndefined(options.clearButtonClass))
                 this.clearButtonClass = options.clearButtonClass;
-            if (options.undoButtonClass)
+            if (!this._isNullOrUndefined(options.undoButtonClass))
                 this.undoButtonClass = options.undoButtonClass;
-            if (options.redoButtonClass)
+            if (!this._isNullOrUndefined(options.redoButtonClass))
                 this.redoButtonClass = options.redoButtonClass;
-            if (options.saveDataButtonClass)
+            if (!this._isNullOrUndefined(options.saveDataButtonClass))
                 this.saveDataButtonClass = options.saveDataButtonClass;
-            if (options.drawButtonText)
+            if (!this._isNullOrUndefined(options.drawButtonText))
                 this.drawButtonText = options.drawButtonText;
-            if (options.clearButtonText)
+            if (!this._isNullOrUndefined(options.clearButtonText))
                 this.clearButtonText = options.clearButtonText;
-            if (options.undoButtonText)
+            if (!this._isNullOrUndefined(options.undoButtonText))
                 this.undoButtonText = options.undoButtonText;
-            if (options.redoButtonText)
+            if (!this._isNullOrUndefined(options.redoButtonText))
                 this.redoButtonText = options.redoButtonText;
-            if (options.saveDataButtonText)
+            if (!this._isNullOrUndefined(options.saveDataButtonText))
                 this.saveDataButtonText = options.saveDataButtonText;
-            if (options.drawButtonEnabled)
+            if (!this._isNullOrUndefined(options.drawButtonEnabled))
                 this.drawButtonEnabled = options.drawButtonEnabled;
-            if (options.clearButtonEnabled)
+            if (!this._isNullOrUndefined(options.clearButtonEnabled))
                 this.clearButtonEnabled = options.clearButtonEnabled;
-            if (options.undoButtonEnabled)
+            if (!this._isNullOrUndefined(options.undoButtonEnabled))
                 this.undoButtonEnabled = options.undoButtonEnabled;
-            if (options.redoButtonEnabled)
+            if (!this._isNullOrUndefined(options.redoButtonEnabled))
                 this.redoButtonEnabled = options.redoButtonEnabled;
-            if (options.saveDataButtonEnabled)
+            if (!this._isNullOrUndefined(options.saveDataButtonEnabled))
                 this.saveDataButtonEnabled = options.saveDataButtonEnabled;
-            if (options.colorPickerEnabled)
+            if (!this._isNullOrUndefined(options.colorPickerEnabled))
                 this.colorPickerEnabled = options.colorPickerEnabled;
-            if (options.lineWidth)
+            if (!this._isNullOrUndefined(options.lineWidth))
                 this.lineWidth = options.lineWidth;
-            if (options.strokeColor)
+            if (!this._isNullOrUndefined(options.strokeColor))
                 this.strokeColor = options.strokeColor;
+            if (!this._isNullOrUndefined(options.shouldDownloadDrawing))
+                this.shouldDownloadDrawing = options.shouldDownloadDrawing;
         }
+    };
+    CanvasWhiteboardComponent.prototype._isNullOrUndefined = function (property) {
+        return property == null || property == undefined;
     };
     /**
      * Init global window listeners like resize and keydown
@@ -437,7 +447,7 @@ var CanvasWhiteboardComponent = (function () {
             }
             if (event.keyCode === 83 || event.keyCode === 115) {
                 event.preventDefault();
-                this.downloadCanvasImage();
+                this.saveLocal();
             }
         }
     };
@@ -651,22 +661,22 @@ var CanvasWhiteboardComponent = (function () {
         if (returnedDataType === void 0) { returnedDataType = "image/png"; }
         if (returnedDataQuality === void 0) { returnedDataQuality = 1; }
         this.context.canvas.toBlob(function (blob) {
-            callbackFn && callbackFn(blob);
+            callbackFn && callbackFn(blob, returnedDataType);
         }, returnedDataType, returnedDataQuality);
     };
     /**
      * Generate a canvas image representation and download it locally
      * The name of the image is canvas_drawing_ + the current local Date and Time the image was created
+     * Methods for standalone creation of the images in this method are left here for backwards compatibility
      *
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
+     * @param {string | Blob} downloadData The created string or Blob (IE).
      */
-    CanvasWhiteboardComponent.prototype.downloadCanvasImage = function (returnedDataType) {
-        var _this = this;
+    CanvasWhiteboardComponent.prototype.downloadCanvasImage = function (returnedDataType, downloadData) {
         if (returnedDataType === void 0) { returnedDataType = "image/png"; }
         if (window.navigator.msSaveOrOpenBlob === undefined) {
             var downloadLink = document.createElement('a');
-            downloadLink.setAttribute('href', this.generateCanvasDataUrl(returnedDataType));
-            console.log(this._generateDataTypeString(returnedDataType));
+            downloadLink.setAttribute('href', downloadData ? downloadData : this.generateCanvasDataUrl(returnedDataType));
             downloadLink.setAttribute('download', "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
             document.body.appendChild(downloadLink);
             downloadLink.click();
@@ -674,10 +684,57 @@ var CanvasWhiteboardComponent = (function () {
         }
         else {
             // IE-specific code
-            this.generateCanvasBlob(function (blob) {
-                window.navigator.msSaveOrOpenBlob(blob, "canvas_drawing_" + new Date().valueOf() + _this._generateDataTypeString(returnedDataType));
-            }, returnedDataType);
+            if (downloadData) {
+                this._saveCanvasBlob(downloadData, returnedDataType);
+            }
+            else {
+                this.generateCanvasBlob(this._saveCanvasBlob.bind(this), returnedDataType);
+            }
         }
+    };
+    /**
+     * Save the canvas blob (IE) locally
+     * @param {Blob} blob
+     * @param {string} returnedDataType
+     * @private
+     */
+    CanvasWhiteboardComponent.prototype._saveCanvasBlob = function (blob, returnedDataType) {
+        if (returnedDataType === void 0) { returnedDataType = "image/png"; }
+        window.navigator.msSaveOrOpenBlob(blob, "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
+    };
+    /**
+     * This method generates a canvas url string or a canvas blob with the presented data type
+     * A callback function is then invoked since the blob creation must be done via a callback
+     *
+     * @param callback
+     * @param {string} returnedDataType
+     * @param returnedDataQuality
+     */
+    CanvasWhiteboardComponent.prototype.generateCanvasData = function (callback, returnedDataType, returnedDataQuality) {
+        if (returnedDataType === void 0) { returnedDataType = "image/png"; }
+        if (returnedDataQuality === void 0) { returnedDataQuality = 1; }
+        if (window.navigator.msSaveOrOpenBlob === undefined) {
+            callback && callback(this.generateCanvasDataUrl(returnedDataType, returnedDataQuality));
+        }
+        else {
+            this.generateCanvasBlob(callback, returnedDataType, returnedDataQuality);
+        }
+    };
+    /**
+     * Local method to invoke saving of the canvas data when clicked on the canvas Save button
+     * This method will emit the generated data with the specified Event Emitter
+     *
+     * @param {string} returnedDataType
+     */
+    CanvasWhiteboardComponent.prototype.saveLocal = function (returnedDataType) {
+        var _this = this;
+        if (returnedDataType === void 0) { returnedDataType = "image/png"; }
+        this.generateCanvasData(function (generatedData) {
+            _this.onSave.emit(generatedData);
+            if (_this.shouldDownloadDrawing) {
+                _this.downloadCanvasImage(returnedDataType, generatedData);
+            }
+        });
     };
     CanvasWhiteboardComponent.prototype._generateDataTypeString = function (returnedDataType) {
         if (returnedDataType) {
@@ -734,6 +791,7 @@ CanvasWhiteboardComponent.propDecorators = {
     'undoButtonEnabled': [{ type: core_1.Input },],
     'redoButtonEnabled': [{ type: core_1.Input },],
     'saveDataButtonEnabled': [{ type: core_1.Input },],
+    'shouldDownloadDrawing': [{ type: core_1.Input },],
     'colorPickerEnabled': [{ type: core_1.Input },],
     'lineWidth': [{ type: core_1.Input },],
     'strokeColor': [{ type: core_1.Input },],
@@ -742,6 +800,7 @@ CanvasWhiteboardComponent.propDecorators = {
     'onRedo': [{ type: core_1.Output },],
     'onBatchUpdate': [{ type: core_1.Output },],
     'onImageLoaded': [{ type: core_1.Output },],
+    'onSave': [{ type: core_1.Output },],
     'canvas': [{ type: core_1.ViewChild, args: ['canvas',] },],
 };
 exports.CanvasWhiteboardComponent = CanvasWhiteboardComponent;
