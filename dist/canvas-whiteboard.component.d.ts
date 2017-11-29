@@ -24,6 +24,7 @@ export interface CanvasWhiteboardOptions {
     saveDataButtonText?: string;
     colorPickerEnabled?: boolean;
     shouldDownloadDrawing?: boolean;
+    startingColor?: string;
 }
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private _canvasWhiteboardService;
@@ -50,6 +51,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     colorPickerEnabled: boolean;
     lineWidth: number;
     strokeColor: string;
+    startingColor: string;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -143,6 +145,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @return Emits a value when the clearing is finished
      */
     private _redrawBackground(callbackFn?);
+    private _drawStartingColor();
     /**
      * Returns a value of whether the user clicked the draw button on the canvas.
      */

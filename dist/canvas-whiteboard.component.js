@@ -23,6 +23,7 @@ var CanvasWhiteboardComponent = (function () {
         this.colorPickerEnabled = false;
         this.lineWidth = 2;
         this.strokeColor = "rgb(216, 184, 0)";
+        this.startingColor = "#fff";
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onRedo = new core_1.EventEmitter();
@@ -56,6 +57,7 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype.ngAfterViewInit = function () {
         this._calculateCanvasWidthAndHeight();
+        this._drawStartingColor();
     };
     /**
      * This method reads the options which are helpful since they can be really long when specified in HTML
@@ -112,10 +114,12 @@ var CanvasWhiteboardComponent = (function () {
                 this.strokeColor = options.strokeColor;
             if (!this._isNullOrUndefined(options.shouldDownloadDrawing))
                 this.shouldDownloadDrawing = options.shouldDownloadDrawing;
+            if (!this._isNullOrUndefined(options.startingColor))
+                this.startingColor = options.startingColor;
         }
     };
     CanvasWhiteboardComponent.prototype._isNullOrUndefined = function (property) {
-        return property == null || property == undefined;
+        return property === null || property === undefined;
     };
     /**
      * Init global window listeners like resize and keydown
@@ -230,6 +234,7 @@ var CanvasWhiteboardComponent = (function () {
         if (this.context) {
             this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+            this._drawStartingColor();
             if (this.imageUrl) {
                 this._loadImage(callbackFn);
             }
@@ -237,6 +242,10 @@ var CanvasWhiteboardComponent = (function () {
                 callbackFn && callbackFn();
             }
         }
+    };
+    CanvasWhiteboardComponent.prototype._drawStartingColor = function () {
+        this.context.fillStyle = this.startingColor;
+        this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
     };
     /**
      * Returns a value of whether the user clicked the draw button on the canvas.
@@ -795,6 +804,7 @@ CanvasWhiteboardComponent.propDecorators = {
     'colorPickerEnabled': [{ type: core_1.Input },],
     'lineWidth': [{ type: core_1.Input },],
     'strokeColor': [{ type: core_1.Input },],
+    'startingColor': [{ type: core_1.Input },],
     'onClear': [{ type: core_1.Output },],
     'onUndo': [{ type: core_1.Output },],
     'onRedo': [{ type: core_1.Output },],

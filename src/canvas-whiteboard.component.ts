@@ -20,36 +20,28 @@ interface EventPositionPoint {
 
 export interface CanvasWhiteboardOptions {
     batchUpdateTimeoutDuration?: number
-
     imageUrl?: string
     aspectRatio?: number
-
     strokeColor?: string
     lineWidth?: number
-
     drawButtonEnabled?: boolean
     drawButtonClass?: string
     drawButtonText?: string
-
     clearButtonEnabled?: boolean
     clearButtonClass?: string
     clearButtonText?: string
-
     undoButtonEnabled?: boolean
     undoButtonClass?: string
     undoButtonText?: string
-
     redoButtonEnabled?: boolean
     redoButtonClass?: string
     redoButtonText?: string
-
     saveDataButtonEnabled?: boolean
     saveDataButtonClass?: string
     saveDataButtonText?: string
-
     colorPickerEnabled?: boolean
-
     shouldDownloadDrawing?: boolean
+    startingColor?: string
 }
 
 @Component({
@@ -90,6 +82,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     @Input() lineWidth: number = 2;
     @Input() strokeColor: string = "rgb(216, 184, 0)";
+
+    @Input() startingColor: string = "#fff";
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -142,6 +136,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     ngAfterViewInit(): void {
         this._calculateCanvasWidthAndHeight();
+        this._drawStartingColor();
     }
 
     /**
@@ -177,11 +172,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.lineWidth)) this.lineWidth = options.lineWidth;
             if (!this._isNullOrUndefined(options.strokeColor)) this.strokeColor = options.strokeColor;
             if (!this._isNullOrUndefined(options.shouldDownloadDrawing)) this.shouldDownloadDrawing = options.shouldDownloadDrawing;
+            if (!this._isNullOrUndefined(options.startingColor)) this.startingColor = options.startingColor;
         }
     }
 
     private _isNullOrUndefined(property: any): boolean {
-        return property == null || property == undefined;
+        return property === null || property === undefined;
     }
 
     /**
@@ -302,12 +298,18 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         if (this.context) {
             this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+            this._drawStartingColor();
             if (this.imageUrl) {
                 this._loadImage(callbackFn);
             } else {
                 callbackFn && callbackFn();
             }
         }
+    }
+
+    private _drawStartingColor() {
+        this.context.fillStyle = this.startingColor;
+        this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
     }
 
     /**

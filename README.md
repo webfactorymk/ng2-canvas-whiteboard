@@ -200,6 +200,9 @@ This input control the color of the brush
 ### shouldDownloadDrawing: boolean (default: true)
 This input control if the image created when clicking the save button should be downloaded right away.
 
+### startingColor: string (default: "#fff")
+This input control is used to fill the canvas with the specified color at initialization and on resize events.
+
 If using component-only styles, for this to work the viewEncapsulation must be set to None.
 ```typescript
 @Component({
