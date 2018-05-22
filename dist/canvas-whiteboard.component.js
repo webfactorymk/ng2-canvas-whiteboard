@@ -24,6 +24,7 @@ var CanvasWhiteboardComponent = (function () {
         this.lineWidth = 2;
         this.strokeColor = "rgb(216, 184, 0)";
         this.startingColor = "#fff";
+        this.scaleFactor = 0;
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onRedo = new core_1.EventEmitter();
@@ -116,6 +117,8 @@ var CanvasWhiteboardComponent = (function () {
                 this.shouldDownloadDrawing = options.shouldDownloadDrawing;
             if (!this._isNullOrUndefined(options.startingColor))
                 this.startingColor = options.startingColor;
+            if (!this._isNullOrUndefined(options.scaleFactor))
+                this.scaleFactor = options.scaleFactor;
         }
     };
     CanvasWhiteboardComponent.prototype._isNullOrUndefined = function (property) {
@@ -417,9 +420,15 @@ var CanvasWhiteboardComponent = (function () {
         if (!hasTouches)
             hasTouches = (eventData.changedTouches && eventData.changedTouches.length) ? eventData.changedTouches[0] : null;
         var event = hasTouches ? hasTouches : eventData;
+        var scaleWidth = canvasBoundingRect.width / this.context.canvas.width;
+        var scaleHeight = canvasBoundingRect.height / this.context.canvas.height;
+        var xPosition = (event.clientX - canvasBoundingRect.left);
+        var yPosition = (event.clientY - canvasBoundingRect.top);
+        xPosition /= this.scaleFactor ? this.scaleFactor : scaleWidth;
+        yPosition /= this.scaleFactor ? this.scaleFactor : scaleHeight;
         return {
-            x: event.clientX - canvasBoundingRect.left,
-            y: event.clientY - canvasBoundingRect.top
+            x: xPosition,
+            y: yPosition
         };
     };
     /**
@@ -805,6 +814,7 @@ CanvasWhiteboardComponent.propDecorators = {
     'lineWidth': [{ type: core_1.Input },],
     'strokeColor': [{ type: core_1.Input },],
     'startingColor': [{ type: core_1.Input },],
+    'scaleFactor': [{ type: core_1.Input },],
     'onClear': [{ type: core_1.Output },],
     'onUndo': [{ type: core_1.Output },],
     'onRedo': [{ type: core_1.Output },],

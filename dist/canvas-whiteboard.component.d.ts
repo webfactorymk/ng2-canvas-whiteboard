@@ -25,6 +25,7 @@ export interface CanvasWhiteboardOptions {
     colorPickerEnabled?: boolean;
     shouldDownloadDrawing?: boolean;
     startingColor?: string;
+    scaleFactor?: number;
 }
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private _canvasWhiteboardService;
@@ -52,6 +53,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     lineWidth: number;
     strokeColor: string;
     startingColor: string;
+    scaleFactor: number;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;

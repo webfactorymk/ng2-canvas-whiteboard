@@ -164,7 +164,8 @@ Changes to this object will be detected by the canvas in the OnChange listener a
       colorPickerEnabled: true,
       saveDataButtonEnabled: true,
       saveDataButtonText: 'Save',
-      lineWidth: 4
+      lineWidth: 4,
+      scaleFactor: 1
   };
 
    //View
@@ -188,6 +189,16 @@ This button can be customized by overriding it's css
 ```
 will add the "Draw" text to the button.
 
+If using component-only styles, for this to work the viewEncapsulation must be set to None.
+```typescript
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+  encapsulation: ViewEncapsulation.None
+})
+```
+
 ### colorPickerEnabled: boolean (default: false)
 This allows the adding of a colorPicker that the user can choose to draw with and the original colors are kept when redrawing
 
@@ -203,15 +214,9 @@ This input control if the image created when clicking the save button should be 
 ### startingColor: string (default: "#fff")
 This input control is used to fill the canvas with the specified color at initialization and on resize events.
 
-If using component-only styles, for this to work the viewEncapsulation must be set to None.
-```typescript
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-  encapsulation: ViewEncapsulation.None
-})
-```
+### scaleFactor: number (default: 0)
+This input controls the generation of the X and Y coordinates with a given scaleOffset. If not provided, the current with and height of the bounding rect and the canvas object will be used so that it works when transforming the canvas with css.
+
 
 ## Event emitters
 ```typescript

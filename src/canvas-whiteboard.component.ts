@@ -42,6 +42,7 @@ export interface CanvasWhiteboardOptions {
     colorPickerEnabled?: boolean
     shouldDownloadDrawing?: boolean
     startingColor?: string
+    scaleFactor?: number
 }
 
 @Component({
@@ -84,6 +85,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() strokeColor: string = "rgb(216, 184, 0)";
 
     @Input() startingColor: string = "#fff";
+
+    @Input() scaleFactor: number = 0;
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -173,6 +176,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.strokeColor)) this.strokeColor = options.strokeColor;
             if (!this._isNullOrUndefined(options.shouldDownloadDrawing)) this.shouldDownloadDrawing = options.shouldDownloadDrawing;
             if (!this._isNullOrUndefined(options.startingColor)) this.startingColor = options.startingColor;
+            if (!this._isNullOrUndefined(options.scaleFactor)) this.scaleFactor = options.scaleFactor;
         }
     }
 
@@ -505,9 +509,18 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
         let event = hasTouches ? hasTouches : eventData;
 
+        const scaleWidth = canvasBoundingRect.width / this.context.canvas.width;
+        const scaleHeight = canvasBoundingRect.height / this.context.canvas.height;
+
+        let xPosition = (event.clientX - canvasBoundingRect.left);
+        let yPosition = (event.clientY - canvasBoundingRect.top);
+
+        xPosition /= this.scaleFactor ? this.scaleFactor : scaleWidth;
+        yPosition /= this.scaleFactor ? this.scaleFactor : scaleHeight;
+
         return {
-            x: event.clientX - canvasBoundingRect.left,
-            y: event.clientY - canvasBoundingRect.top
+            x: xPosition,
+            y: yPosition
         }
     }
 
