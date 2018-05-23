@@ -217,6 +217,9 @@ This input control is used to fill the canvas with the specified color at initia
 ### scaleFactor: number (default: 0)
 This input controls the generation of the X and Y coordinates with a given scaleOffset. If not provided, the current with and height of the bounding rect and the canvas object will be used so that it works when transforming the canvas with css.
 
+### drawingEnabled: boolean (default: false)
+This input controls if the drawing should be enabled from the start, instead of waiting for the user to click draw
+
 
 ## Event emitters
 ```typescript

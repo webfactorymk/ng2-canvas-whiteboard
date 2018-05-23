@@ -43,6 +43,7 @@ export interface CanvasWhiteboardOptions {
     shouldDownloadDrawing?: boolean
     startingColor?: string
     scaleFactor?: number
+    drawingEnabled?: boolean
 }
 
 @Component({
@@ -55,38 +56,30 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     //Number of ms to wait before sending out the updates as an array
     @Input() batchUpdateTimeoutDuration: number = 100;
-
     @Input() imageUrl: string;
     @Input() aspectRatio: number;
-
     @Input() drawButtonClass: string;
     @Input() clearButtonClass: string;
     @Input() undoButtonClass: string;
     @Input() redoButtonClass: string;
     @Input() saveDataButtonClass: string;
-
     @Input() drawButtonText: string = "";
     @Input() clearButtonText: string = "";
     @Input() undoButtonText: string = "";
     @Input() redoButtonText: string = "";
     @Input() saveDataButtonText: string = "";
-
     @Input() drawButtonEnabled: boolean = true;
     @Input() clearButtonEnabled: boolean = true;
     @Input() undoButtonEnabled: boolean = false;
     @Input() redoButtonEnabled: boolean = false;
     @Input() saveDataButtonEnabled: boolean = false;
-
     @Input() shouldDownloadDrawing: boolean = true;
-
     @Input() colorPickerEnabled: boolean = false;
-
     @Input() lineWidth: number = 2;
     @Input() strokeColor: string = "rgb(216, 184, 0)";
-
     @Input() startingColor: string = "#fff";
-
     @Input() scaleFactor: number = 0;
+    @Input() drawingEnabled = false;
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -101,7 +94,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     private _imageElement: HTMLImageElement;
 
-    private _shouldDraw = false;
     private _canDraw = true;
 
     private _clientDragging = false;
@@ -177,6 +169,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.shouldDownloadDrawing)) this.shouldDownloadDrawing = options.shouldDownloadDrawing;
             if (!this._isNullOrUndefined(options.startingColor)) this.startingColor = options.startingColor;
             if (!this._isNullOrUndefined(options.scaleFactor)) this.scaleFactor = options.scaleFactor;
+            if (!this._isNullOrUndefined(options.drawingEnabled)) this.drawingEnabled = options.drawingEnabled;
         }
     }
 
@@ -317,25 +310,46 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     }
 
     /**
-     * Returns a value of whether the user clicked the draw button on the canvas.
+     * @deprecated Use getDrawingEnabled(): boolean
      */
     getShouldDraw(): boolean {
-        return this._shouldDraw;
+        return this.getDrawingEnabled();
+    }
+
+    /**
+     * Returns a value of whether the user clicked the draw button on the canvas.
+     */
+    getDrawingEnabled(): boolean {
+        return this.drawingEnabled;
+    }
+
+    /**
+     * @deprecated Use toggleDrawingEnabled(): void
+     */
+    toggleShouldDraw(): void {
+        this.toggleDrawingEnabled();
     }
 
     /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
-    toggleShouldDraw(): void {
-        this._shouldDraw = !this._shouldDraw;
+    toggleDrawingEnabled(): void {
+        this.drawingEnabled = !this.drawingEnabled;
+    }
+
+    /**
+     * @deprecated Use setDrawingEnabled(drawingEnabled: boolean): void
+     */
+    setShouldDraw(drawingEnabled: boolean): void {
+        this.setDrawingEnabled(drawingEnabled);
     }
 
     /**
      * Set if drawing is enabled from the client using the canvas
-     * @param {boolean} shouldDraw
+     * @param {boolean} drawingEnabled
      */
-    setShouldDraw(shouldDraw: boolean): void {
-        this._shouldDraw = shouldDraw;
+    setDrawingEnabled(drawingEnabled: boolean): void {
+        this.drawingEnabled = drawingEnabled;
     }
 
     /**
@@ -445,7 +459,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      *
      */
     canvasUserEvents(event: any): void {
-        if (!this._shouldDraw || !this._canDraw) {
+        if (!this.drawingEnabled || !this._canDraw) {
             //Ignore all if we didn't click the _draw! button or the image did not load
             return;
         }

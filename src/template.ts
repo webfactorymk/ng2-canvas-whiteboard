@@ -2,8 +2,8 @@ export const DEFAULT_TEMPLATE = `
 <div class="canvas_wrapper_div">
      <span class="canvas_whiteboard_buttons">
          <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled" [selectedColor]="strokeColor" (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
-         <button *ngIf="drawButtonEnabled" (click)="toggleShouldDraw()"
-                 [class.canvas_whiteboard_button-draw_animated]="getShouldDraw()"
+         <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
+                 [class.canvas_whiteboard_button-draw_animated]="getDrawingEnabled()"
                  class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">
                 <i [class]="drawButtonClass" aria-hidden="true"></i>
                    {{drawButtonText}}

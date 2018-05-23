@@ -25,13 +25,13 @@ var CanvasWhiteboardComponent = (function () {
         this.strokeColor = "rgb(216, 184, 0)";
         this.startingColor = "#fff";
         this.scaleFactor = 0;
+        this.drawingEnabled = false;
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onRedo = new core_1.EventEmitter();
         this.onBatchUpdate = new core_1.EventEmitter();
         this.onImageLoaded = new core_1.EventEmitter();
         this.onSave = new core_1.EventEmitter();
-        this._shouldDraw = false;
         this._canDraw = true;
         this._clientDragging = false;
         this._lastPositionForUUID = {};
@@ -119,6 +119,8 @@ var CanvasWhiteboardComponent = (function () {
                 this.startingColor = options.startingColor;
             if (!this._isNullOrUndefined(options.scaleFactor))
                 this.scaleFactor = options.scaleFactor;
+            if (!this._isNullOrUndefined(options.drawingEnabled))
+                this.drawingEnabled = options.drawingEnabled;
         }
     };
     CanvasWhiteboardComponent.prototype._isNullOrUndefined = function (property) {
@@ -251,23 +253,41 @@ var CanvasWhiteboardComponent = (function () {
         this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
     };
     /**
-     * Returns a value of whether the user clicked the draw button on the canvas.
+     * @deprecated Use getDrawingEnabled(): boolean
      */
     CanvasWhiteboardComponent.prototype.getShouldDraw = function () {
-        return this._shouldDraw;
+        return this.getDrawingEnabled();
+    };
+    /**
+     * Returns a value of whether the user clicked the draw button on the canvas.
+     */
+    CanvasWhiteboardComponent.prototype.getDrawingEnabled = function () {
+        return this.drawingEnabled;
+    };
+    /**
+     * @deprecated Use toggleDrawingEnabled(): void
+     */
+    CanvasWhiteboardComponent.prototype.toggleShouldDraw = function () {
+        this.toggleDrawingEnabled();
     };
     /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
-    CanvasWhiteboardComponent.prototype.toggleShouldDraw = function () {
-        this._shouldDraw = !this._shouldDraw;
+    CanvasWhiteboardComponent.prototype.toggleDrawingEnabled = function () {
+        this.drawingEnabled = !this.drawingEnabled;
+    };
+    /**
+     * @deprecated Use setDrawingEnabled(drawingEnabled: boolean): void
+     */
+    CanvasWhiteboardComponent.prototype.setShouldDraw = function (drawingEnabled) {
+        this.setDrawingEnabled(drawingEnabled);
     };
     /**
      * Set if drawing is enabled from the client using the canvas
-     * @param {boolean} shouldDraw
+     * @param {boolean} drawingEnabled
      */
-    CanvasWhiteboardComponent.prototype.setShouldDraw = function (shouldDraw) {
-        this._shouldDraw = shouldDraw;
+    CanvasWhiteboardComponent.prototype.setDrawingEnabled = function (drawingEnabled) {
+        this.drawingEnabled = drawingEnabled;
     };
     /**
      * Replaces the drawing color with a new color
@@ -365,7 +385,7 @@ var CanvasWhiteboardComponent = (function () {
      *
      */
     CanvasWhiteboardComponent.prototype.canvasUserEvents = function (event) {
-        if (!this._shouldDraw || !this._canDraw) {
+        if (!this.drawingEnabled || !this._canDraw) {
             //Ignore all if we didn't click the _draw! button or the image did not load
             return;
         }
@@ -815,6 +835,7 @@ CanvasWhiteboardComponent.propDecorators = {
     'strokeColor': [{ type: core_1.Input },],
     'startingColor': [{ type: core_1.Input },],
     'scaleFactor': [{ type: core_1.Input },],
+    'drawingEnabled': [{ type: core_1.Input },],
     'onClear': [{ type: core_1.Output },],
     'onUndo': [{ type: core_1.Output },],
     'onRedo': [{ type: core_1.Output },],

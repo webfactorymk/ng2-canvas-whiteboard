@@ -26,6 +26,7 @@ export interface CanvasWhiteboardOptions {
     shouldDownloadDrawing?: boolean;
     startingColor?: string;
     scaleFactor?: number;
+    drawingEnabled?: boolean;
 }
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private _canvasWhiteboardService;
@@ -54,6 +55,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     strokeColor: string;
     startingColor: string;
     scaleFactor: number;
+    drawingEnabled: boolean;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -63,7 +65,6 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
     private _imageElement;
-    private _shouldDraw;
     private _canDraw;
     private _clientDragging;
     private _lastUUID;
@@ -149,18 +150,30 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _redrawBackground(callbackFn?);
     private _drawStartingColor();
     /**
-     * Returns a value of whether the user clicked the draw button on the canvas.
+     * @deprecated Use getDrawingEnabled(): boolean
      */
     getShouldDraw(): boolean;
     /**
-     * Toggles drawing on the canvas. It is called via the draw button on the canvas.
+     * Returns a value of whether the user clicked the draw button on the canvas.
+     */
+    getDrawingEnabled(): boolean;
+    /**
+     * @deprecated Use toggleDrawingEnabled(): void
      */
     toggleShouldDraw(): void;
     /**
-     * Set if drawing is enabled from the client using the canvas
-     * @param {boolean} shouldDraw
+     * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
-    setShouldDraw(shouldDraw: boolean): void;
+    toggleDrawingEnabled(): void;
+    /**
+     * @deprecated Use setDrawingEnabled(drawingEnabled: boolean): void
+     */
+    setShouldDraw(drawingEnabled: boolean): void;
+    /**
+     * Set if drawing is enabled from the client using the canvas
+     * @param {boolean} drawingEnabled
+     */
+    setDrawingEnabled(drawingEnabled: boolean): void;
     /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
