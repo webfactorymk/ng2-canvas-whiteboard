@@ -1,7 +1,12 @@
 export const DEFAULT_TEMPLATE = `
 <div class="canvas_wrapper_div">
      <span class="canvas_whiteboard_buttons">
-         <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled" [selectedColor]="strokeColor" (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
+         <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled" 
+         [showColorPicker]="showColorPicker" 
+         [selectedColor]="strokeColor"
+         (onToggleColorPicker)="toggleColorPicker($event)"
+         (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
+         
          <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
                  [class.canvas_whiteboard_button-draw_animated]="getDrawingEnabled()"
                  class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">

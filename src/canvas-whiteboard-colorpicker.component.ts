@@ -11,12 +11,12 @@ import {
         '(document:touchstart)': 'closeOnExternalClick($event)',
     },
     template: `
-        <input [style.background]="selectedColor" [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input" (click)="toggleColorPicker($event)"/>
+        <input [style.background]="selectedColor" [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input"
+               (click)="toggleColorPicker($event)"/>
         <div [hidden]="!showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
             <canvas #canvaswhiteboardcolorpicker class="canvas-whiteboard-colorpicker" width="284" height="155"
-          (click)="selectColor($event)"></canvas>
+                    (click)="selectColor($event)"></canvas>
         </div>
-    
     `,
     styles: [`
         .canvas-whiteboard-colorpicker {
@@ -24,10 +24,10 @@ import {
             background: #000;
             border: 1px solid #afafaf;
         }
-        
-        @media (min-width: 401px) { 
+
+        @media (min-width: 401px) {
             .canvas-whiteboard-colorpicker {
-               position: absolute;
+                position: absolute;
                 top: 0;
                 right: 100%;
             }
@@ -46,9 +46,10 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
     @Input() selectedColor: string = "rgb(0,0,0)";
     @ViewChild('canvaswhiteboardcolorpicker') canvas: ElementRef;
 
-    showColorPicker: boolean = false;
+    @Input() readonly showColorPicker: boolean = false;
     private _context: CanvasRenderingContext2D;
 
+    @Output() onToggleColorPicker = new EventEmitter<boolean>();
     @Output() onColorSelected = new EventEmitter<string>();
 
     constructor(private _elementRef: ElementRef) {
@@ -65,37 +66,37 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
     createColorPalette() {
         let gradient = this._context.createLinearGradient(0, 0, this._context.canvas.width, 0);
-        gradient.addColorStop(0, "rgb(255,   0,   0)");
-        gradient.addColorStop(0.15, "rgb(255,   0, 255)");
-        gradient.addColorStop(0.33, "rgb(0,     0, 255)");
-        gradient.addColorStop(0.49, "rgb(0,   255, 255)");
-        gradient.addColorStop(0.67, "rgb(0,   255,   0)");
-        gradient.addColorStop(0.84, "rgb(255, 255,   0)");
-        gradient.addColorStop(1, "rgb(255,   0,   0)");
+        gradient.addColorStop(0, "rgb(255, 0, 0)");
+        gradient.addColorStop(0.15, "rgb(255, 0, 255)");
+        gradient.addColorStop(0.33, "rgb(0, 0, 255)");
+        gradient.addColorStop(0.49, "rgb(0, 255, 255)");
+        gradient.addColorStop(0.67, "rgb(0, 255, 0)");
+        gradient.addColorStop(0.84, "rgb(255, 255, 0)");
+        gradient.addColorStop(1, "rgb(255, 0, 0)");
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
 
         gradient = this._context.createLinearGradient(0, 0, 0, this._context.canvas.height);
         gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
         gradient.addColorStop(0.5, "rgba(255, 255, 255, 0)");
-        gradient.addColorStop(0.5, "rgba(0,     0,   0, 0)");
-        gradient.addColorStop(1, "rgba(0,     0,   0, 1)");
+        gradient.addColorStop(0.5, "rgba(0, 0, 0, 0)");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 1)");
         this._context.fillStyle = gradient;
         this._context.fillRect(0, 0, this._context.canvas.width, this._context.canvas.height);
     }
 
     closeOnExternalClick(event) {
         if (!this._elementRef.nativeElement.contains(event.target) && this.showColorPicker) {
-            this.showColorPicker = false;
+            this.onToggleColorPicker.emit(false);
         }
     }
 
-    toggleColorPicker(event: any) {
+    toggleColorPicker(event: Event) {
         if (event) {
             event.preventDefault();
         }
 
-        this.showColorPicker = !this.showColorPicker;
+        this.onToggleColorPicker.emit(!this.showColorPicker);
     }
 
     private _getColor(event: any) {

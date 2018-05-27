@@ -3,8 +3,9 @@ export declare class CanvasWhiteboardColorPickerComponent implements OnInit {
     private _elementRef;
     selectedColor: string;
     canvas: ElementRef;
-    showColorPicker: boolean;
+    readonly showColorPicker: boolean;
     private _context;
+    onToggleColorPicker: EventEmitter<boolean>;
     onColorSelected: EventEmitter<string>;
     constructor(_elementRef: ElementRef);
     /**
@@ -14,7 +15,7 @@ export declare class CanvasWhiteboardColorPickerComponent implements OnInit {
     ngOnInit(): void;
     createColorPalette(): void;
     closeOnExternalClick(event: any): void;
-    toggleColorPicker(event: any): void;
+    toggleColorPicker(event: Event): void;
     private _getColor(event);
     selectColor(event: any): void;
 }

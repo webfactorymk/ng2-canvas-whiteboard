@@ -220,6 +220,9 @@ This input controls the generation of the X and Y coordinates with a given scale
 ### drawingEnabled: boolean (default: false)
 This input controls if the drawing should be enabled from the start, instead of waiting for the user to click draw
 
+### showColorPicker: boolean (default: false)
+This input controls if the CanvasWhiteboardColorPickerComponent should be shown programatically
+
 
 ## Event emitters
 ```typescript

@@ -27,6 +27,7 @@ export interface CanvasWhiteboardOptions {
     startingColor?: string;
     scaleFactor?: number;
     drawingEnabled?: boolean;
+    showColorPicker?: boolean;
 }
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private _canvasWhiteboardService;
@@ -56,6 +57,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     startingColor: string;
     scaleFactor: number;
     drawingEnabled: boolean;
+    showColorPicker: boolean;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -377,6 +379,12 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     saveLocal(returnedDataType?: string): void;
     private _generateDataTypeString(returnedDataType);
+    /**
+     * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleColorPicker(value: boolean): void;
     /**
      * Unsubscribe from a given subscription if it is active
      * @param {Subscription} subscription

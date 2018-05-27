@@ -44,6 +44,7 @@ export interface CanvasWhiteboardOptions {
     startingColor?: string
     scaleFactor?: number
     drawingEnabled?: boolean
+    showColorPicker?: boolean
 }
 
 @Component({
@@ -79,7 +80,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() strokeColor: string = "rgb(216, 184, 0)";
     @Input() startingColor: string = "#fff";
     @Input() scaleFactor: number = 0;
-    @Input() drawingEnabled = false;
+    @Input() drawingEnabled: boolean = false;
+    @Input() showColorPicker: boolean = false;
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -869,6 +871,15 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         }
 
         return "";
+    }
+
+    /**
+     * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleColorPicker(value: boolean) {
+        this.showColorPicker = !this._isNullOrUndefined(value) ? value : !this.showColorPicker;
     }
 
     /**
