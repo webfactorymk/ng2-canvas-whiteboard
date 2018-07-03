@@ -1,7 +1,7 @@
 {
   "name": "ng2-canvas-whiteboard",
-  "version": "1.4.5",
-  "description": "A Canvas component for Angular2 which supports free drawing.",
+  "version": "1.4.6",
+  "description": "A Canvas component for Angular which supports free drawing.",
   "main": "index.js",
   "scripts": {
     "watch": "tsc -w",
@@ -23,6 +23,8 @@
     "angular2",
     "angular",
     "angular4",
+    "angular5",
+    "angular6",
     "canvas",
     "drawing",
     "touch drawing",
@@ -30,7 +32,11 @@
     "colorpicker",
     "canvas colorpicker"
   ],
-  "dependencies": {},
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "rxjs-compat": "^6.0.0"
+  },
   "devDependencies": {
     "@angular/common": "4.3.2",
     "@angular/compiler-cli": "4.3.2",
@@ -38,6 +44,7 @@
     "@angular/core": "4.3.2",
     "typescript": "2.2.1",
     "rxjs": "5.2.0",
+    "rxjs-compat": "^6.0.0",
     "zone.js": "0.8.4"
   }
 }
