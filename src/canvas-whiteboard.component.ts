@@ -45,6 +45,7 @@ export interface CanvasWhiteboardOptions {
     scaleFactor?: number
     drawingEnabled?: boolean
     showColorPicker?: boolean
+    downloadedFileName?: string
 }
 
 @Component({
@@ -82,6 +83,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() scaleFactor: number = 0;
     @Input() drawingEnabled: boolean = false;
     @Input() showColorPicker: boolean = false;
+    @Input() downloadedFileName: string;
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -172,6 +174,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.startingColor)) this.startingColor = options.startingColor;
             if (!this._isNullOrUndefined(options.scaleFactor)) this.scaleFactor = options.scaleFactor;
             if (!this._isNullOrUndefined(options.drawingEnabled)) this.drawingEnabled = options.drawingEnabled;
+            if (!this._isNullOrUndefined(options.downloadedFileName)) this.downloadedFileName = options.downloadedFileName;
         }
     }
 
@@ -803,13 +806,18 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * Methods for standalone creation of the images in this method are left here for backwards compatibility
      *
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
-     * @param {string | Blob} downloadData The created string or Blob (IE).
+     * @param {string | Blob} downloadData? The created string or Blob (IE).
+     * @param {string} customFileName? The name of the file that should be downloaded
      */
-    downloadCanvasImage(returnedDataType: string = "image/png", downloadData?: string | Blob): void {
+    downloadCanvasImage(returnedDataType: string = "image/png", downloadData?: string | Blob, customFileName?: string): void {
         if (window.navigator.msSaveOrOpenBlob === undefined) {
             let downloadLink = document.createElement('a');
             downloadLink.setAttribute('href', downloadData ? <string>downloadData : this.generateCanvasDataUrl(returnedDataType));
-            downloadLink.setAttribute('download', "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
+
+            let fileName = customFileName ? customFileName
+                : (this.downloadedFileName ? this.downloadedFileName : "canvas_drawing_" + new Date().valueOf());
+
+            downloadLink.setAttribute('download', fileName + this._generateDataTypeString(returnedDataType));
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);

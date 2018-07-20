@@ -28,6 +28,7 @@ export interface CanvasWhiteboardOptions {
     scaleFactor?: number;
     drawingEnabled?: boolean;
     showColorPicker?: boolean;
+    downloadedFileName?: string;
 }
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private _canvasWhiteboardService;
@@ -58,6 +59,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     scaleFactor: number;
     drawingEnabled: boolean;
     showColorPicker: boolean;
+    downloadedFileName: string;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -352,9 +354,10 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * Methods for standalone creation of the images in this method are left here for backwards compatibility
      *
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
-     * @param {string | Blob} downloadData The created string or Blob (IE).
+     * @param {string | Blob} downloadData? The created string or Blob (IE).
+     * @param {string} customFileName? The name of the file that should be downloaded
      */
-    downloadCanvasImage(returnedDataType?: string, downloadData?: string | Blob): void;
+    downloadCanvasImage(returnedDataType?: string, downloadData?: string | Blob, customFileName?: string): void;
     /**
      * Save the canvas blob (IE) locally
      * @param {Blob} blob

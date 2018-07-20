@@ -14,6 +14,8 @@ Add a canvas component which the user can draw on.
 
 # Install
 
+*NOTE: If you are using `rxjs^6`, please use `npm install --save rxjs-compat` to allow backwards compatibility for this module*
+
 1. Install npm module:
 
     ```bash
@@ -120,26 +122,26 @@ When the drawing is started, after 100 ms all the signals in between are added t
 emitted by the **onBatchUpdate** emitter. If received, the user can then manipulate with the sent signals.
 
 # Inputs
-### batchUpdateTimeoutDuration: number (default: 100)
+### `batchUpdateTimeoutDuration: number` (default: 100)
 The time in milliseconds that a batch update should be sent after drawing.
 
-### imageUrl: string (optional)
+### `imageUrl: string` (optional)
 The path to the image. If not specified, the drawings will be placed on the background color of the canvas
 
-### aspectRatio: number (optional)
+### `aspectRatio: number` (optional)
 If specified, the canvas will be resized according to this ratio
 
-#### drawButtonClass: string <br/>clearButtonClass: string <br/>undoButtonClass: string <br/>redoButtonClass: string<br/>saveDataButtonClass: string
+#### `drawButtonClass: string`<br/>`clearButtonClass: string` <br/>`undoButtonClass: string` <br/>`redoButtonClass: string`<br/>`saveDataButtonClass: string`
 The classes of the draw, clear, undo and redo buttons. These classes are used in "\<i>" tags. <br/>
 Example:  
 ```html
 [drawButtonClass]="'fa fa-pencil fa-2x'"
 [clearButtonClass]="'fa fa-eraser fa-2x canvas_whiteboard_button-clear'"
    ```
-#### drawButtonEnabled: boolean (default: true) <br/>clearButtonEnabled: boolean (default: true) <br/>undoButtonEnabled: boolean (default: false)<br/>redoButtonEnabled: boolean (default: false)<br/>saveDataButtonEnabled: boolean (default: false)
+#### `drawButtonEnabled: boolean` (default: true) <br/>`clearButtonEnabled: boolean` (default: true) <br/>`undoButtonEnabled: boolean` (default: false)<br/>`redoButtonEnabled: boolean` (default: false)<br/>`saveDataButtonEnabled: boolean` (default: false)
 Specifies whether or not the button for drawing or clearing the canvas should be shown.
 
-#### drawButtonText, clearButtonText, undoButtonText, redoButtonText, saveDataButtonText
+#### `drawButtonText, clearButtonText, undoButtonText, redoButtonText, saveDataButtonText`
 Specify the text to add to the buttons, default is no text
 ```html
 [drawButtonText]="'Draw'"
@@ -199,30 +201,36 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 })
 ```
 
-### colorPickerEnabled: boolean (default: false)
+### `colorPickerEnabled: boolean` (default: false)
 This allows the adding of a colorPicker that the user can choose to draw with and the original colors are kept when redrawing
 
-### lineWidth: number (default: 2)
+### `lineWidth: number` (default: 2)
 This input controls the drawing pencil size
 
-### strokeColor: string (default: "rgb(216, 184, 0)")
+### `strokeColor: string` (default: "rgb(216, 184, 0)")
 This input control the color of the brush
 
-### shouldDownloadDrawing: boolean (default: true)
+### `shouldDownloadDrawing: boolean` (default: true)
 This input control if the image created when clicking the save button should be downloaded right away.
 
-### startingColor: string (default: "#fff")
+### `startingColor: string` (default: "#fff")
 This input control is used to fill the canvas with the specified color at initialization and on resize events.
 
-### scaleFactor: number (default: 0)
+### `scaleFactor: number` (default: 0)
 This input controls the generation of the X and Y coordinates with a given scaleOffset. If not provided, the current with and height of the bounding rect and the canvas object will be used so that it works when transforming the canvas with css.
 
-### drawingEnabled: boolean (default: false)
+### `drawingEnabled: boolean` (default: false)
 This input controls if the drawing should be enabled from the start, instead of waiting for the user to click draw
 
-### showColorPicker: boolean (default: false)
+### `showColorPicker: boolean` (default: false)
 This input controls if the CanvasWhiteboardColorPickerComponent should be shown programatically
 
+### `downloadedFileName: string` (no default value)
+This input controls the name of the file that will be downloaded when an image is saved.
+If the `downloadCanvasImage` method is called with a `fileName` as a third parameter, then it will have priority over everything
+If the `fileName` is not provided, then this Input will have priority. If this input is not provided as well,
+the image will be saved as `canvas_drawing_" + new Date().valueOf()`;
+At the end the file extension will be added so that it can be opened by a particular app.
 
 ## Event emitters
 ```typescript
@@ -233,11 +241,11 @@ This input controls if the CanvasWhiteboardColorPickerComponent should be shown 
  @Output() onRedo = new EventEmitter<any>();
  @Output() onSave = new EventEmitter<string | Blob>();
 ```
-**onClear** is emitted when the canvas has been cleared. <br/>
-**onImageLoaded** is emitted if the user specified an image and it has successfully been drawn on the canvas.
-**onUndo** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
-**onClear** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
-**onSave** is emitted when the canvas has done a SAVE function, emits a Data URL or a Blob (IE). <br/>
+**`onClear`** is emitted when the canvas has been cleared. <br/>
+**`onImageLoaded`** is emitted if the user specified an image and it has successfully been drawn on the canvas.
+**`onUndo`** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
+**`onClear`** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
+**`onSave`** is emitted when the canvas has done a SAVE function, emits a Data URL or a Blob (IE). <br/>
 
 # Canvas Whiteboard Service
 The ```CanvasWhiteboardService``` will be used by the canvas to listen to outside events.
@@ -306,7 +314,7 @@ export class AppComponent {
     
     //This method downloads the image using either existing data if it exists
     //or creates it locally
-    this.canvasWhiteboard.downloadCanvasImage("image/png", existingData?);
+    this.canvasWhiteboard.downloadCanvasImage("image/png", existingData?, "customFileName");
     
     //If you need the context of the canvas
     let context = this.canvasWhiteboard.context;

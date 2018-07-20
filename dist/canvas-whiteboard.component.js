@@ -122,6 +122,8 @@ var CanvasWhiteboardComponent = (function () {
                 this.scaleFactor = options.scaleFactor;
             if (!this._isNullOrUndefined(options.drawingEnabled))
                 this.drawingEnabled = options.drawingEnabled;
+            if (!this._isNullOrUndefined(options.downloadedFileName))
+                this.downloadedFileName = options.downloadedFileName;
         }
     };
     CanvasWhiteboardComponent.prototype._isNullOrUndefined = function (property) {
@@ -709,14 +711,17 @@ var CanvasWhiteboardComponent = (function () {
      * Methods for standalone creation of the images in this method are left here for backwards compatibility
      *
      * @param {string} returnedDataType A DOMString indicating the image format. The default type is image/png.
-     * @param {string | Blob} downloadData The created string or Blob (IE).
+     * @param {string | Blob} downloadData? The created string or Blob (IE).
+     * @param {string} customFileName? The name of the file that should be downloaded
      */
-    CanvasWhiteboardComponent.prototype.downloadCanvasImage = function (returnedDataType, downloadData) {
+    CanvasWhiteboardComponent.prototype.downloadCanvasImage = function (returnedDataType, downloadData, customFileName) {
         if (returnedDataType === void 0) { returnedDataType = "image/png"; }
         if (window.navigator.msSaveOrOpenBlob === undefined) {
             var downloadLink = document.createElement('a');
             downloadLink.setAttribute('href', downloadData ? downloadData : this.generateCanvasDataUrl(returnedDataType));
-            downloadLink.setAttribute('download', "canvas_drawing_" + new Date().valueOf() + this._generateDataTypeString(returnedDataType));
+            var fileName = customFileName ? customFileName
+                : (this.downloadedFileName ? this.downloadedFileName : "canvas_drawing_" + new Date().valueOf());
+            downloadLink.setAttribute('download', fileName + this._generateDataTypeString(returnedDataType));
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
@@ -846,6 +851,7 @@ CanvasWhiteboardComponent.propDecorators = {
     'scaleFactor': [{ type: core_1.Input },],
     'drawingEnabled': [{ type: core_1.Input },],
     'showColorPicker': [{ type: core_1.Input },],
+    'downloadedFileName': [{ type: core_1.Input },],
     'onClear': [{ type: core_1.Output },],
     'onUndo': [{ type: core_1.Output },],
     'onRedo': [{ type: core_1.Output },],
