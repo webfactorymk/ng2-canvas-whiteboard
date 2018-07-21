@@ -699,9 +699,19 @@ var CanvasWhiteboardComponent = (function () {
      If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
      */
     CanvasWhiteboardComponent.prototype.generateCanvasBlob = function (callbackFn, returnedDataType, returnedDataQuality) {
+        var _this = this;
         if (returnedDataType === void 0) { returnedDataType = "image/png"; }
         if (returnedDataQuality === void 0) { returnedDataQuality = 1; }
-        this.context.canvas.toBlob(function (blob) {
+        var toBlobMethod;
+        if (typeof this.context.canvas.toBlob !== "undefined") {
+            toBlobMethod = this.context.canvas.toBlob;
+        }
+        else if (typeof this.context.canvas.msToBlob !== "undefined") {
+            toBlobMethod = function (callback) {
+                callback && callback(_this.context.canvas.msToBlob());
+            };
+        }
+        toBlobMethod && toBlobMethod(function (blob) {
             callbackFn && callbackFn(blob, returnedDataType);
         }, returnedDataType, returnedDataQuality);
     };

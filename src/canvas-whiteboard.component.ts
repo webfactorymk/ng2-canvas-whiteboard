@@ -795,7 +795,17 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      If this argument is anything else, the default value for image quality is used. Other arguments are ignored.
      */
     generateCanvasBlob(callbackFn: any, returnedDataType: string = "image/png", returnedDataQuality: number = 1): void {
-        this.context.canvas.toBlob((blob: Blob) => {
+        let toBlobMethod: Function;
+
+        if (typeof this.context.canvas.toBlob !== "undefined") {
+            toBlobMethod = this.context.canvas.toBlob;
+        } else if (typeof this.context.canvas.msToBlob !== "undefined") {
+            toBlobMethod = (callback) => {
+                callback && callback(this.context.canvas.msToBlob());
+            };
+        }
+
+        toBlobMethod && toBlobMethod((blob: Blob) => {
             callbackFn && callbackFn(blob, returnedDataType);
         }, returnedDataType, returnedDataQuality);
     }
