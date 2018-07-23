@@ -9,48 +9,60 @@ import {
     OnChanges, OnDestroy, AfterViewInit
 } from '@angular/core';
 import {CanvasWhiteboardUpdate, UPDATE_TYPE} from "./canvas-whiteboard-update.model";
-import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
+import {DEFAULT_STYLES} from "./template";
 import {CanvasWhiteboardService} from "./canvas-whiteboard.service";
+import {CanvasWhiteboardOptions} from "./canvas-whiteboard-options";
 import {Subscription} from "rxjs/Subscription";
-
-interface EventPositionPoint {
-    x: number,
-    y: number
-}
-
-export interface CanvasWhiteboardOptions {
-    batchUpdateTimeoutDuration?: number
-    imageUrl?: string
-    aspectRatio?: number
-    strokeColor?: string
-    lineWidth?: number
-    drawButtonEnabled?: boolean
-    drawButtonClass?: string
-    drawButtonText?: string
-    clearButtonEnabled?: boolean
-    clearButtonClass?: string
-    clearButtonText?: string
-    undoButtonEnabled?: boolean
-    undoButtonClass?: string
-    undoButtonText?: string
-    redoButtonEnabled?: boolean
-    redoButtonClass?: string
-    redoButtonText?: string
-    saveDataButtonEnabled?: boolean
-    saveDataButtonClass?: string
-    saveDataButtonText?: string
-    colorPickerEnabled?: boolean
-    shouldDownloadDrawing?: boolean
-    startingColor?: string
-    scaleFactor?: number
-    drawingEnabled?: boolean
-    showColorPicker?: boolean
-    downloadedFileName?: string
-}
+import {CanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape";
+import {CanvasWhiteboardPoint} from "./canvas-whiteboard-point";
+import {RectangleShape} from "./shapes/rectangle-shape";
+import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
 
 @Component({
     selector: 'canvas-whiteboard',
-    template: DEFAULT_TEMPLATE,
+    template:
+            `
+        <div class="canvas_wrapper_div">
+             <span class="canvas_whiteboard_buttons">
+                 <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                                                [showColorPicker]="showColorPicker"
+                                                [selectedColor]="strokeColor"
+                                                (onToggleColorPicker)="toggleColorPicker($event)"
+                                                (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
+                 
+                 <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
+                         [class.canvas_whiteboard_button-draw_animated]="getDrawingEnabled()"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">
+                        <i [class]="drawButtonClass" aria-hidden="true"></i> {{drawButtonText}}
+                </button>
+                
+                <button *ngIf="clearButtonEnabled" (click)="clearCanvasLocal()" type="button"
+                        class="canvas_whiteboard_button canvas_whiteboard_button-clear">
+                    <i [class]="clearButtonClass" aria-hidden="true"></i> {{clearButtonText}}
+                </button>
+                
+                 <button *ngIf="undoButtonEnabled" (click)="undoLocal()" type="button"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-undo">
+                     <i [class]="undoButtonClass" aria-hidden="true"></i> {{undoButtonText}} 
+                 </button>
+                 
+                 <button *ngIf="redoButtonEnabled" (click)="redoLocal()" type="button"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-redo">
+                     <i [class]="redoButtonClass" aria-hidden="true"></i> {{redoButtonText}}
+                 </button> 
+                 <button *ngIf="saveDataButtonEnabled" (click)="saveLocal()" type="button"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-save">
+                     <i [class]="saveDataButtonClass" aria-hidden="true"></i> {{saveDataButtonText}}
+                 </button>
+             </span>
+            <canvas #canvas
+                    (mousedown)="canvasUserEvents($event)" (mouseup)="canvasUserEvents($event)"
+                    (mousemove)="canvasUserEvents($event)" (mouseout)="canvasUserEvents($event)"
+                    (touchstart)="canvasUserEvents($event)" (touchmove)="canvasUserEvents($event)"
+                    (touchend)="canvasUserEvents($event)" (touchcancel)="canvasUserEvents($event)">
+            </canvas>
+        </div>
+    `,
     styles: [DEFAULT_STYLES]
 })
 export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
@@ -78,7 +90,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() shouldDownloadDrawing: boolean = true;
     @Input() colorPickerEnabled: boolean = false;
     @Input() lineWidth: number = 2;
-    @Input() strokeColor: string = "rgb(216, 184, 0)";
+    @Input() strokeColor: string = "rgba(0, 0, 0, 1)";
     @Input() startingColor: string = "#fff";
     @Input() scaleFactor: number = 0;
     @Input() drawingEnabled: boolean = false;
@@ -136,6 +148,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     ngAfterViewInit(): void {
         this._calculateCanvasWidthAndHeight();
         this._drawStartingColor();
+
+        console.log("CANVAS AFTER VIEW INIT");
+        this.drawShape(new RectangleShape(new CanvasWhiteboardPoint(0, 0), 300, 300, new CanvasWhiteboardShapeOptions()))
     }
 
     /**
@@ -298,7 +313,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     private _redrawBackground(callbackFn?: any): void {
         if (this.context) {
-            this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             this._drawStartingColor();
             if (this.imageUrl) {
@@ -480,13 +494,13 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
         let update: CanvasWhiteboardUpdate;
         let updateType: number;
-        let eventPosition: EventPositionPoint = this._getCanvasEventPosition(event);
+        let eventPosition: CanvasWhiteboardPoint = this._getCanvasEventPosition(event);
 
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                this._lastUUID = eventPosition.x + eventPosition.y + Math.random().toString(36);
+                this._lastUUID = this._generateUUID();
                 updateType = UPDATE_TYPE.start;
                 break;
             case 'mousemove':
@@ -519,7 +533,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @return {EventPositionPoint}
      * @private
      */
-    private _getCanvasEventPosition(eventData: any): EventPositionPoint {
+    private _getCanvasEventPosition(eventData: any): CanvasWhiteboardPoint {
         let canvasBoundingRect = this.context.canvas.getBoundingClientRect();
 
         let hasTouches = (eventData.touches && eventData.touches.length) ? eventData.touches[0] : null;
@@ -537,10 +551,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         xPosition /= this.scaleFactor ? this.scaleFactor : scaleWidth;
         yPosition /= this.scaleFactor ? this.scaleFactor : scaleHeight;
 
-        return {
-            x: xPosition,
-            y: yPosition
-        }
+        return new CanvasWhiteboardPoint(xPosition, yPosition);
     }
 
     /**
@@ -655,6 +666,15 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
                 y: yToDraw
             };
         }
+    }
+
+    private _drawFreeHand(update: CanvasWhiteboardUpdate) {
+
+    }
+
+    public drawShape(shape: CanvasWhiteboardShape) {
+        shape.draw(this.context);
+
     }
 
     /**
@@ -908,6 +928,18 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     private _unsubscribe(subscription: Subscription): void {
         if (subscription) subscription.unsubscribe();
     }
+
+    private _generateUUID(): string {
+        return this._random4() + this._random4() + "-" + this._random4() + "-" + this._random4() + "-" +
+            this._random4() + "-" + this._random4() + this._random4() + this._random4();
+    }
+
+    private _random4(): string {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    }
+
 
     /**
      * Unsubscribe from the service observables

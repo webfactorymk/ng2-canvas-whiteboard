@@ -11,6 +11,14 @@ var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model
 exports.CanvasWhiteboardUpdate = canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate;
 var canvas_whiteboard_service_2 = require("./canvas-whiteboard.service");
 exports.CanvasWhiteboardService = canvas_whiteboard_service_2.CanvasWhiteboardService;
+var canvas_whiteboard_shape_1 = require("./shapes/canvas-whiteboard-shape");
+exports.CanvasWhiteboardShape = canvas_whiteboard_shape_1.CanvasWhiteboardShape;
+var canvas_whiteboard_shape_options_1 = require("./shapes/canvas-whiteboard-shape-options");
+exports.CanvasWhiteboardShapeOptions = canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions;
+var rectangle_shape_1 = require("./shapes/rectangle-shape");
+exports.RectangleShape = rectangle_shape_1.RectangleShape;
+var circle_shape_1 = require("./shapes/circle-shape");
+exports.CircleShape = circle_shape_1.CircleShape;
 var CanvasWhiteboardModule = (function () {
     function CanvasWhiteboardModule() {
     }

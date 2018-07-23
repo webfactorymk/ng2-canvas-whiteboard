@@ -4,6 +4,9 @@ var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
 var template_1 = require("./template");
 var canvas_whiteboard_service_1 = require("./canvas-whiteboard.service");
+var canvas_whiteboard_point_1 = require("./canvas-whiteboard-point");
+var rectangle_shape_1 = require("./shapes/rectangle-shape");
+var canvas_whiteboard_shape_options_1 = require("./shapes/canvas-whiteboard-shape-options");
 var CanvasWhiteboardComponent = (function () {
     function CanvasWhiteboardComponent(_canvasWhiteboardService) {
         this._canvasWhiteboardService = _canvasWhiteboardService;
@@ -22,7 +25,7 @@ var CanvasWhiteboardComponent = (function () {
         this.shouldDownloadDrawing = true;
         this.colorPickerEnabled = false;
         this.lineWidth = 2;
-        this.strokeColor = "rgb(216, 184, 0)";
+        this.strokeColor = "rgba(0, 0, 0, 1)";
         this.startingColor = "#fff";
         this.scaleFactor = 0;
         this.drawingEnabled = false;
@@ -60,6 +63,8 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype.ngAfterViewInit = function () {
         this._calculateCanvasWidthAndHeight();
         this._drawStartingColor();
+        console.log("CANVAS AFTER VIEW INIT");
+        this.drawShape(new rectangle_shape_1.RectangleShape(new canvas_whiteboard_point_1.CanvasWhiteboardPoint(0, 0), 300, 300, new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions()));
     };
     /**
      * This method reads the options which are helpful since they can be really long when specified in HTML
@@ -240,7 +245,6 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype._redrawBackground = function (callbackFn) {
         if (this.context) {
-            this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             this._drawStartingColor();
             if (this.imageUrl) {
@@ -406,7 +410,7 @@ var CanvasWhiteboardComponent = (function () {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                this._lastUUID = eventPosition.x + eventPosition.y + Math.random().toString(36);
+                this._lastUUID = this._generateUUID();
                 updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.start;
                 break;
             case 'mousemove':
@@ -449,10 +453,7 @@ var CanvasWhiteboardComponent = (function () {
         var yPosition = (event.clientY - canvasBoundingRect.top);
         xPosition /= this.scaleFactor ? this.scaleFactor : scaleWidth;
         yPosition /= this.scaleFactor ? this.scaleFactor : scaleHeight;
-        return {
-            x: xPosition,
-            y: yPosition
-        };
+        return new canvas_whiteboard_point_1.CanvasWhiteboardPoint(xPosition, yPosition);
     };
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
@@ -556,6 +557,11 @@ var CanvasWhiteboardComponent = (function () {
                 y: yToDraw
             };
         }
+    };
+    CanvasWhiteboardComponent.prototype._drawFreeHand = function (update) {
+    };
+    CanvasWhiteboardComponent.prototype.drawShape = function (shape) {
+        shape.draw(this.context);
     };
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
@@ -813,6 +819,15 @@ var CanvasWhiteboardComponent = (function () {
         if (subscription)
             subscription.unsubscribe();
     };
+    CanvasWhiteboardComponent.prototype._generateUUID = function () {
+        return this._random4() + this._random4() + "-" + this._random4() + "-" + this._random4() + "-" +
+            this._random4() + "-" + this._random4() + this._random4() + this._random4();
+    };
+    CanvasWhiteboardComponent.prototype._random4 = function () {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    };
     /**
      * Unsubscribe from the service observables
      */
@@ -825,7 +840,7 @@ var CanvasWhiteboardComponent = (function () {
 CanvasWhiteboardComponent.decorators = [
     { type: core_1.Component, args: [{
                 selector: 'canvas-whiteboard',
-                template: template_1.DEFAULT_TEMPLATE,
+                template: "\n        <div class=\"canvas_wrapper_div\">\n             <span class=\"canvas_whiteboard_buttons\">\n                 <canvas-whiteboard-colorpicker *ngIf=\"colorPickerEnabled\"\n                                                [showColorPicker]=\"showColorPicker\"\n                                                [selectedColor]=\"strokeColor\"\n                                                (onToggleColorPicker)=\"toggleColorPicker($event)\"\n                                                (onColorSelected)=\"changeColor($event)\"></canvas-whiteboard-colorpicker>\n                 \n                 <button *ngIf=\"drawButtonEnabled\" (click)=\"toggleDrawingEnabled()\"\n                         [class.canvas_whiteboard_button-draw_animated]=\"getDrawingEnabled()\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-draw\" type=\"button\">\n                        <i [class]=\"drawButtonClass\" aria-hidden=\"true\"></i> {{drawButtonText}}\n                </button>\n                \n                <button *ngIf=\"clearButtonEnabled\" (click)=\"clearCanvasLocal()\" type=\"button\"\n                        class=\"canvas_whiteboard_button canvas_whiteboard_button-clear\">\n                    <i [class]=\"clearButtonClass\" aria-hidden=\"true\"></i> {{clearButtonText}}\n                </button>\n                \n                 <button *ngIf=\"undoButtonEnabled\" (click)=\"undoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-undo\">\n                     <i [class]=\"undoButtonClass\" aria-hidden=\"true\"></i> {{undoButtonText}} \n                 </button>\n                 \n                 <button *ngIf=\"redoButtonEnabled\" (click)=\"redoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-redo\">\n                     <i [class]=\"redoButtonClass\" aria-hidden=\"true\"></i> {{redoButtonText}}\n                 </button> \n                 <button *ngIf=\"saveDataButtonEnabled\" (click)=\"saveLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-save\">\n                     <i [class]=\"saveDataButtonClass\" aria-hidden=\"true\"></i> {{saveDataButtonText}}\n                 </button>\n             </span>\n            <canvas #canvas\n                    (mousedown)=\"canvasUserEvents($event)\" (mouseup)=\"canvasUserEvents($event)\"\n                    (mousemove)=\"canvasUserEvents($event)\" (mouseout)=\"canvasUserEvents($event)\"\n                    (touchstart)=\"canvasUserEvents($event)\" (touchmove)=\"canvasUserEvents($event)\"\n                    (touchend)=\"canvasUserEvents($event)\" (touchcancel)=\"canvasUserEvents($event)\">\n            </canvas>\n        </div>\n    ",
                 styles: [template_1.DEFAULT_STYLES]
             },] },
 ];

@@ -1,0 +1,29 @@
+export interface CanvasWhiteboardOptions {
+    batchUpdateTimeoutDuration?: number
+    imageUrl?: string
+    aspectRatio?: number
+    strokeColor?: string
+    lineWidth?: number
+    drawButtonEnabled?: boolean
+    drawButtonClass?: string
+    drawButtonText?: string
+    clearButtonEnabled?: boolean
+    clearButtonClass?: string
+    clearButtonText?: string
+    undoButtonEnabled?: boolean
+    undoButtonClass?: string
+    undoButtonText?: string
+    redoButtonEnabled?: boolean
+    redoButtonClass?: string
+    redoButtonText?: string
+    saveDataButtonEnabled?: boolean
+    saveDataButtonClass?: string
+    saveDataButtonText?: string
+    colorPickerEnabled?: boolean
+    shouldDownloadDrawing?: boolean
+    startingColor?: string
+    scaleFactor?: number
+    drawingEnabled?: boolean
+    showColorPicker?: boolean
+    downloadedFileName?: string
+}

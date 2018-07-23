@@ -1,35 +1,8 @@
 import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
-export interface CanvasWhiteboardOptions {
-    batchUpdateTimeoutDuration?: number;
-    imageUrl?: string;
-    aspectRatio?: number;
-    strokeColor?: string;
-    lineWidth?: number;
-    drawButtonEnabled?: boolean;
-    drawButtonClass?: string;
-    drawButtonText?: string;
-    clearButtonEnabled?: boolean;
-    clearButtonClass?: string;
-    clearButtonText?: string;
-    undoButtonEnabled?: boolean;
-    undoButtonClass?: string;
-    undoButtonText?: string;
-    redoButtonEnabled?: boolean;
-    redoButtonClass?: string;
-    redoButtonText?: string;
-    saveDataButtonEnabled?: boolean;
-    saveDataButtonClass?: string;
-    saveDataButtonText?: string;
-    colorPickerEnabled?: boolean;
-    shouldDownloadDrawing?: boolean;
-    startingColor?: string;
-    scaleFactor?: number;
-    drawingEnabled?: boolean;
-    showColorPicker?: boolean;
-    downloadedFileName?: string;
-}
+import { CanvasWhiteboardOptions } from "./canvas-whiteboard-options";
+import { CanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape";
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private _canvasWhiteboardService;
     options: CanvasWhiteboardOptions;
@@ -291,6 +264,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param {boolean} mappedCoordinates? The offsetX that needs to be mapped
      */
     private _draw(update, mappedCoordinates?);
+    private _drawFreeHand(update);
+    drawShape(shape: CanvasWhiteboardShape): void;
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
      * multiple updates are sent at the same time). If this method is called, after 100 ms all updates
@@ -394,6 +369,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @private
      */
     private _unsubscribe(subscription);
+    private _generateUUID();
+    private _random4();
     /**
      * Unsubscribe from the service observables
      */
