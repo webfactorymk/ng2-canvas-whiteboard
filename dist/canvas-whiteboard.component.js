@@ -5,8 +5,6 @@ var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model
 var template_1 = require("./template");
 var canvas_whiteboard_service_1 = require("./canvas-whiteboard.service");
 var canvas_whiteboard_point_1 = require("./canvas-whiteboard-point");
-var rectangle_shape_1 = require("./shapes/rectangle-shape");
-var canvas_whiteboard_shape_options_1 = require("./shapes/canvas-whiteboard-shape-options");
 var CanvasWhiteboardComponent = (function () {
     function CanvasWhiteboardComponent(_canvasWhiteboardService) {
         this._canvasWhiteboardService = _canvasWhiteboardService;
@@ -63,8 +61,6 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype.ngAfterViewInit = function () {
         this._calculateCanvasWidthAndHeight();
         this._drawStartingColor();
-        console.log("CANVAS AFTER VIEW INIT");
-        this.drawShape(new rectangle_shape_1.RectangleShape(new canvas_whiteboard_point_1.CanvasWhiteboardPoint(0, 0), 300, 300, new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions()));
     };
     /**
      * This method reads the options which are helpful since they can be really long when specified in HTML
@@ -411,21 +407,21 @@ var CanvasWhiteboardComponent = (function () {
             case 'touchstart':
                 this._clientDragging = true;
                 this._lastUUID = this._generateUUID();
-                updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.start;
+                updateType = canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.START;
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (!this._clientDragging) {
                     return;
                 }
-                updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.drag;
+                updateType = canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.DRAG;
                 break;
             case 'touchcancel':
             case 'mouseup':
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.stop;
+                updateType = canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.STOP;
                 break;
         }
         update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
@@ -529,7 +525,7 @@ var CanvasWhiteboardComponent = (function () {
         this._drawHistory.push(update);
         var xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
         var yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
-        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
+        if (update.getType() === canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.DRAG) {
             var lastPosition = this._lastPositionForUUID[update.getUUID()];
             this.context.save();
             this.context.beginPath();
@@ -547,11 +543,11 @@ var CanvasWhiteboardComponent = (function () {
             this.context.stroke();
             this.context.restore();
         }
-        else if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.stop && update.getVisible()) {
+        else if (update.getType() === canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.STOP && update.getVisible()) {
             this._undoStack.push(update.getUUID());
             delete this._lastPositionForUUID[update.getUUID()];
         }
-        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.start || update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
+        if (update.getType() === canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.START || update.getType() === canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.DRAG) {
             this._lastPositionForUUID[update.getUUID()] = {
                 x: xToDraw,
                 y: yToDraw

@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UPDATE_TYPE = {
-    "start": 0,
-    "drag": 1,
-    "stop": 2
-};
+var CanvasWhiteboardUpdateType;
+(function (CanvasWhiteboardUpdateType) {
+    CanvasWhiteboardUpdateType[CanvasWhiteboardUpdateType["START"] = 0] = "START";
+    CanvasWhiteboardUpdateType[CanvasWhiteboardUpdateType["DRAG"] = 1] = "DRAG";
+    CanvasWhiteboardUpdateType[CanvasWhiteboardUpdateType["STOP"] = 2] = "STOP";
+    CanvasWhiteboardUpdateType[CanvasWhiteboardUpdateType["SHAPE"] = 3] = "SHAPE";
+})(CanvasWhiteboardUpdateType = exports.CanvasWhiteboardUpdateType || (exports.CanvasWhiteboardUpdateType = {}));
 var CanvasWhiteboardUpdate = (function () {
     function CanvasWhiteboardUpdate(x, y, type, strokeColor, uuid, visible) {
         this._x = x;

@@ -1,18 +1,19 @@
-export const UPDATE_TYPE = {
-    "start": 0,
-    "drag": 1,
-    "stop": 2
-};
+export enum CanvasWhiteboardUpdateType {
+    START = 0,
+    DRAG = 1,
+    STOP = 2,
+    SHAPE = 3
+}
 
 export class CanvasWhiteboardUpdate {
     private _x: number;
     private _y: number;
-    private _type: number;
+    private readonly _type: CanvasWhiteboardUpdateType;
     private _strokeColor: string;
     private _uuid: string;
     private _visible: boolean;
 
-    constructor(x: number, y: number, type: number, strokeColor?: string, uuid?: string, visible?: boolean) {
+    constructor(x: number, y: number, type: CanvasWhiteboardUpdateType, strokeColor?: string, uuid?: string, visible?: boolean) {
         this._x = x;
         this._y = y;
         this._type = type;
@@ -33,7 +34,7 @@ export class CanvasWhiteboardUpdate {
         this._y = newY;
     }
 
-    getType() {
+    getType(): CanvasWhiteboardUpdateType {
         return this._type;
     }
 
@@ -79,10 +80,10 @@ export class CanvasWhiteboardUpdate {
     stringify(onlyShowCoordinatesAndType: boolean = false): string {
         let serializedUpdate = "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type;
 
-        if(!onlyShowCoordinatesAndType) {
+        if (!onlyShowCoordinatesAndType) {
             serializedUpdate += this._strokeColor ? (", \"stroke_color\": " + JSON.stringify(this._strokeColor)) : "";
             serializedUpdate += this._uuid ? (", \"uuid\": " + JSON.stringify(this._uuid)) : "";
-            serializedUpdate += this._visible != null ? (", \"visible\": " + this._visible ) : "";
+            serializedUpdate += this._visible != null ? (", \"visible\": " + this._visible) : "";
         }
         serializedUpdate += " }";
 

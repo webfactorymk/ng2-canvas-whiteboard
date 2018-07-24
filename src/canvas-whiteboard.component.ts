@@ -8,7 +8,7 @@ import {
     OnInit,
     OnChanges, OnDestroy, AfterViewInit
 } from '@angular/core';
-import {CanvasWhiteboardUpdate, UPDATE_TYPE} from "./canvas-whiteboard-update.model";
+import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "./canvas-whiteboard-update.model";
 import {DEFAULT_STYLES} from "./template";
 import {CanvasWhiteboardService} from "./canvas-whiteboard.service";
 import {CanvasWhiteboardOptions} from "./canvas-whiteboard-options";
@@ -148,9 +148,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     ngAfterViewInit(): void {
         this._calculateCanvasWidthAndHeight();
         this._drawStartingColor();
-
-        console.log("CANVAS AFTER VIEW INIT");
-        this.drawShape(new RectangleShape(new CanvasWhiteboardPoint(0, 0), 300, 300, new CanvasWhiteboardShapeOptions()))
     }
 
     /**
@@ -501,21 +498,21 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             case 'touchstart':
                 this._clientDragging = true;
                 this._lastUUID = this._generateUUID();
-                updateType = UPDATE_TYPE.start;
+                updateType = CanvasWhiteboardUpdateType.START;
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (!this._clientDragging) {
                     return;
                 }
-                updateType = UPDATE_TYPE.drag;
+                updateType = CanvasWhiteboardUpdateType.DRAG;
                 break;
             case 'touchcancel':
             case 'mouseup':
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                updateType = UPDATE_TYPE.stop;
+                updateType = CanvasWhiteboardUpdateType.STOP;
                 break;
         }
 
@@ -635,7 +632,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         let xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
         let yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
 
-        if (update.getType() === UPDATE_TYPE.drag) {
+        if (update.getType() === CanvasWhiteboardUpdateType.DRAG) {
             let lastPosition = this._lastPositionForUUID[update.getUUID()];
 
             this.context.save();
@@ -655,12 +652,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             this.context.closePath();
             this.context.stroke();
             this.context.restore();
-        } else if (update.getType() === UPDATE_TYPE.stop && update.getVisible()) {
+        } else if (update.getType() === CanvasWhiteboardUpdateType.STOP && update.getVisible()) {
             this._undoStack.push(update.getUUID());
             delete this._lastPositionForUUID[update.getUUID()];
         }
 
-        if (update.getType() === UPDATE_TYPE.start || update.getType() === UPDATE_TYPE.drag) {
+        if (update.getType() === CanvasWhiteboardUpdateType.START || update.getType() === CanvasWhiteboardUpdateType.DRAG) {
             this._lastPositionForUUID[update.getUUID()] = {
                 x: xToDraw,
                 y: yToDraw
@@ -939,7 +936,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             .toString(16)
             .substring(1);
     }
-
 
     /**
      * Unsubscribe from the service observables

@@ -5,7 +5,7 @@ export abstract class CanvasWhiteboardShape {
     protected startingPoint: CanvasWhiteboardPoint;
     protected options: CanvasWhiteboardShapeOptions;
 
-    protected constructor(startingPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions) {
+    constructor(startingPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions) {
         this.startingPoint = startingPoint || new CanvasWhiteboardPoint(0, 0);
         this.options = options || new CanvasWhiteboardShapeOptions();
     }
