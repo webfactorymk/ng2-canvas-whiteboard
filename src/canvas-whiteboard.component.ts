@@ -139,7 +139,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[3];
 
         setInterval(() => {
-            // this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[~~(_canvasWhiteboardShapeService.getCurrentRegisteredShapes().length * Math.random())];
+            this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[~~(_canvasWhiteboardShapeService.getCurrentRegisteredShapes().length * Math.random())];
         }, 5000);
     }
 
@@ -645,10 +645,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @param {CanvasWhiteboardUpdate} update The update object.
      */
     private _draw(update: CanvasWhiteboardUpdate): void {
-        if (update.type === CanvasWhiteboardUpdateType.START) {
-            this._setCurrentShapeToUpdate(update);
-        }
-
         this._updateHistory.push(update);
 
         //map the canvas coordinates to our canvas size since they are scaled.
@@ -660,9 +656,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             });
 
         if (update.type === CanvasWhiteboardUpdateType.START) {
+            let updateShapeConstructor = this._canvasWhiteboardShapeService.getShapeConstructorFromShapeName(update.selectedShape);
             this._shapesMap.set(
                 update.UUID,
-                new update.selectedShape(
+                new updateShapeConstructor(
                     new CanvasWhiteboardPoint(update.x, update.y),
                     Object.assign(new CanvasWhiteboardShapeOptions(), update.selectedShapeOptions)
                 )
@@ -692,7 +689,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     private _setCurrentShapeToUpdate(update: CanvasWhiteboardUpdate) {
         if (!update.selectedShape) {
-            update.selectedShape = this.selectedShapeBlueprint;
+            update.selectedShape = this.selectedShapeBlueprint.name;
         }
         if (!update.selectedShapeOptions) {
             update.selectedShapeOptions = Object.assign(new CanvasWhiteboardShapeOptions(),

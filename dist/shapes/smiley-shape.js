@@ -21,7 +21,6 @@ var SmileyShape = (function (_super) {
         return _this;
     }
     SmileyShape.prototype.draw = function (context) {
-        console.log(this);
         context.save();
         context.beginPath();
         context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);

@@ -9,6 +9,7 @@ export declare class CanvasWhiteboardShapeService {
     private _registeredShapesSubject;
     registeredShapes$: Observable<INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]>;
     constructor();
+    getShapeConstructorFromShapeName(shapeName: string): INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
     getCurrentRegisteredShapes(): INewCanvasWhiteboardShape<CanvasWhiteboardShape>[];
     isRegisteredShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): boolean;
     registerShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): void;

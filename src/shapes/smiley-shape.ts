@@ -15,7 +15,6 @@ export class SmileyShape extends CanvasWhiteboardShape {
     }
 
     draw(context: CanvasRenderingContext2D) {
-        console.log(this);
         context.save();
         context.beginPath();
         context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);

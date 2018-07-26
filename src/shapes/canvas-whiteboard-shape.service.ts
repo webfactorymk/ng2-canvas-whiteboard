@@ -24,6 +24,10 @@ export class CanvasWhiteboardShapeService {
         this.registeredShapes$ = this._registeredShapesSubject.asObservable();
     }
 
+    getShapeConstructorFromShapeName(shapeName: string): INewCanvasWhiteboardShape<CanvasWhiteboardShape> {
+        return this.getCurrentRegisteredShapes().find((shape) => shape.name == shapeName);
+    }
+
     getCurrentRegisteredShapes(): INewCanvasWhiteboardShape<CanvasWhiteboardShape>[] {
         return this._registeredShapesSubject.getValue();
     }

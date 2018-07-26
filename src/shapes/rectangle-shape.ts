@@ -32,7 +32,6 @@ export class RectangleShape extends CanvasWhiteboardShape {
     }
 
     onUpdateReceived(update: CanvasWhiteboardUpdate) {
-        console.log(update, this.positionPoint);
         this.width = update.x - this.positionPoint.x;
         this.height = update.y - this.positionPoint.y;
     }

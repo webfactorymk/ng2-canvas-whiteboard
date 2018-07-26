@@ -1,5 +1,3 @@
-import {CanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape";
-import {INewCanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
 
 export enum CanvasWhiteboardUpdateType {
@@ -14,10 +12,10 @@ export class CanvasWhiteboardUpdate {
     type: CanvasWhiteboardUpdateType;
     UUID: string;
 
-    selectedShape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    selectedShape: string;
     selectedShapeOptions: CanvasWhiteboardShapeOptions;
 
-    constructor(x?: number, y?: number, type?: CanvasWhiteboardUpdateType, UUID?: string, selectedShape?: INewCanvasWhiteboardShape<CanvasWhiteboardShape>, selectedShapeOptions?: CanvasWhiteboardShapeOptions) {
+    constructor(x?: number, y?: number, type?: CanvasWhiteboardUpdateType, UUID?: string, selectedShape?: string, selectedShapeOptions?: CanvasWhiteboardShapeOptions) {
         this.x = x;
         this.y = y;
         this.type = type;
@@ -36,12 +34,9 @@ export class CanvasWhiteboardUpdate {
             x: this.x.toFixed(3),
             y: this.y.toFixed(3),
             type: this.type,
-            uuid: this.UUID
+            uuid: this.UUID,
+            selectedShape: this.selectedShape
         };
-
-        if (this.selectedShape) {
-            objectToSerialize["selectedShape"] = this.selectedShape.name;
-        }
 
         if (this.selectedShapeOptions) {
             objectToSerialize["selectedShapeOptions"] = this.selectedShapeOptions;

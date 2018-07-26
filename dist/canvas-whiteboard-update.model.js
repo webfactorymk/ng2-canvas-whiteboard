@@ -24,11 +24,9 @@ var CanvasWhiteboardUpdate = (function () {
             x: this.x.toFixed(3),
             y: this.y.toFixed(3),
             type: this.type,
-            uuid: this.UUID
+            uuid: this.UUID,
+            selectedShape: this.selectedShape
         };
-        if (this.selectedShape) {
-            objectToSerialize["selectedShape"] = this.selectedShape.name;
-        }
         if (this.selectedShapeOptions) {
             objectToSerialize["selectedShapeOptions"] = this.selectedShapeOptions;
         }
