@@ -15,7 +15,7 @@ import {CanvasWhiteboardOptions} from "./canvas-whiteboard-options";
 import {Subscription} from "rxjs/Subscription";
 import {CanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape";
 import {CanvasWhiteboardPoint} from "./canvas-whiteboard-point";
-import {CanvasWhiteboardShapeService, INewableShape} from "./shapes/canvas-whiteboard-shape.service";
+import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape.service";
 import {Observable} from "rxjs";
 import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
 
@@ -132,11 +132,11 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     private _canvasWhiteboardServiceSubscriptions: Subscription[] = [];
     private _resizeSubscription: Subscription;
 
-    selectedShapeBlueprint: INewableShape<CanvasWhiteboardShape>;
+    selectedShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
 
     constructor(private ngZone: NgZone, private _canvasWhiteboardService: CanvasWhiteboardService, private _canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
         this._shapesMap = new Map<string, CanvasWhiteboardShape>();
-        this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[1];
+        this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[3];
 
         setInterval(() => {
             // this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[~~(_canvasWhiteboardShapeService.getCurrentRegisteredShapes().length * Math.random())];

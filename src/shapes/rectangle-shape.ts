@@ -9,8 +9,8 @@ export class RectangleShape extends CanvasWhiteboardShape {
 
     constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, width?: number, height?: number) {
         super(positionPoint, options);
-        this.width = width;
-        this.height = height;
+        this.width = width || 0;
+        this.height = height || 0;
     }
 
     draw(context: CanvasRenderingContext2D) {

@@ -3,7 +3,7 @@ import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
 import { CanvasWhiteboardOptions } from "./canvas-whiteboard-options";
 import { CanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape";
-import { CanvasWhiteboardShapeService, INewableShape } from "./shapes/canvas-whiteboard-shape.service";
+import { CanvasWhiteboardShapeService, INewCanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape.service";
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private ngZone;
     private _canvasWhiteboardService;
@@ -60,7 +60,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _updateTimeout;
     private _canvasWhiteboardServiceSubscriptions;
     private _resizeSubscription;
-    selectedShapeBlueprint: INewableShape<CanvasWhiteboardShape>;
+    selectedShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
     constructor(ngZone: NgZone, _canvasWhiteboardService: CanvasWhiteboardService, _canvasWhiteboardShapeService: CanvasWhiteboardShapeService);
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize

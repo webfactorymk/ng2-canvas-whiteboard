@@ -8,7 +8,7 @@ export class CircleShape extends CanvasWhiteboardShape {
 
     constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, radius?: number) {
         super(positionPoint, options);
-        this.radius = radius;
+        this.radius = radius || 0;
     }
 
     draw(context: CanvasRenderingContext2D) {

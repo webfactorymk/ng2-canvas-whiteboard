@@ -15,8 +15,8 @@ var RectangleShape = (function (_super) {
     __extends(RectangleShape, _super);
     function RectangleShape(positionPoint, options, width, height) {
         var _this = _super.call(this, positionPoint, options) || this;
-        _this.width = width;
-        _this.height = height;
+        _this.width = width || 0;
+        _this.height = height || 0;
         return _this;
     }
     RectangleShape.prototype.draw = function (context) {

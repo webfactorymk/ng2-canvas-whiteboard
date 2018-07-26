@@ -11,7 +11,7 @@ export class SmileyShape extends CanvasWhiteboardShape {
         options.shouldFillShape = true;
         options.fillStyle = "yellow";
 
-        this.radius = radius;
+        this.radius = radius || 0;
     }
 
     draw(context: CanvasRenderingContext2D) {

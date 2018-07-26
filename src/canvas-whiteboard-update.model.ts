@@ -1,5 +1,5 @@
 import {CanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape";
-import {INewableShape} from "./shapes/canvas-whiteboard-shape.service";
+import {INewCanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
 
 export enum CanvasWhiteboardUpdateType {
@@ -14,10 +14,10 @@ export class CanvasWhiteboardUpdate {
     type: CanvasWhiteboardUpdateType;
     UUID: string;
 
-    selectedShape: INewableShape<CanvasWhiteboardShape>;
+    selectedShape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
     selectedShapeOptions: CanvasWhiteboardShapeOptions;
 
-    constructor(x?: number, y?: number, type?: CanvasWhiteboardUpdateType, UUID?: string, selectedShape?: INewableShape<CanvasWhiteboardShape>, selectedShapeOptions?: CanvasWhiteboardShapeOptions) {
+    constructor(x?: number, y?: number, type?: CanvasWhiteboardUpdateType, UUID?: string, selectedShape?: INewCanvasWhiteboardShape<CanvasWhiteboardShape>, selectedShapeOptions?: CanvasWhiteboardShapeOptions) {
         this.x = x;
         this.y = y;
         this.type = type;

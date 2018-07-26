@@ -15,7 +15,7 @@ var CircleShape = (function (_super) {
     __extends(CircleShape, _super);
     function CircleShape(positionPoint, options, radius) {
         var _this = _super.call(this, positionPoint, options) || this;
-        _this.radius = radius;
+        _this.radius = radius || 0;
         return _this;
     }
     CircleShape.prototype.draw = function (context) {

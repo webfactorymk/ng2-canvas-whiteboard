@@ -17,7 +17,7 @@ var SmileyShape = (function (_super) {
         var _this = _super.call(this, positionPoint, options) || this;
         options.shouldFillShape = true;
         options.fillStyle = "yellow";
-        _this.radius = radius;
+        _this.radius = radius || 0;
         return _this;
     }
     SmileyShape.prototype.draw = function (context) {

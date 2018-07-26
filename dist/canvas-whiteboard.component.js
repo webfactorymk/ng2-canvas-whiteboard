@@ -60,7 +60,7 @@ var CanvasWhiteboardComponent = (function () {
         this._updatesNotDrawn = [];
         this._canvasWhiteboardServiceSubscriptions = [];
         this._shapesMap = new Map();
-        this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[1];
+        this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[3];
         setInterval(function () {
             // this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[~~(_canvasWhiteboardShapeService.getCurrentRegisteredShapes().length * Math.random())];
         }, 5000);

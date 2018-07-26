@@ -8,36 +8,54 @@ import {FreeHandShape} from "./free-hand-shape";
 import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
 import {CanvasWhiteboardPoint} from "../canvas-whiteboard-point";
 import {SmileyShape} from "./smiley-shape";
+import {StarShape} from "./star-shape";
 
-export interface INewableShape<T extends CanvasWhiteboardShape> {
+export interface INewCanvasWhiteboardShape<T extends CanvasWhiteboardShape> {
     new(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, ...args: any[]): T;
 }
 
 @Injectable()
 export class CanvasWhiteboardShapeService {
-    private _registeredShapesSubject: BehaviorSubject<INewableShape<CanvasWhiteboardShape>[]>;
-    public registeredShapes$: Observable<INewableShape<CanvasWhiteboardShape>[]>;
+    private _registeredShapesSubject: BehaviorSubject<INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]>;
+    public registeredShapes$: Observable<INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]>;
 
     constructor() {
-        this._registeredShapesSubject = new BehaviorSubject([FreeHandShape, RectangleShape, CircleShape, SmileyShape]);
+        this._registeredShapesSubject = new BehaviorSubject([FreeHandShape, RectangleShape, CircleShape, StarShape, SmileyShape]);
         this.registeredShapes$ = this._registeredShapesSubject.asObservable();
     }
 
-    getCurrentRegisteredShapes(): INewableShape<CanvasWhiteboardShape>[] {
+    getCurrentRegisteredShapes(): INewCanvasWhiteboardShape<CanvasWhiteboardShape>[] {
         return this._registeredShapesSubject.getValue();
     }
 
-    isRegisteredShape(shape: INewableShape<CanvasWhiteboardShape>) {
+    isRegisteredShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>) {
         return this.getCurrentRegisteredShapes().indexOf(shape) != -1;
     }
 
-    registerShape(shape: INewableShape<CanvasWhiteboardShape>) {
+    registerShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>) {
+        if (this.isRegisteredShape(shape)) {
+            console.warn(`You tried to register a shape:${shape}, but is has already been registered.`);
+            return;
+        }
+
         let registeredShapes = this.getCurrentRegisteredShapes();
         registeredShapes.push(shape);
         this._registeredShapesSubject.next(registeredShapes);
     }
 
-    registerShapes(shapes: INewableShape<CanvasWhiteboardShape>[]) {
-        this._registeredShapesSubject.next(this.getCurrentRegisteredShapes().concat(shapes));
+    registerShapes(shapes: INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]) {
+        this._registeredShapesSubject.next(
+            this.getCurrentRegisteredShapes()
+                .concat(
+                    shapes.filter((shape) => {
+                        if (this.isRegisteredShape(shape)) {
+                            console.warn(`You tried to register a shape:${shape}, but is has already been registered.`);
+                            return false;
+                        }
+
+                        return true;
+                    })
+                )
+        );
     }
 }
