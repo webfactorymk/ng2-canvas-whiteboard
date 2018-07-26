@@ -4,9 +4,13 @@ import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {Observable} from "rxjs/Observable";
 import {CircleShape} from "./circle-shape";
 import {RectangleShape} from "./rectangle-shape";
+import {FreeHandShape} from "./free-hand-shape";
+import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
+import {CanvasWhiteboardPoint} from "../canvas-whiteboard-point";
+import {SmileyShape} from "./smiley-shape";
 
 export interface INewableShape<T extends CanvasWhiteboardShape> {
-    new(...args: any[]): T;
+    new(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, ...args: any[]): T;
 }
 
 @Injectable()
@@ -15,7 +19,7 @@ export class CanvasWhiteboardShapeService {
     public registeredShapes$: Observable<INewableShape<CanvasWhiteboardShape>[]>;
 
     constructor() {
-        this._registeredShapesSubject = new BehaviorSubject([RectangleShape, CircleShape]);
+        this._registeredShapesSubject = new BehaviorSubject([FreeHandShape, RectangleShape, CircleShape, SmileyShape]);
         this.registeredShapes$ = this._registeredShapesSubject.asObservable();
     }
 

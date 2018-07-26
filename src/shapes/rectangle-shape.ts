@@ -1,40 +1,42 @@
 import {CanvasWhiteboardShape} from "./canvas-whiteboard-shape";
 import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
 import {CanvasWhiteboardPoint} from "../canvas-whiteboard-point";
+import {CanvasWhiteboardUpdate} from "../canvas-whiteboard-update.model";
 
 export class RectangleShape extends CanvasWhiteboardShape {
-    protected width: number;
-    protected height: number;
+    width: number;
+    height: number;
 
-    constructor(startingPoint: CanvasWhiteboardPoint, width: number, height: number, options: CanvasWhiteboardShapeOptions) {
-        super(startingPoint, options);
+    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, width?: number, height?: number) {
+        super(positionPoint, options);
         this.width = width;
         this.height = height;
     }
 
     draw(context: CanvasRenderingContext2D) {
-        console.log("ABOUT TO DRAW RECTANGLE");
+        if (!this.width || !this.height) return;
+        context.save();
         context.beginPath();
-        context.rect(this.startingPoint.x, this.startingPoint.y, this.width, this.height);
+        context.rect(this.positionPoint.x, this.positionPoint.y, this.width, this.height);
 
         context.strokeStyle = this.options.strokeStyle;
         context.stroke();
 
-        if (this.options.fillShape) {
+        if (this.options.shouldFillShape) {
             context.fillStyle = this.options.fillStyle;
             context.fill();
         }
 
         context.closePath();
+        context.restore();
     }
 
-    deserialize(json: any): CanvasWhiteboardShape {
-        let point = new CanvasWhiteboardPoint(0, 0);
-        let width = 0;
-        let height = 0;
-        return new RectangleShape(point, width, height, new CanvasWhiteboardShapeOptions());
+    onUpdateReceived(update: CanvasWhiteboardUpdate) {
+        console.log(update, this.positionPoint);
+        this.width = update.x - this.positionPoint.x;
+        this.height = update.y - this.positionPoint.y;
     }
 
-    serialize(item: any): any {
+    onStopReceived(update: CanvasWhiteboardUpdate) {
     }
 }

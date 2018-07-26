@@ -1,10 +1,11 @@
 import { CanvasWhiteboardShape } from "./canvas-whiteboard-shape";
 import { CanvasWhiteboardShapeOptions } from "./canvas-whiteboard-shape-options";
 import { CanvasWhiteboardPoint } from "../canvas-whiteboard-point";
+import { CanvasWhiteboardUpdate } from "../canvas-whiteboard-update.model";
 export declare class CircleShape extends CanvasWhiteboardShape {
-    protected radius: number;
-    constructor(startingPoint: CanvasWhiteboardPoint, radius: number, options: CanvasWhiteboardShapeOptions);
+    radius: number;
+    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, radius?: number);
     draw(context: CanvasRenderingContext2D): void;
-    deserialize(json: any): CanvasWhiteboardShape;
-    serialize(item: any): any;
+    onUpdateReceived(update: CanvasWhiteboardUpdate): void;
+    onStopReceived(update: CanvasWhiteboardUpdate): void;
 }

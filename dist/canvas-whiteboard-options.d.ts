@@ -26,4 +26,7 @@ export interface CanvasWhiteboardOptions {
     drawingEnabled?: boolean;
     showColorPicker?: boolean;
     downloadedFileName?: string;
+    lineJoin?: string;
+    lineCap?: string;
+    shadowBlur?: number;
 }

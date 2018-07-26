@@ -1,10 +1,13 @@
-import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit } from '@angular/core';
+import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
 import { CanvasWhiteboardOptions } from "./canvas-whiteboard-options";
 import { CanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape";
+import { CanvasWhiteboardShapeService, INewableShape } from "./shapes/canvas-whiteboard-shape.service";
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+    private ngZone;
     private _canvasWhiteboardService;
+    private _canvasWhiteboardShapeService;
     options: CanvasWhiteboardOptions;
     batchUpdateTimeoutDuration: number;
     imageUrl: string;
@@ -33,6 +36,9 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     drawingEnabled: boolean;
     showColorPicker: boolean;
     downloadedFileName: string;
+    lineJoin: string;
+    lineCap: string;
+    shadowBlur: number;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -44,16 +50,18 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _imageElement;
     private _canDraw;
     private _clientDragging;
+    private _updateHistory;
     private _lastUUID;
-    private _lastPositionForUUID;
+    private _shapesMap;
     private _undoStack;
     private _redoStack;
-    private _drawHistory;
     private _batchUpdates;
     private _updatesNotDrawn;
     private _updateTimeout;
     private _canvasWhiteboardServiceSubscriptions;
-    constructor(_canvasWhiteboardService: CanvasWhiteboardService);
+    private _resizeSubscription;
+    selectedShapeBlueprint: INewableShape<CanvasWhiteboardShape>;
+    constructor(ngZone: NgZone, _canvasWhiteboardService: CanvasWhiteboardService, _canvasWhiteboardShapeService: CanvasWhiteboardShapeService);
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
@@ -135,17 +143,9 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     getDrawingEnabled(): boolean;
     /**
-     * @deprecated Use toggleDrawingEnabled(): void
-     */
-    toggleShouldDraw(): void;
-    /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
     toggleDrawingEnabled(): void;
-    /**
-     * @deprecated Use setDrawingEnabled(drawingEnabled: boolean): void
-     */
-    setShouldDraw(drawingEnabled: boolean): void;
     /**
      * Set if drawing is enabled from the client using the canvas
      * @param {boolean} drawingEnabled
@@ -229,10 +229,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * was drawn on this update.
      *
      * @param {CanvasWhiteboardUpdate} update The CanvasWhiteboardUpdate object.
-     * @param {number} eventX The offsetX that needs to be mapped
-     * @param {number} eventY The offsetY that needs to be mapped
      */
-    private _prepareToSendUpdate(update, eventX, eventY);
+    private _prepareToSendUpdate(update);
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
@@ -253,7 +251,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     private _redrawHistory();
     /**
-     * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
+     * Draws a CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
      * are first reverse mapped so that they can be drawn in the proper place. The update
      * is afterwards added to the undoStack so that it can be
      *
@@ -261,11 +259,10 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * This function saves the last X and Y coordinates that were drawn.
      *
      * @param {CanvasWhiteboardUpdate} update The update object.
-     * @param {boolean} mappedCoordinates? The offsetX that needs to be mapped
      */
-    private _draw(update, mappedCoordinates?);
-    private _drawFreeHand(update);
-    drawShape(shape: CanvasWhiteboardShape): void;
+    private _draw(update);
+    drawAllShapes(): void;
+    private _setCurrentShapeToUpdate(update);
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
      * multiple updates are sent at the same time). If this method is called, after 100 ms all updates

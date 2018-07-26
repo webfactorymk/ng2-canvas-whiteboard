@@ -11,32 +11,28 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_whiteboard_shape_1 = require("./canvas-whiteboard-shape");
-var canvas_whiteboard_shape_options_1 = require("./canvas-whiteboard-shape-options");
-var canvas_whiteboard_point_1 = require("../canvas-whiteboard-point");
 var CircleShape = (function (_super) {
     __extends(CircleShape, _super);
-    function CircleShape(startingPoint, radius, options) {
-        var _this = _super.call(this, startingPoint, options) || this;
+    function CircleShape(positionPoint, options, radius) {
+        var _this = _super.call(this, positionPoint, options) || this;
         _this.radius = radius;
         return _this;
     }
     CircleShape.prototype.draw = function (context) {
         context.beginPath();
-        context.arc(this.startingPoint.x, this.startingPoint.y, this.radius, 0, Math.PI * 2, false);
+        context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);
         context.strokeStyle = this.options.strokeStyle;
         context.stroke();
-        if (this.options.fillShape) {
+        if (this.options.shouldFillShape) {
             context.fillStyle = this.options.fillStyle;
             context.fill();
         }
         context.closePath();
     };
-    CircleShape.prototype.deserialize = function (json) {
-        var point = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(0, 0);
-        var radius = 0;
-        return new CircleShape(point, radius, new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions());
+    CircleShape.prototype.onUpdateReceived = function (update) {
+        this.radius = Math.sqrt(Math.pow(update.x - this.positionPoint.x, 2) + Math.pow(update.y - this.positionPoint.y, 2));
     };
-    CircleShape.prototype.serialize = function (item) {
+    CircleShape.prototype.onStopReceived = function (update) {
     };
     return CircleShape;
 }(canvas_whiteboard_shape_1.CanvasWhiteboardShape));
