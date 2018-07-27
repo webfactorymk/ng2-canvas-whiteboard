@@ -25,6 +25,12 @@ import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-opt
         `
         <div class="canvas_wrapper_div">
              <span class="canvas_whiteboard_buttons">
+                 <canvas-whiteboard-shape-selector *ngIf="shapeSelectorEnabled"
+                                                   [showShapeSelector]="showShapeSelector"
+                                                   [selectedShape]="selectedShapeBlueprint"
+                                                   (onToggleShapeSelector)="toggleShapeSelector($event)"
+                                                   (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
+                                                   
                  <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
                                                 [showColorPicker]="showColorPicker"
                                                 [selectedColor]="strokeColor"
@@ -100,6 +106,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() lineJoin: string = "round";
     @Input() lineCap: string = "round";
     @Input() shadowBlur: number = 10;
+    @Input() shapeSelectorEnabled: boolean = true;
+    @Input() showShapeSelector: boolean = false;
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -137,10 +145,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     constructor(private ngZone: NgZone, private _canvasWhiteboardService: CanvasWhiteboardService, private _canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
         this._shapesMap = new Map<string, CanvasWhiteboardShape>();
         this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[3];
-
-        setInterval(() => {
-            this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[~~(_canvasWhiteboardShapeService.getCurrentRegisteredShapes().length * Math.random())];
-        }, 5000);
     }
 
     /**
@@ -203,6 +207,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.lineJoin)) this.lineJoin = options.lineJoin;
             if (!this._isNullOrUndefined(options.lineCap)) this.lineCap = options.lineCap;
             if (!this._isNullOrUndefined(options.shadowBlur)) this.shadowBlur = options.shadowBlur;
+            if (!this._isNullOrUndefined(options.shapeSelectorEnabled)) this.shapeSelectorEnabled = options.shapeSelectorEnabled;
+            if (!this._isNullOrUndefined(options.showShapeSelector)) this.showShapeSelector = options.showShapeSelector;
         }
     }
 
@@ -217,7 +223,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     private _initCanvasEventListeners(): void {
         this.ngZone.runOutsideAngular(() => {
             this._resizeSubscription = Observable.fromEvent(window, 'resize')
-                .debounceTime(450).distinctUntilChanged().subscribe(() => {
+                .debounceTime(200).distinctUntilChanged().subscribe(() => {
                     this.ngZone.run(() => {
                         this._redrawCanvasOnResize();
                     });
@@ -946,6 +952,19 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     toggleColorPicker(value: boolean) {
         this.showColorPicker = !this._isNullOrUndefined(value) ? value : !this.showColorPicker;
+    }
+
+    /**
+     * Toggles the shape selector window, delegating the showShapeSelector Input to the CanvasWhiteboardShapeSelectorComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleShapeSelector(value: boolean) {
+        this.showShapeSelector = !this._isNullOrUndefined(value) ? value : !this.showShapeSelector;
+    }
+
+    selectShape(newShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>) {
+        this.selectedShapeBlueprint = newShapeBlueprint;
     }
 
     /**

@@ -39,6 +39,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     lineJoin: string;
     lineCap: string;
     shadowBlur: number;
+    shapeSelectorEnabled: boolean;
+    showShapeSelector: boolean;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -360,6 +362,13 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param {boolean} value
      */
     toggleColorPicker(value: boolean): void;
+    /**
+     * Toggles the shape selector window, delegating the showShapeSelector Input to the CanvasWhiteboardShapeSelectorComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleShapeSelector(value: boolean): void;
+    selectShape(newShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): void;
     /**
      * Unsubscribe from a given subscription if it is active
      * @param {Subscription} subscription

@@ -9,6 +9,7 @@ import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
 import {CanvasWhiteboardPoint} from "../canvas-whiteboard-point";
 import {SmileyShape} from "./smiley-shape";
 import {StarShape} from "./star-shape";
+import {LineShape} from "./line-shape";
 
 export interface INewCanvasWhiteboardShape<T extends CanvasWhiteboardShape> {
     new(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, ...args: any[]): T;
@@ -20,7 +21,7 @@ export class CanvasWhiteboardShapeService {
     public registeredShapes$: Observable<INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]>;
 
     constructor() {
-        this._registeredShapesSubject = new BehaviorSubject([FreeHandShape, RectangleShape, CircleShape, StarShape, SmileyShape]);
+        this._registeredShapesSubject = new BehaviorSubject([FreeHandShape, LineShape, RectangleShape, CircleShape, StarShape, SmileyShape]);
         this.registeredShapes$ = this._registeredShapesSubject.asObservable();
     }
 

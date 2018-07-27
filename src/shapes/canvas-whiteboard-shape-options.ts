@@ -14,7 +14,7 @@ export class CanvasWhiteboardShapeOptions {
         this.lineWidth = 2;
         this.lineJoin = "round";
         this.lineCap = "round";
-        this.shadowBlur = 10;
+        this.shadowBlur = 0;
     }
 
     // stringify() {

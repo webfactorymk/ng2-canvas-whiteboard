@@ -21,13 +21,15 @@ var SmileyShape = (function (_super) {
         return _this;
     }
     SmileyShape.prototype.draw = function (context) {
-        context.save();
         context.beginPath();
-        context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);
-        context.fillStyle = this.options.fillStyle;
-        context.fill();
         context.lineWidth = this.options.lineWidth;
+        context.lineCap = this.options.lineCap;
+        context.lineJoin = this.options.lineJoin;
+        context.shadowBlur = this.options.shadowBlur;
         context.strokeStyle = this.options.strokeStyle;
+        context.fillStyle = this.options.fillStyle;
+        context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);
+        context.fill();
         context.stroke();
         context.beginPath();
         var leftEyeX = this.positionPoint.x - this.radius * 0.3;
@@ -36,14 +38,13 @@ var SmileyShape = (function (_super) {
         var eyeSize = this.radius * 0.1;
         context.arc(leftEyeX, eyesY, eyeSize, 0, 2 * Math.PI, false);
         context.arc(rightEyeX, eyesY, eyeSize, 0, 2 * Math.PI, false);
-        context.fillStyle = 'black';
+        context.fillStyle = this.options.strokeStyle;
         context.fill();
         // draw the mouth
         context.beginPath();
         context.arc(this.positionPoint.x, this.positionPoint.y, this.radius * 0.7, 0, Math.PI, false);
         context.stroke();
         context.closePath();
-        context.restore();
     };
     SmileyShape.prototype.onUpdateReceived = function (update) {
         this.radius = Math.sqrt(Math.pow(update.x - this.positionPoint.x, 2) + Math.pow(update.y - this.positionPoint.y, 2));

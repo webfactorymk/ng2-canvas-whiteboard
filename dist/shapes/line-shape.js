@@ -11,34 +11,34 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_whiteboard_shape_1 = require("./canvas-whiteboard-shape");
-var CircleShape = (function (_super) {
-    __extends(CircleShape, _super);
-    function CircleShape(positionPoint, options, radius) {
+var canvas_whiteboard_point_1 = require("../canvas-whiteboard-point");
+var LineShape = (function (_super) {
+    __extends(LineShape, _super);
+    function LineShape(positionPoint, options, endPosition) {
         var _this = _super.call(this, positionPoint, options) || this;
-        _this.radius = radius || 0;
+        _this.endPosition = endPosition || new canvas_whiteboard_point_1.CanvasWhiteboardPoint(_this.positionPoint.x, _this.positionPoint.y);
         return _this;
     }
-    CircleShape.prototype.draw = function (context) {
+    LineShape.prototype.draw = function (context) {
+        if (!this.endPosition)
+            return;
         context.beginPath();
-        context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);
         context.lineWidth = this.options.lineWidth;
         context.lineCap = this.options.lineCap;
         context.lineJoin = this.options.lineJoin;
         context.shadowBlur = this.options.shadowBlur;
         context.strokeStyle = this.options.strokeStyle;
-        context.fillStyle = this.options.fillStyle;
-        context.stroke();
-        if (this.options.shouldFillShape) {
-            context.fill();
-        }
+        context.moveTo(this.positionPoint.x, this.positionPoint.y);
+        context.lineTo(this.endPosition.x, this.endPosition.y);
         context.closePath();
+        context.stroke();
     };
-    CircleShape.prototype.onUpdateReceived = function (update) {
-        this.radius = Math.sqrt(Math.pow(update.x - this.positionPoint.x, 2) + Math.pow(update.y - this.positionPoint.y, 2));
+    LineShape.prototype.onUpdateReceived = function (update) {
+        this.endPosition = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(update.x, update.y);
     };
-    CircleShape.prototype.onStopReceived = function (update) {
+    LineShape.prototype.onStopReceived = function (update) {
     };
-    return CircleShape;
+    return LineShape;
 }(canvas_whiteboard_shape_1.CanvasWhiteboardShape));
-exports.CircleShape = CircleShape;
-//# sourceMappingURL=circle-shape.js.map
+exports.LineShape = LineShape;
+//# sourceMappingURL=line-shape.js.map

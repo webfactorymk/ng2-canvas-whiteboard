@@ -29,4 +29,6 @@ export interface CanvasWhiteboardOptions {
     lineJoin?: string
     lineCap?: string
     shadowBlur?: number
+    shapeSelectorEnabled?: boolean
+    showShapeSelector?: boolean
 }

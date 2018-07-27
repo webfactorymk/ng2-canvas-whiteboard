@@ -8,5 +8,6 @@ export { CanvasWhiteboardShapeOptions } from "./shapes/canvas-whiteboard-shape-o
 export { CanvasWhiteboardShapeService } from "./shapes/canvas-whiteboard-shape.service";
 export { RectangleShape } from "./shapes/rectangle-shape";
 export { CircleShape } from "./shapes/circle-shape";
+export { CanvasWhiteboardShapeSelectorComponent } from "./shapes/canvas-whiteboard-shape-selector.component";
 export declare class CanvasWhiteboardModule {
 }

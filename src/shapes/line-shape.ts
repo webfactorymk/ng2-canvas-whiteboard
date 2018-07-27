@@ -3,18 +3,16 @@ import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
 import {CanvasWhiteboardPoint} from "../canvas-whiteboard-point";
 import {CanvasWhiteboardUpdate} from "../canvas-whiteboard-update.model";
 
-export class RectangleShape extends CanvasWhiteboardShape {
-    width: number;
-    height: number;
+export class LineShape extends CanvasWhiteboardShape {
+    endPosition: CanvasWhiteboardPoint;
 
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, width?: number, height?: number) {
+    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, endPosition?: CanvasWhiteboardPoint) {
         super(positionPoint, options);
-        this.width = width || 0;
-        this.height = height || 0;
+        this.endPosition = endPosition || new CanvasWhiteboardPoint(this.positionPoint.x, this.positionPoint.y)
     }
 
     draw(context: CanvasRenderingContext2D) {
-        if (!this.width || !this.height) return;
+        if (!this.endPosition) return;
         context.beginPath();
 
         context.lineWidth = this.options.lineWidth;
@@ -22,22 +20,16 @@ export class RectangleShape extends CanvasWhiteboardShape {
         context.lineJoin = this.options.lineJoin;
         context.shadowBlur = this.options.shadowBlur;
         context.strokeStyle = this.options.strokeStyle;
-        context.fillStyle = this.options.fillStyle;
 
-        context.rect(this.positionPoint.x, this.positionPoint.y, this.width, this.height);
-
-        context.stroke();
-
-        if (this.options.shouldFillShape) {
-            context.fill();
-        }
+        context.moveTo(this.positionPoint.x, this.positionPoint.y);
+        context.lineTo(this.endPosition.x, this.endPosition.y);
 
         context.closePath();
+        context.stroke();
     }
 
     onUpdateReceived(update: CanvasWhiteboardUpdate) {
-        this.width = update.x - this.positionPoint.x;
-        this.height = update.y - this.positionPoint.y;
+        this.endPosition = new CanvasWhiteboardPoint(update.x, update.y);
     }
 
     onStopReceived(update: CanvasWhiteboardUpdate) {

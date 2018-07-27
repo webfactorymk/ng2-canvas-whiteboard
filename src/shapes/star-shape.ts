@@ -14,7 +14,12 @@ export class StarShape extends CanvasWhiteboardShape {
     }
 
     draw(context: CanvasRenderingContext2D) {
-        context.save();
+        context.lineWidth = this.options.lineWidth;
+        context.lineCap = this.options.lineCap;
+        context.lineJoin = this.options.lineJoin;
+        context.shadowBlur = this.options.shadowBlur;
+        context.strokeStyle = this.options.strokeStyle;
+        context.fillStyle = this.options.fillStyle;
 
         let rotation = Math.PI / 2 * 3;
         let spikeX = this.positionPoint.x;
@@ -40,15 +45,11 @@ export class StarShape extends CanvasWhiteboardShape {
         context.lineTo(this.positionPoint.x, this.positionPoint.y - this.radius);
         context.closePath();
 
-        context.strokeStyle = this.options.strokeStyle;
         context.stroke();
 
         if (this.options.shouldFillShape) {
-            context.fillStyle = this.options.fillStyle;
             context.fill();
         }
-
-        context.restore();
     }
 
     onUpdateReceived(update: CanvasWhiteboardUpdate) {

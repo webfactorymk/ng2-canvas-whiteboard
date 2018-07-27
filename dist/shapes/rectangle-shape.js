@@ -22,17 +22,19 @@ var RectangleShape = (function (_super) {
     RectangleShape.prototype.draw = function (context) {
         if (!this.width || !this.height)
             return;
-        context.save();
         context.beginPath();
-        context.rect(this.positionPoint.x, this.positionPoint.y, this.width, this.height);
+        context.lineWidth = this.options.lineWidth;
+        context.lineCap = this.options.lineCap;
+        context.lineJoin = this.options.lineJoin;
+        context.shadowBlur = this.options.shadowBlur;
         context.strokeStyle = this.options.strokeStyle;
+        context.fillStyle = this.options.fillStyle;
+        context.rect(this.positionPoint.x, this.positionPoint.y, this.width, this.height);
         context.stroke();
         if (this.options.shouldFillShape) {
-            context.fillStyle = this.options.fillStyle;
             context.fill();
         }
         context.closePath();
-        context.restore();
     };
     RectangleShape.prototype.onUpdateReceived = function (update) {
         this.width = update.x - this.positionPoint.x;
