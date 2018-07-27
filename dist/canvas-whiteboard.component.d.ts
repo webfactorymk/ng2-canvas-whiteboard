@@ -1,11 +1,13 @@
-import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
+import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
 import { CanvasWhiteboardOptions } from "./canvas-whiteboard-options";
 import { CanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape";
 import { CanvasWhiteboardShapeService, INewCanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape.service";
+import { CanvasWhiteboardShapeOptions } from "./shapes/canvas-whiteboard-shape-options";
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     private ngZone;
+    private _changeDetector;
     private _canvasWhiteboardService;
     private _canvasWhiteboardShapeService;
     options: CanvasWhiteboardOptions;
@@ -41,6 +43,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     shadowBlur: number;
     shapeSelectorEnabled: boolean;
     showShapeSelector: boolean;
+    fillColor: string;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -62,8 +65,9 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _updateTimeout;
     private _canvasWhiteboardServiceSubscriptions;
     private _resizeSubscription;
-    selectedShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
-    constructor(ngZone: NgZone, _canvasWhiteboardService: CanvasWhiteboardService, _canvasWhiteboardShapeService: CanvasWhiteboardShapeService);
+    selectedShapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    canvasWhiteboardShapePreviewOptions: CanvasWhiteboardShapeOptions;
+    constructor(ngZone: NgZone, _changeDetector: ChangeDetectorRef, _canvasWhiteboardService: CanvasWhiteboardService, _canvasWhiteboardShapeService: CanvasWhiteboardShapeService);
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
@@ -154,13 +158,25 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     setDrawingEnabled(drawingEnabled: boolean): void;
     /**
+     * @deprecated Please use the changeStrokeColor(newStrokeColor: string): void method
+     */
+    changeColor(newStrokeColor: string): void;
+    /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
      * This method is public so that anyone can access the canvas and change the stroke color
      *
      * @param {string} newStrokeColor The new stroke color
      */
-    changeColor(newStrokeColor: string): void;
+    changeStrokeColor(newStrokeColor: string): void;
+    /**
+     * Replaces the fill color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the fill color
+     *
+     * @param {string} newFillColor The new fill color
+     */
+    changeFillColor(newFillColor: string): void;
     /**
      * This method is invoked by the undo button on the canvas screen
      * It calls the global undo method and emits a notification after undoing.
@@ -265,6 +281,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _draw(update);
     drawAllShapes(): void;
     private _setCurrentShapeToUpdate(update);
+    generateShapePreviewOptions(): CanvasWhiteboardShapeOptions;
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
      * multiple updates are sent at the same time). If this method is called, after 100 ms all updates

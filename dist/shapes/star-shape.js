@@ -20,12 +20,13 @@ var StarShape = (function (_super) {
         return _this;
     }
     StarShape.prototype.draw = function (context) {
-        context.lineWidth = this.options.lineWidth;
-        context.lineCap = this.options.lineCap;
-        context.lineJoin = this.options.lineJoin;
-        context.shadowBlur = this.options.shadowBlur;
-        context.strokeStyle = this.options.strokeStyle;
-        context.fillStyle = this.options.fillStyle;
+        Object.assign(context, this.options);
+        // context.lineWidth = this.options.lineWidth;
+        // context.lineCap = this.options.lineCap;
+        // context.lineJoin = this.options.lineJoin;
+        // context.shadowBlur = this.options.shadowBlur;
+        // context.strokeStyle = this.options.strokeStyle;
+        // context.fillStyle = this.options.fillStyle;
         var rotation = Math.PI / 2 * 3;
         var spikeX = this.positionPoint.x;
         var spikeY = this.positionPoint.y;

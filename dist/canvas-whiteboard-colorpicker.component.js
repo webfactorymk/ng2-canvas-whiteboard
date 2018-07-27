@@ -17,6 +17,7 @@ var CanvasWhiteboardColorPickerComponent = (function () {
         this.showColorPicker = false;
         this.onToggleColorPicker = new core_1.EventEmitter();
         this.onColorSelected = new core_1.EventEmitter();
+        this.onSecondaryColorSelected = new core_1.EventEmitter();
     }
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
@@ -63,7 +64,11 @@ var CanvasWhiteboardColorPickerComponent = (function () {
     };
     CanvasWhiteboardColorPickerComponent.prototype.selectColor = function (event) {
         this.selectedColor = this._getColor(event);
+        // if(event.) {
         this.onColorSelected.emit(this.selectedColor);
+        // } else {
+        //     this.onSecondaryColorSelected.emit(this.selectedColor);
+        // }
         this.toggleColorPicker(null);
     };
     return CanvasWhiteboardColorPickerComponent;
@@ -88,6 +93,10 @@ __decorate([
     core_1.Output(),
     __metadata("design:type", Object)
 ], CanvasWhiteboardColorPickerComponent.prototype, "onColorSelected", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", Object)
+], CanvasWhiteboardColorPickerComponent.prototype, "onSecondaryColorSelected", void 0);
 CanvasWhiteboardColorPickerComponent = __decorate([
     core_1.Component({
         selector: 'canvas-whiteboard-colorpicker',

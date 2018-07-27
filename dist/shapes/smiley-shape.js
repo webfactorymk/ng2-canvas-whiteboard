@@ -16,18 +16,19 @@ var SmileyShape = (function (_super) {
     function SmileyShape(positionPoint, options, radius) {
         var _this = _super.call(this, positionPoint, options) || this;
         options.shouldFillShape = true;
-        options.fillStyle = "yellow";
+        options.fillStyle = options.fillStyle || "yellow";
         _this.radius = radius || 0;
         return _this;
     }
     SmileyShape.prototype.draw = function (context) {
         context.beginPath();
-        context.lineWidth = this.options.lineWidth;
-        context.lineCap = this.options.lineCap;
-        context.lineJoin = this.options.lineJoin;
-        context.shadowBlur = this.options.shadowBlur;
-        context.strokeStyle = this.options.strokeStyle;
-        context.fillStyle = this.options.fillStyle;
+        Object.assign(context, this.options);
+        // context.lineWidth = this.options.lineWidth;
+        // context.lineCap = this.options.lineCap;
+        // context.lineJoin = this.options.lineJoin;
+        // context.shadowBlur = this.options.shadowBlur;
+        // context.strokeStyle = this.options.strokeStyle;
+        // context.fillStyle = this.options.fillStyle;
         context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);
         context.fill();
         context.stroke();

@@ -21,12 +21,13 @@ var CircleShape = (function (_super) {
     CircleShape.prototype.draw = function (context) {
         context.beginPath();
         context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);
-        context.lineWidth = this.options.lineWidth;
-        context.lineCap = this.options.lineCap;
-        context.lineJoin = this.options.lineJoin;
-        context.shadowBlur = this.options.shadowBlur;
-        context.strokeStyle = this.options.strokeStyle;
-        context.fillStyle = this.options.fillStyle;
+        Object.assign(context, this.options);
+        // context.lineWidth = this.options.lineWidth;
+        // context.lineCap = this.options.lineCap;
+        // context.lineJoin = this.options.lineJoin;
+        // context.shadowBlur = this.options.shadowBlur;
+        // context.strokeStyle = this.options.strokeStyle;
+        // context.fillStyle = this.options.fillStyle;
         context.stroke();
         if (this.options.shouldFillShape) {
             context.fill();

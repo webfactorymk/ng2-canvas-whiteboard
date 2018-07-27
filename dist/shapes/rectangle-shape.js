@@ -23,12 +23,13 @@ var RectangleShape = (function (_super) {
         if (!this.width || !this.height)
             return;
         context.beginPath();
-        context.lineWidth = this.options.lineWidth;
-        context.lineCap = this.options.lineCap;
-        context.lineJoin = this.options.lineJoin;
-        context.shadowBlur = this.options.shadowBlur;
-        context.strokeStyle = this.options.strokeStyle;
-        context.fillStyle = this.options.fillStyle;
+        Object.assign(context, this.options);
+        // context.lineWidth = this.options.lineWidth;
+        // context.lineCap = this.options.lineCap;
+        // context.lineJoin = this.options.lineJoin;
+        // context.shadowBlur = this.options.shadowBlur;
+        // context.strokeStyle = this.options.strokeStyle;
+        // context.fillStyle = this.options.fillStyle;
         context.rect(this.positionPoint.x, this.positionPoint.y, this.width, this.height);
         context.stroke();
         if (this.options.shouldFillShape) {

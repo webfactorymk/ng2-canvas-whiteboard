@@ -7,6 +7,7 @@ export declare class CanvasWhiteboardColorPickerComponent implements OnInit {
     private _context;
     onToggleColorPicker: EventEmitter<boolean>;
     onColorSelected: EventEmitter<string>;
+    onSecondaryColorSelected: EventEmitter<string>;
     constructor(_elementRef: ElementRef);
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize

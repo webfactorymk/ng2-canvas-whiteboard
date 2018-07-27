@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var canvas_whiteboard_shape_service_1 = require("./canvas-whiteboard-shape.service");
+var canvas_whiteboard_shape_options_1 = require("./canvas-whiteboard-shape-options");
 var CanvasWhiteboardShapeSelectorComponent = (function () {
     function CanvasWhiteboardShapeSelectorComponent(_elementRef, _canvasWhiteboardShapeService) {
         this._elementRef = _elementRef;
@@ -44,7 +45,11 @@ __decorate([
 __decorate([
     core_1.Input(),
     __metadata("design:type", Object)
-], CanvasWhiteboardShapeSelectorComponent.prototype, "selectedShape", void 0);
+], CanvasWhiteboardShapeSelectorComponent.prototype, "selectedShapeConstructor", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions)
+], CanvasWhiteboardShapeSelectorComponent.prototype, "shapeOptions", void 0);
 __decorate([
     core_1.Output(),
     __metadata("design:type", Object)
@@ -60,7 +65,7 @@ CanvasWhiteboardShapeSelectorComponent = __decorate([
             '(document:mousedown)': 'closeOnExternalClick($event)',
             '(document:touchstart)': 'closeOnExternalClick($event)',
         },
-        template: "\n        <div *ngIf=\"!showShapeSelector\" (click)=\"toggleShapeSelector($event)\">\n            <canvas-whiteboard-shape-preview [shape]=\"selectedShape\"></canvas-whiteboard-shape-preview>\n        </div>\n        SHAPES\n        <div class=\"canvas-whiteboard-shape-selector-wrapper\" *ngIf=\"showShapeSelector\">\n              <canvas-whiteboard-shape-preview *ngFor=\"let shape of registeredShapes$ | async\" \n              [shape]=\"shape\"\n              (click)=\"selectShape(shape)\"></canvas-whiteboard-shape-preview>\n        </div>\n    ",
+        template: "\n        <div *ngIf=\"!showShapeSelector\" (click)=\"toggleShapeSelector($event)\">\n            <canvas-whiteboard-shape-preview [shapeConstructor]=\"selectedShapeConstructor\" [shapeOptions]=\"shapeOptions\"></canvas-whiteboard-shape-preview>\n        </div>\n        <div class=\"canvas-whiteboard-shape-selector-wrapper\" *ngIf=\"showShapeSelector\">\n              <canvas-whiteboard-shape-preview *ngFor=\"let shapeConstructor of registeredShapes$ | async\" \n              [shapeConstructor]=\"shapeConstructor\"\n              [shapeOptions]=\"shapeOptions\"\n              (click)=\"selectShape(shapeConstructor)\"></canvas-whiteboard-shape-preview>\n        </div>\n    ",
         styles: ["\n        .canvas-whiteboard-colorpicker {\n            padding: 4px;\n            background: #000;\n            border: 1px solid #afafaf;\n        }\n\n        @media (min-width: 401px) {\n            .canvas-whiteboard-colorpicker {\n                position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n    "]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef,

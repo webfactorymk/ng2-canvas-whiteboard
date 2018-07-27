@@ -23,11 +23,12 @@ var LineShape = (function (_super) {
         if (!this.endPosition)
             return;
         context.beginPath();
-        context.lineWidth = this.options.lineWidth;
-        context.lineCap = this.options.lineCap;
-        context.lineJoin = this.options.lineJoin;
-        context.shadowBlur = this.options.shadowBlur;
-        context.strokeStyle = this.options.strokeStyle;
+        Object.assign(context, this.options);
+        // context.lineWidth = this.options.lineWidth;
+        // context.lineCap = this.options.lineCap;
+        // context.lineJoin = this.options.lineJoin;
+        // context.shadowBlur = this.options.shadowBlur;
+        // context.strokeStyle = this.options.strokeStyle;
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
         context.lineTo(this.endPosition.x, this.endPosition.y);
         context.closePath();

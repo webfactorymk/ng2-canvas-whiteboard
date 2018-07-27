@@ -20,11 +20,12 @@ var FreeHandShape = (function (_super) {
         return _this;
     }
     FreeHandShape.prototype.draw = function (context) {
-        context.lineWidth = this.options.lineWidth;
-        context.lineCap = this.options.lineCap;
-        context.lineJoin = this.options.lineJoin;
-        context.shadowBlur = this.options.shadowBlur;
-        context.strokeStyle = this.options.strokeStyle;
+        Object.assign(context, this.options);
+        // context.lineWidth = this.options.lineWidth;
+        // context.lineCap = this.options.lineCap;
+        // context.lineJoin = this.options.lineJoin;
+        // context.shadowBlur = this.options.shadowBlur;
+        // context.strokeStyle = this.options.strokeStyle;
         context.beginPath();
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
         // let controlPoint = this.positionPoint;

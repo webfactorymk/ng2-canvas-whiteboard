@@ -8,6 +8,7 @@ import {
 import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShape} from "./canvas-whiteboard-shape";
 import {Observable} from "rxjs/Observable";
+import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
 
 @Component({
     selector: "canvas-whiteboard-shape-selector",
@@ -17,13 +18,13 @@ import {Observable} from "rxjs/Observable";
     },
     template: `
         <div *ngIf="!showShapeSelector" (click)="toggleShapeSelector($event)">
-            <canvas-whiteboard-shape-preview [shape]="selectedShape"></canvas-whiteboard-shape-preview>
+            <canvas-whiteboard-shape-preview [shapeConstructor]="selectedShapeConstructor" [shapeOptions]="shapeOptions"></canvas-whiteboard-shape-preview>
         </div>
-        SHAPES
         <div class="canvas-whiteboard-shape-selector-wrapper" *ngIf="showShapeSelector">
-              <canvas-whiteboard-shape-preview *ngFor="let shape of registeredShapes$ | async" 
-              [shape]="shape"
-              (click)="selectShape(shape)"></canvas-whiteboard-shape-preview>
+              <canvas-whiteboard-shape-preview *ngFor="let shapeConstructor of registeredShapes$ | async" 
+              [shapeConstructor]="shapeConstructor"
+              [shapeOptions]="shapeOptions"
+              (click)="selectShape(shapeConstructor)"></canvas-whiteboard-shape-preview>
         </div>
     `,
     styles: [`
@@ -44,7 +45,8 @@ import {Observable} from "rxjs/Observable";
 })
 export class CanvasWhiteboardShapeSelectorComponent {
     @Input() readonly showShapeSelector: boolean = false;
-    @Input() readonly selectedShape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    @Input() readonly selectedShapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    @Input() readonly shapeOptions: CanvasWhiteboardShapeOptions;
 
     @Output() onToggleShapeSelector = new EventEmitter<boolean>();
     @Output() onShapeSelected = new EventEmitter<INewCanvasWhiteboardShape<CanvasWhiteboardShape>>();

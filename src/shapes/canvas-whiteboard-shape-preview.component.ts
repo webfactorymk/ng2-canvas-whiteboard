@@ -27,7 +27,8 @@ import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "../canvas-whit
     `]
 })
 export class CanvasWhiteboardShapePreviewComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
-    @Input() shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    @Input() readonly shapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    @Input() readonly shapeOptions: CanvasWhiteboardShapeOptions;
 
     @ViewChild('canvasWhiteboardShapePreview') canvas: ElementRef;
 
@@ -40,7 +41,7 @@ export class CanvasWhiteboardShapePreviewComponent implements OnInit, AfterViewI
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.shape) {
+        if (changes.shapeConstructor || changes.shapeOptions) {
             this.drawShapePreview();
         }
     }
@@ -51,11 +52,9 @@ export class CanvasWhiteboardShapePreviewComponent implements OnInit, AfterViewI
         let context: CanvasRenderingContext2D = this.canvas.nativeElement.getContext("2d");
         console.log(context);
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        let concreteShape = new this.shape(
+        let concreteShape = new this.shapeConstructor(
             new CanvasWhiteboardPoint(context.canvas.width / 2, context.canvas.height / 2),
-            Object.assign(new CanvasWhiteboardShapeOptions(), {
-                lineWidth: 1
-            })
+            Object.assign(new CanvasWhiteboardShapeOptions(), this.shapeOptions)
         );
 
         let update = new CanvasWhiteboardUpdate(context.canvas.width - 2, context.canvas.height / 2);

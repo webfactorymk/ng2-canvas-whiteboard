@@ -6,7 +6,7 @@ import {
     ViewChild,
     ElementRef,
     OnInit,
-    OnChanges, OnDestroy, AfterViewInit, NgZone
+    OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef
 } from '@angular/core';
 import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "./canvas-whiteboard-update.model";
 import {DEFAULT_STYLES} from "./template";
@@ -27,7 +27,8 @@ import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-opt
              <span class="canvas_whiteboard_buttons">
                  <canvas-whiteboard-shape-selector *ngIf="shapeSelectorEnabled"
                                                    [showShapeSelector]="showShapeSelector"
-                                                   [selectedShape]="selectedShapeBlueprint"
+                                                   [selectedShapeConstructor]="selectedShapeConstructor"
+                                                   [shapeOptions]="generateShapeOptions()"
                                                    (onToggleShapeSelector)="toggleShapeSelector($event)"
                                                    (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
                                                    
@@ -35,7 +36,9 @@ import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-opt
                                                 [showColorPicker]="showColorPicker"
                                                 [selectedColor]="strokeColor"
                                                 (onToggleColorPicker)="toggleColorPicker($event)"
-                                                (onColorSelected)="changeColor($event)"></canvas-whiteboard-colorpicker>
+                                                (onSecondaryColorSelected)="changeFillColor($event)"
+                                                (onColorSelected)="changeStrokeColor($event)"></canvas-whiteboard-colorpicker>
+                                                 
                  
                  <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
                          [class.canvas_whiteboard_button-draw_animated]="getDrawingEnabled()"
@@ -103,11 +106,13 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() drawingEnabled: boolean = false;
     @Input() showColorPicker: boolean = false;
     @Input() downloadedFileName: string;
+
     @Input() lineJoin: string = "round";
     @Input() lineCap: string = "round";
     @Input() shadowBlur: number = 10;
     @Input() shapeSelectorEnabled: boolean = true;
     @Input() showShapeSelector: boolean = false;
+    @Input() fillColor: string = "#001100";
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -140,11 +145,13 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     private _canvasWhiteboardServiceSubscriptions: Subscription[] = [];
     private _resizeSubscription: Subscription;
 
-    selectedShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    selectedShapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    canvasWhiteboardShapePreviewOptions: CanvasWhiteboardShapeOptions;
 
-    constructor(private ngZone: NgZone, private _canvasWhiteboardService: CanvasWhiteboardService, private _canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
+    constructor(private ngZone: NgZone, private _changeDetector: ChangeDetectorRef, private _canvasWhiteboardService: CanvasWhiteboardService, private _canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
         this._shapesMap = new Map<string, CanvasWhiteboardShape>();
-        this.selectedShapeBlueprint = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[3];
+        this.selectedShapeConstructor = _canvasWhiteboardShapeService.getCurrentRegisteredShapes()[0];
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
     }
 
     /**
@@ -209,6 +216,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.shadowBlur)) this.shadowBlur = options.shadowBlur;
             if (!this._isNullOrUndefined(options.shapeSelectorEnabled)) this.shapeSelectorEnabled = options.shapeSelectorEnabled;
             if (!this._isNullOrUndefined(options.showShapeSelector)) this.showShapeSelector = options.showShapeSelector;
+            if (!this._isNullOrUndefined(options.fillColor)) this.fillColor = options.fillColor;
         }
     }
 
@@ -393,14 +401,37 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     }
 
     /**
+     * @deprecated Please use the changeStrokeColor(newStrokeColor: string): void method
+     */
+    changeColor(newStrokeColor: string): void {
+        this.changeStrokeColor(newStrokeColor);
+    }
+
+    /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
      * This method is public so that anyone can access the canvas and change the stroke color
      *
      * @param {string} newStrokeColor The new stroke color
      */
-    changeColor(newStrokeColor: string): void {
+    changeStrokeColor(newStrokeColor: string): void {
         this.strokeColor = newStrokeColor;
+
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
+        this._changeDetector.detectChanges();
+    }
+
+    /**
+     * Replaces the fill color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the fill color
+     *
+     * @param {string} newFillColor The new fill color
+     */
+    changeFillColor(newFillColor: string): void {
+        this.fillColor = newFillColor;
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
+        this._changeDetector.detectChanges();
     }
 
     /**
@@ -695,20 +726,25 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     private _setCurrentShapeToUpdate(update: CanvasWhiteboardUpdate) {
         if (!update.selectedShape) {
-            update.selectedShape = this.selectedShapeBlueprint.name;
+            update.selectedShape = this.selectedShapeConstructor.name;
         }
         if (!update.selectedShapeOptions) {
-            update.selectedShapeOptions = Object.assign(new CanvasWhiteboardShapeOptions(),
-                {
-                    shouldFillShape: false,
-                    fillStyle: null,
-                    strokeStyle: this.strokeColor,
-                    lineWidth: this.lineWidth,
-                    lineJoin: this.lineJoin,
-                    lineCap: this.lineCap,
-                    shadowBlur: this.shadowBlur
-                });
+            //Make a deep copy since we don't want some Shape implementation to change something by accident
+            update.selectedShapeOptions = Object.assign(new CanvasWhiteboardShapeOptions(), this.generateShapePreviewOptions(), {lineWidth: this.lineWidth});
         }
+    }
+
+    generateShapePreviewOptions(): CanvasWhiteboardShapeOptions {
+        return Object.assign(new CanvasWhiteboardShapeOptions(),
+            {
+                shouldFillShape: !!this.fillColor,
+                fillStyle: this.fillColor,
+                strokeStyle: this.strokeColor,
+                lineWidth: 2,
+                lineJoin: this.lineJoin,
+                lineCap: this.lineCap,
+                shadowBlur: this.shadowBlur
+            });
     }
 
     /**
@@ -964,7 +1000,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     }
 
     selectShape(newShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>) {
-        this.selectedShapeBlueprint = newShapeBlueprint;
+        this.selectedShapeConstructor = newShapeBlueprint;
     }
 
     /**

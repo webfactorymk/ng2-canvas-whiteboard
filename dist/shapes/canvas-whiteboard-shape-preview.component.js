@@ -22,7 +22,7 @@ var CanvasWhiteboardShapePreviewComponent = (function () {
         this.drawShapePreview();
     };
     CanvasWhiteboardShapePreviewComponent.prototype.ngOnChanges = function (changes) {
-        if (changes.shape) {
+        if (changes.shapeConstructor || changes.shapeOptions) {
             this.drawShapePreview();
         }
     };
@@ -32,9 +32,7 @@ var CanvasWhiteboardShapePreviewComponent = (function () {
         var context = this.canvas.nativeElement.getContext("2d");
         console.log(context);
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        var concreteShape = new this.shape(new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width / 2, context.canvas.height / 2), Object.assign(new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions(), {
-            lineWidth: 1
-        }));
+        var concreteShape = new this.shapeConstructor(new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width / 2, context.canvas.height / 2), Object.assign(new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions(), this.shapeOptions));
         var update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(context.canvas.width - 2, context.canvas.height / 2);
         concreteShape.onUpdateReceived(update);
         concreteShape.draw(context);
@@ -46,7 +44,11 @@ var CanvasWhiteboardShapePreviewComponent = (function () {
 __decorate([
     core_1.Input(),
     __metadata("design:type", Object)
-], CanvasWhiteboardShapePreviewComponent.prototype, "shape", void 0);
+], CanvasWhiteboardShapePreviewComponent.prototype, "shapeConstructor", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions)
+], CanvasWhiteboardShapePreviewComponent.prototype, "shapeOptions", void 0);
 __decorate([
     core_1.ViewChild('canvasWhiteboardShapePreview'),
     __metadata("design:type", core_1.ElementRef)

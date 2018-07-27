@@ -51,6 +51,7 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
     @Output() onToggleColorPicker = new EventEmitter<boolean>();
     @Output() onColorSelected = new EventEmitter<string>();
+    @Output() onSecondaryColorSelected = new EventEmitter<string>();
 
     constructor(private _elementRef: ElementRef) {
     }
@@ -109,7 +110,12 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
     selectColor(event: any) {
         this.selectedColor = this._getColor(event);
 
+        // if(event.) {
         this.onColorSelected.emit(this.selectedColor);
+
+        // } else {
+        //     this.onSecondaryColorSelected.emit(this.selectedColor);
+        // }
         this.toggleColorPicker(null);
     }
 }

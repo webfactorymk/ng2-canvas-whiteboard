@@ -31,4 +31,5 @@ export interface CanvasWhiteboardOptions {
     shadowBlur?: number
     shapeSelectorEnabled?: boolean
     showShapeSelector?: boolean
+    fillColor?: string
 }
