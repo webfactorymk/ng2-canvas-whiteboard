@@ -24,7 +24,8 @@ export interface CanvasWhiteboardOptions {
     startingColor?: string
     scaleFactor?: number
     drawingEnabled?: boolean
-    showColorPicker?: boolean
+    showStrokeColorPicker?: boolean
+    showFillColorPicker?: boolean
     downloadedFileName?: string
     lineJoin?: string
     lineCap?: string

@@ -17,7 +17,7 @@ import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
         '(document:touchstart)': 'closeOnExternalClick($event)',
     },
     template: `
-        <div *ngIf="!showShapeSelector" (click)="toggleShapeSelector($event)">
+        <div *ngIf="!showShapeSelector" (click)="toggleShapeSelector($event)" class="canvas-whiteboard-shape-selector-selected-preview">
             <canvas-whiteboard-shape-preview [shapeConstructor]="selectedShapeConstructor" [shapeOptions]="shapeOptions"></canvas-whiteboard-shape-preview>
         </div>
         <div class="canvas-whiteboard-shape-selector-wrapper" *ngIf="showShapeSelector">
@@ -28,14 +28,19 @@ import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
         </div>
     `,
     styles: [`
-        .canvas-whiteboard-colorpicker {
+        .canvas-whiteboard-shape-selector-selected-preview {
+             vertical-align: bottom;
+             display: inline-block;
+        }
+        
+        .canvas-whiteboard-shape-selector-wrapper {
+            display: inline-block;
             padding: 4px;
-            background: #000;
             border: 1px solid #afafaf;
         }
 
         @media (min-width: 401px) {
-            .canvas-whiteboard-colorpicker {
+            .canvas-whiteboard-shape-selector-wrapper {
                 position: absolute;
                 top: 0;
                 right: 100%;

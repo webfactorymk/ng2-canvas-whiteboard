@@ -24,20 +24,29 @@ import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-opt
     template:
         `
         <div class="canvas_wrapper_div">
-             <span class="canvas_whiteboard_buttons">
+             <div class="canvas_whiteboard_buttons">
                  <canvas-whiteboard-shape-selector *ngIf="shapeSelectorEnabled"
                                                    [showShapeSelector]="showShapeSelector"
                                                    [selectedShapeConstructor]="selectedShapeConstructor"
-                                                   [shapeOptions]="generateShapeOptions()"
+                                                   [shapeOptions]="generateShapePreviewOptions()"
                                                    (onToggleShapeSelector)="toggleShapeSelector($event)"
                                                    (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
                                                    
                  <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
-                                                [showColorPicker]="showColorPicker"
+                                                [showColorPicker]="showFillColorPicker"
+                                                [selectedColor]="fillColor"
+                                                (onToggleColorPicker)="toggleFillColorPicker($event)"
+                                                (onColorSelected)="changeFillColor($event)">
+                                                Fill
+                 </canvas-whiteboard-colorpicker>    
+                 
+                 <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                                                [showColorPicker]="showStrokeColorPicker"
                                                 [selectedColor]="strokeColor"
-                                                (onToggleColorPicker)="toggleColorPicker($event)"
-                                                (onSecondaryColorSelected)="changeFillColor($event)"
-                                                (onColorSelected)="changeStrokeColor($event)"></canvas-whiteboard-colorpicker>
+                                                (onToggleColorPicker)="toggleStrokeColorPicker($event)"
+                                                (onColorSelected)="changeStrokeColor($event)">
+                                                Stroke
+                   </canvas-whiteboard-colorpicker>
                                                  
                  
                  <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
@@ -64,7 +73,7 @@ import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-opt
                          class="canvas_whiteboard_button canvas_whiteboard_button-save">
                      <i [class]="saveDataButtonClass" aria-hidden="true"></i> {{saveDataButtonText}}
                  </button>
-             </span>
+             </div>
             <canvas #canvas
                     (mousedown)="canvasUserEvents($event)" (mouseup)="canvasUserEvents($event)"
                     (mousemove)="canvasUserEvents($event)" (mouseout)="canvasUserEvents($event)"
@@ -104,7 +113,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() startingColor: string = "#fff";
     @Input() scaleFactor: number = 0;
     @Input() drawingEnabled: boolean = false;
-    @Input() showColorPicker: boolean = false;
+    @Input() showStrokeColorPicker: boolean = false;
+    @Input() showFillColorPicker: boolean = false;
     @Input() downloadedFileName: string;
 
     @Input() lineJoin: string = "round";
@@ -112,7 +122,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() shadowBlur: number = 10;
     @Input() shapeSelectorEnabled: boolean = true;
     @Input() showShapeSelector: boolean = false;
-    @Input() fillColor: string = "#001100";
+    @Input() fillColor: string = "rgba(0,0,0,1)";
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -217,6 +227,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.shapeSelectorEnabled)) this.shapeSelectorEnabled = options.shapeSelectorEnabled;
             if (!this._isNullOrUndefined(options.showShapeSelector)) this.showShapeSelector = options.showShapeSelector;
             if (!this._isNullOrUndefined(options.fillColor)) this.fillColor = options.fillColor;
+            if (!this._isNullOrUndefined(options.showStrokeColorPicker)) this.showStrokeColorPicker = options.showStrokeColorPicker;
+            if (!this._isNullOrUndefined(options.showFillColorPicker)) this.showFillColorPicker = options.showFillColorPicker;
         }
     }
 
@@ -986,8 +998,17 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * If no value is supplied (null/undefined) the current value will be negated and used.
      * @param {boolean} value
      */
-    toggleColorPicker(value: boolean) {
-        this.showColorPicker = !this._isNullOrUndefined(value) ? value : !this.showColorPicker;
+    toggleStrokeColorPicker(value: boolean) {
+        this.showStrokeColorPicker = !this._isNullOrUndefined(value) ? value : !this.showStrokeColorPicker;
+    }
+
+    /**
+     * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleFillColorPicker(value: boolean) {
+        this.showFillColorPicker = !this._isNullOrUndefined(value) ? value : !this.showFillColorPicker;
     }
 
     /**

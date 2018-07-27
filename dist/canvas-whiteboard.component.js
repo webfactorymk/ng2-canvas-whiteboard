@@ -42,13 +42,14 @@ var CanvasWhiteboardComponent = (function () {
         this.startingColor = "#fff";
         this.scaleFactor = 0;
         this.drawingEnabled = false;
-        this.showColorPicker = false;
+        this.showStrokeColorPicker = false;
+        this.showFillColorPicker = false;
         this.lineJoin = "round";
         this.lineCap = "round";
         this.shadowBlur = 10;
         this.shapeSelectorEnabled = true;
         this.showShapeSelector = false;
-        this.fillColor = "#001100";
+        this.fillColor = "rgba(0,0,0,1)";
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onRedo = new core_1.EventEmitter();
@@ -160,6 +161,10 @@ var CanvasWhiteboardComponent = (function () {
                 this.showShapeSelector = options.showShapeSelector;
             if (!this._isNullOrUndefined(options.fillColor))
                 this.fillColor = options.fillColor;
+            if (!this._isNullOrUndefined(options.showStrokeColorPicker))
+                this.showStrokeColorPicker = options.showStrokeColorPicker;
+            if (!this._isNullOrUndefined(options.showFillColorPicker))
+                this.showFillColorPicker = options.showFillColorPicker;
         }
     };
     CanvasWhiteboardComponent.prototype._isNullOrUndefined = function (property) {
@@ -872,8 +877,16 @@ var CanvasWhiteboardComponent = (function () {
      * If no value is supplied (null/undefined) the current value will be negated and used.
      * @param {boolean} value
      */
-    CanvasWhiteboardComponent.prototype.toggleColorPicker = function (value) {
-        this.showColorPicker = !this._isNullOrUndefined(value) ? value : !this.showColorPicker;
+    CanvasWhiteboardComponent.prototype.toggleStrokeColorPicker = function (value) {
+        this.showStrokeColorPicker = !this._isNullOrUndefined(value) ? value : !this.showStrokeColorPicker;
+    };
+    /**
+     * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    CanvasWhiteboardComponent.prototype.toggleFillColorPicker = function (value) {
+        this.showFillColorPicker = !this._isNullOrUndefined(value) ? value : !this.showFillColorPicker;
     };
     /**
      * Toggles the shape selector window, delegating the showShapeSelector Input to the CanvasWhiteboardShapeSelectorComponent.
@@ -1021,7 +1034,11 @@ __decorate([
 __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
-], CanvasWhiteboardComponent.prototype, "showColorPicker", void 0);
+], CanvasWhiteboardComponent.prototype, "showStrokeColorPicker", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], CanvasWhiteboardComponent.prototype, "showFillColorPicker", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", String)
@@ -1081,7 +1098,7 @@ __decorate([
 CanvasWhiteboardComponent = __decorate([
     core_1.Component({
         selector: 'canvas-whiteboard',
-        template: "\n        <div class=\"canvas_wrapper_div\">\n             <span class=\"canvas_whiteboard_buttons\">\n                 <canvas-whiteboard-shape-selector *ngIf=\"shapeSelectorEnabled\"\n                                                   [showShapeSelector]=\"showShapeSelector\"\n                                                   [selectedShapeConstructor]=\"selectedShapeConstructor\"\n                                                   [shapeOptions]=\"generateShapeOptions()\"\n                                                   (onToggleShapeSelector)=\"toggleShapeSelector($event)\"\n                                                   (onShapeSelected)=\"selectShape($event)\"></canvas-whiteboard-shape-selector>\n                                                   \n                 <canvas-whiteboard-colorpicker *ngIf=\"colorPickerEnabled\"\n                                                [showColorPicker]=\"showColorPicker\"\n                                                [selectedColor]=\"strokeColor\"\n                                                (onToggleColorPicker)=\"toggleColorPicker($event)\"\n                                                (onSecondaryColorSelected)=\"changeFillColor($event)\"\n                                                (onColorSelected)=\"changeStrokeColor($event)\"></canvas-whiteboard-colorpicker>\n                                                 \n                 \n                 <button *ngIf=\"drawButtonEnabled\" (click)=\"toggleDrawingEnabled()\"\n                         [class.canvas_whiteboard_button-draw_animated]=\"getDrawingEnabled()\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-draw\" type=\"button\">\n                        <i [class]=\"drawButtonClass\" aria-hidden=\"true\"></i> {{drawButtonText}}\n                </button>\n                \n                <button *ngIf=\"clearButtonEnabled\" (click)=\"clearCanvasLocal()\" type=\"button\"\n                        class=\"canvas_whiteboard_button canvas_whiteboard_button-clear\">\n                    <i [class]=\"clearButtonClass\" aria-hidden=\"true\"></i> {{clearButtonText}}\n                </button>\n                \n                 <button *ngIf=\"undoButtonEnabled\" (click)=\"undoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-undo\">\n                     <i [class]=\"undoButtonClass\" aria-hidden=\"true\"></i> {{undoButtonText}} \n                 </button>\n                 \n                 <button *ngIf=\"redoButtonEnabled\" (click)=\"redoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-redo\">\n                     <i [class]=\"redoButtonClass\" aria-hidden=\"true\"></i> {{redoButtonText}}\n                 </button> \n                 <button *ngIf=\"saveDataButtonEnabled\" (click)=\"saveLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-save\">\n                     <i [class]=\"saveDataButtonClass\" aria-hidden=\"true\"></i> {{saveDataButtonText}}\n                 </button>\n             </span>\n            <canvas #canvas\n                    (mousedown)=\"canvasUserEvents($event)\" (mouseup)=\"canvasUserEvents($event)\"\n                    (mousemove)=\"canvasUserEvents($event)\" (mouseout)=\"canvasUserEvents($event)\"\n                    (touchstart)=\"canvasUserEvents($event)\" (touchmove)=\"canvasUserEvents($event)\"\n                    (touchend)=\"canvasUserEvents($event)\" (touchcancel)=\"canvasUserEvents($event)\">\n            </canvas>\n        </div>\n    ",
+        template: "\n        <div class=\"canvas_wrapper_div\">\n             <div class=\"canvas_whiteboard_buttons\">\n                 <canvas-whiteboard-shape-selector *ngIf=\"shapeSelectorEnabled\"\n                                                   [showShapeSelector]=\"showShapeSelector\"\n                                                   [selectedShapeConstructor]=\"selectedShapeConstructor\"\n                                                   [shapeOptions]=\"generateShapePreviewOptions()\"\n                                                   (onToggleShapeSelector)=\"toggleShapeSelector($event)\"\n                                                   (onShapeSelected)=\"selectShape($event)\"></canvas-whiteboard-shape-selector>\n                                                   \n                 <canvas-whiteboard-colorpicker *ngIf=\"colorPickerEnabled\"\n                                                [showColorPicker]=\"showFillColorPicker\"\n                                                [selectedColor]=\"fillColor\"\n                                                (onToggleColorPicker)=\"toggleFillColorPicker($event)\"\n                                                (onColorSelected)=\"changeFillColor($event)\">\n                                                Fill\n                 </canvas-whiteboard-colorpicker>    \n                 \n                 <canvas-whiteboard-colorpicker *ngIf=\"colorPickerEnabled\"\n                                                [showColorPicker]=\"showStrokeColorPicker\"\n                                                [selectedColor]=\"strokeColor\"\n                                                (onToggleColorPicker)=\"toggleStrokeColorPicker($event)\"\n                                                (onColorSelected)=\"changeStrokeColor($event)\">\n                                                Stroke\n                   </canvas-whiteboard-colorpicker>\n                                                 \n                 \n                 <button *ngIf=\"drawButtonEnabled\" (click)=\"toggleDrawingEnabled()\"\n                         [class.canvas_whiteboard_button-draw_animated]=\"getDrawingEnabled()\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-draw\" type=\"button\">\n                        <i [class]=\"drawButtonClass\" aria-hidden=\"true\"></i> {{drawButtonText}}\n                </button>\n                \n                <button *ngIf=\"clearButtonEnabled\" (click)=\"clearCanvasLocal()\" type=\"button\"\n                        class=\"canvas_whiteboard_button canvas_whiteboard_button-clear\">\n                    <i [class]=\"clearButtonClass\" aria-hidden=\"true\"></i> {{clearButtonText}}\n                </button>\n                \n                 <button *ngIf=\"undoButtonEnabled\" (click)=\"undoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-undo\">\n                     <i [class]=\"undoButtonClass\" aria-hidden=\"true\"></i> {{undoButtonText}} \n                 </button>\n                 \n                 <button *ngIf=\"redoButtonEnabled\" (click)=\"redoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-redo\">\n                     <i [class]=\"redoButtonClass\" aria-hidden=\"true\"></i> {{redoButtonText}}\n                 </button> \n                 <button *ngIf=\"saveDataButtonEnabled\" (click)=\"saveLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-save\">\n                     <i [class]=\"saveDataButtonClass\" aria-hidden=\"true\"></i> {{saveDataButtonText}}\n                 </button>\n             </div>\n            <canvas #canvas\n                    (mousedown)=\"canvasUserEvents($event)\" (mouseup)=\"canvasUserEvents($event)\"\n                    (mousemove)=\"canvasUserEvents($event)\" (mouseout)=\"canvasUserEvents($event)\"\n                    (touchstart)=\"canvasUserEvents($event)\" (touchmove)=\"canvasUserEvents($event)\"\n                    (touchend)=\"canvasUserEvents($event)\" (touchcancel)=\"canvasUserEvents($event)\">\n            </canvas>\n        </div>\n    ",
         styles: [template_1.DEFAULT_STYLES]
     }),
     __metadata("design:paramtypes", [core_1.NgZone, core_1.ChangeDetectorRef, canvas_whiteboard_service_1.CanvasWhiteboardService, canvas_whiteboard_shape_service_1.CanvasWhiteboardShapeService])

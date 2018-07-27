@@ -11,14 +11,33 @@ import {
         '(document:touchstart)': 'closeOnExternalClick($event)',
     },
     template: `
-        <input [style.background]="selectedColor" [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input"
-               (click)="toggleColorPicker($event)"/>
+        <div [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input"
+               (click)="toggleColorPicker($event)">
+               <div class="selected-color-type-wrapper"><ng-content></ng-content></div>
+               <div class="selected-color-preview" [style.background]="selectedColor"></div>
+        </div>
         <div [hidden]="!showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
+            <div (click)="selectColor('rgba(0,0,0,0)')">Transparent</div>
             <canvas #canvaswhiteboardcolorpicker class="canvas-whiteboard-colorpicker" width="284" height="155"
                     (click)="selectColor($event)"></canvas>
         </div>
     `,
     styles: [`
+        .selected-color-preview {
+            width: 100%;
+            height: 20%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+        
+        .selected-color-type-wrapper {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
+            text-align: center;
+        }
+        
         .canvas-whiteboard-colorpicker {
             padding: 4px;
             background: #000;
@@ -34,16 +53,19 @@ import {
         }
 
         .canvas-whiteboard-colorpicker-input {
+            display: inline-block;
+            position:relative;
             width: 44px;
             height: 44px;
-            border: 2px solid black;
             margin: 5px;
+            cursor: pointer;
+            color: #000;
         }
     `]
 })
 export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
-    @Input() selectedColor: string = "rgb(0,0,0)";
+    @Input() selectedColor: string = "rgba(0,0,0,1)";
     @ViewChild('canvaswhiteboardcolorpicker') canvas: ElementRef;
 
     @Input() readonly showColorPicker: boolean = false;
@@ -104,18 +126,11 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
         let canvasRect = this._context.canvas.getBoundingClientRect();
         let imageData = this._context.getImageData(event.clientX - canvasRect.left, event.clientY - canvasRect.top, 1, 1);
 
-        return 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
+        return `rgba(${imageData.data[0]}, ${imageData.data[1]}, ${imageData.data[2]}, ${imageData.data[3]})`;
     }
 
     selectColor(event: any) {
-        this.selectedColor = this._getColor(event);
-
-        // if(event.) {
-        this.onColorSelected.emit(this.selectedColor);
-
-        // } else {
-        //     this.onSecondaryColorSelected.emit(this.selectedColor);
-        // }
+        this.onColorSelected.emit(this._getColor(event));
         this.toggleColorPicker(null);
     }
 }
