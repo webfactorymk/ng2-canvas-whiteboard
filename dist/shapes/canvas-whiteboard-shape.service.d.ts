@@ -3,7 +3,7 @@ import { Observable } from "rxjs/Observable";
 import { CanvasWhiteboardShapeOptions } from "./canvas-whiteboard-shape-options";
 import { CanvasWhiteboardPoint } from "../canvas-whiteboard-point";
 export interface INewCanvasWhiteboardShape<T extends CanvasWhiteboardShape> {
-    new (positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, ...args: any[]): T;
+    new (positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, ...args: any[]): T;
 }
 export declare class CanvasWhiteboardShapeService {
     private _registeredShapesSubject;

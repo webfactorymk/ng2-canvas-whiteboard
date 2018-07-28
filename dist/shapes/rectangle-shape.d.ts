@@ -5,8 +5,8 @@ import { CanvasWhiteboardUpdate } from "../canvas-whiteboard-update.model";
 export declare class RectangleShape extends CanvasWhiteboardShape {
     width: number;
     height: number;
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, width?: number, height?: number);
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, width?: number, height?: number);
     draw(context: CanvasRenderingContext2D): void;
+    drawPreview(context: CanvasRenderingContext2D): void;
     onUpdateReceived(update: CanvasWhiteboardUpdate): void;
-    onStopReceived(update: CanvasWhiteboardUpdate): void;
 }

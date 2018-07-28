@@ -6,18 +6,13 @@ import {CanvasWhiteboardUpdate} from "../canvas-whiteboard-update.model";
 export class FreeHandShape extends CanvasWhiteboardShape {
     linePositions: CanvasWhiteboardPoint[];
 
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions) {
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions) {
         super(positionPoint, options);
         this.linePositions = [];
     }
 
     draw(context: CanvasRenderingContext2D) {
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
 
         context.beginPath();
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
@@ -33,6 +28,17 @@ export class FreeHandShape extends CanvasWhiteboardShape {
         context.stroke();
     }
 
+    drawPreview(context: CanvasRenderingContext2D) {
+        this.positionPoint = new CanvasWhiteboardPoint(2, 2);
+        this.linePositions = [
+            new CanvasWhiteboardPoint(context.canvas.width - 5, context.canvas.height * 0.3),
+            new CanvasWhiteboardPoint(context.canvas.width * 0.4, context.canvas.height * 0.6),
+            new CanvasWhiteboardPoint(context.canvas.width, context.canvas.height)
+        ];
+
+        this.draw(context);
+    }
+
     // private _getBezierControlPoint(firstPoint: CanvasWhiteboardPoint, secondPoint: CanvasWhiteboardPoint): CanvasWhiteboardPoint {
     //     return new CanvasWhiteboardPoint(
     //         firstPoint.x + ((secondPoint.x - firstPoint.x) / 2),
@@ -44,6 +50,5 @@ export class FreeHandShape extends CanvasWhiteboardShape {
         this.linePositions.push(new CanvasWhiteboardPoint(update.x, update.y));
     }
 
-    onStopReceived(update: CanvasWhiteboardUpdate) {
-    }
+
 }

@@ -7,7 +7,7 @@ export abstract class CanvasWhiteboardShape {
     protected positionPoint: CanvasWhiteboardPoint;
     protected options: CanvasWhiteboardShapeOptions;
 
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions) {
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions) {
         this.positionPoint = positionPoint || new CanvasWhiteboardPoint(0, 0);
         this.options = options || new CanvasWhiteboardShapeOptions();
         this.isVisible = true;
@@ -15,7 +15,11 @@ export abstract class CanvasWhiteboardShape {
 
     abstract onUpdateReceived(update: CanvasWhiteboardUpdate);
 
-    abstract onStopReceived(update: CanvasWhiteboardUpdate);
+    onStopReceived(update: CanvasWhiteboardUpdate) {
+
+    }
 
     abstract draw(context: CanvasRenderingContext2D);
+
+    abstract drawPreview(context: CanvasRenderingContext2D);
 }

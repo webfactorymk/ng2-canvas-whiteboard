@@ -12,7 +12,7 @@ import {StarShape} from "./star-shape";
 import {LineShape} from "./line-shape";
 
 export interface INewCanvasWhiteboardShape<T extends CanvasWhiteboardShape> {
-    new(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, ...args: any[]): T;
+    new(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, ...args: any[]): T;
 }
 
 @Injectable()

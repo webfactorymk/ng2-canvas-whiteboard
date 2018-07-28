@@ -4,8 +4,8 @@ import { CanvasWhiteboardPoint } from "../canvas-whiteboard-point";
 import { CanvasWhiteboardUpdate } from "../canvas-whiteboard-update.model";
 export declare class FreeHandShape extends CanvasWhiteboardShape {
     linePositions: CanvasWhiteboardPoint[];
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions);
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions);
     draw(context: CanvasRenderingContext2D): void;
+    drawPreview(context: CanvasRenderingContext2D): void;
     onUpdateReceived(update: CanvasWhiteboardUpdate): void;
-    onStopReceived(update: CanvasWhiteboardUpdate): void;
 }

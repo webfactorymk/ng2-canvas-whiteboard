@@ -21,11 +21,6 @@ var FreeHandShape = (function (_super) {
     }
     FreeHandShape.prototype.draw = function (context) {
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
         context.beginPath();
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
         // let controlPoint = this.positionPoint;
@@ -37,6 +32,15 @@ var FreeHandShape = (function (_super) {
         });
         context.stroke();
     };
+    FreeHandShape.prototype.drawPreview = function (context) {
+        this.positionPoint = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(2, 2);
+        this.linePositions = [
+            new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width - 5, context.canvas.height * 0.3),
+            new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width * 0.4, context.canvas.height * 0.6),
+            new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width, context.canvas.height)
+        ];
+        this.draw(context);
+    };
     // private _getBezierControlPoint(firstPoint: CanvasWhiteboardPoint, secondPoint: CanvasWhiteboardPoint): CanvasWhiteboardPoint {
     //     return new CanvasWhiteboardPoint(
     //         firstPoint.x + ((secondPoint.x - firstPoint.x) / 2),
@@ -45,8 +49,6 @@ var FreeHandShape = (function (_super) {
     // }
     FreeHandShape.prototype.onUpdateReceived = function (update) {
         this.linePositions.push(new canvas_whiteboard_point_1.CanvasWhiteboardPoint(update.x, update.y));
-    };
-    FreeHandShape.prototype.onStopReceived = function (update) {
     };
     return FreeHandShape;
 }(canvas_whiteboard_shape_1.CanvasWhiteboardShape));

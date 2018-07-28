@@ -17,9 +17,9 @@ import {
                <div class="selected-color-preview" [style.background]="selectedColor"></div>
         </div>
         <div [hidden]="!showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
-            <div (click)="selectColor('rgba(0,0,0,0)')">Transparent</div>
+            <div (click)="selectColor('transparent')">Transparent</div>
             <canvas #canvaswhiteboardcolorpicker class="canvas-whiteboard-colorpicker" width="284" height="155"
-                    (click)="selectColor($event)"></canvas>
+                    (click)="selectColor(determineColorFromCanvas($event))"></canvas>
         </div>
     `,
     styles: [`
@@ -38,14 +38,13 @@ import {
             text-align: center;
         }
         
-        .canvas-whiteboard-colorpicker {
-            padding: 4px;
-            background: #000;
+        .canvas-whiteboard-colorpicker-wrapper {
             border: 1px solid #afafaf;
+            color: #000;
         }
 
         @media (min-width: 401px) {
-            .canvas-whiteboard-colorpicker {
+            .canvas-whiteboard-colorpicker-wrapper {
                 position: absolute;
                 top: 0;
                 right: 100%;
@@ -65,7 +64,7 @@ import {
 })
 export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
-    @Input() selectedColor: string = "rgba(0,0,0,1)";
+    @Input() readonly selectedColor: string = 'rgba(0,0,0,1)';
     @ViewChild('canvaswhiteboardcolorpicker') canvas: ElementRef;
 
     @Input() readonly showColorPicker: boolean = false;
@@ -122,15 +121,15 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
         this.onToggleColorPicker.emit(!this.showColorPicker);
     }
 
-    private _getColor(event: any) {
+    determineColorFromCanvas(event: any) {
         let canvasRect = this._context.canvas.getBoundingClientRect();
         let imageData = this._context.getImageData(event.clientX - canvasRect.left, event.clientY - canvasRect.top, 1, 1);
 
         return `rgba(${imageData.data[0]}, ${imageData.data[1]}, ${imageData.data[2]}, ${imageData.data[3]})`;
     }
 
-    selectColor(event: any) {
-        this.onColorSelected.emit(this._getColor(event));
+    selectColor(color: string) {
+        this.onColorSelected.emit(color);
         this.toggleColorPicker(null);
     }
 }

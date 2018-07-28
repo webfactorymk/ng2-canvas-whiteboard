@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_whiteboard_shape_1 = require("./canvas-whiteboard-shape");
+var canvas_whiteboard_point_1 = require("../canvas-whiteboard-point");
 var StarShape = (function (_super) {
     __extends(StarShape, _super);
     function StarShape(positionPoint, options, radius, spikes) {
@@ -21,12 +22,6 @@ var StarShape = (function (_super) {
     }
     StarShape.prototype.draw = function (context) {
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
-        // context.fillStyle = this.options.fillStyle;
         var rotation = Math.PI / 2 * 3;
         var spikeX = this.positionPoint.x;
         var spikeY = this.positionPoint.y;
@@ -51,10 +46,16 @@ var StarShape = (function (_super) {
             context.fill();
         }
     };
-    StarShape.prototype.onUpdateReceived = function (update) {
-        this.radius = Math.sqrt(Math.pow(update.x - this.positionPoint.x, 2) + Math.pow(update.y - this.positionPoint.y, 2));
+    StarShape.prototype.drawPreview = function (context) {
+        this.positionPoint = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width / 2, context.canvas.height / 2);
+        this.radius = this.calculateRadius(context.canvas.width - 2, context.canvas.height / 2);
+        this.draw(context);
     };
-    StarShape.prototype.onStopReceived = function (update) {
+    StarShape.prototype.onUpdateReceived = function (update) {
+        this.radius = this.calculateRadius(update.x, update.y);
+    };
+    StarShape.prototype.calculateRadius = function (x, y) {
+        return Math.sqrt(Math.pow(x - this.positionPoint.x, 2) + Math.pow(y - this.positionPoint.y, 2));
     };
     return StarShape;
 }(canvas_whiteboard_shape_1.CanvasWhiteboardShape));

@@ -13,7 +13,7 @@ var core_1 = require("@angular/core");
 var CanvasWhiteboardColorPickerComponent = (function () {
     function CanvasWhiteboardColorPickerComponent(_elementRef) {
         this._elementRef = _elementRef;
-        this.selectedColor = "rgba(0,0,0,1)";
+        this.selectedColor = 'rgba(0,0,0,1)';
         this.showColorPicker = false;
         this.onToggleColorPicker = new core_1.EventEmitter();
         this.onColorSelected = new core_1.EventEmitter();
@@ -57,13 +57,13 @@ var CanvasWhiteboardColorPickerComponent = (function () {
         }
         this.onToggleColorPicker.emit(!this.showColorPicker);
     };
-    CanvasWhiteboardColorPickerComponent.prototype._getColor = function (event) {
+    CanvasWhiteboardColorPickerComponent.prototype.determineColorFromCanvas = function (event) {
         var canvasRect = this._context.canvas.getBoundingClientRect();
         var imageData = this._context.getImageData(event.clientX - canvasRect.left, event.clientY - canvasRect.top, 1, 1);
         return "rgba(" + imageData.data[0] + ", " + imageData.data[1] + ", " + imageData.data[2] + ", " + imageData.data[3] + ")";
     };
-    CanvasWhiteboardColorPickerComponent.prototype.selectColor = function (event) {
-        this.onColorSelected.emit(this._getColor(event));
+    CanvasWhiteboardColorPickerComponent.prototype.selectColor = function (color) {
+        this.onColorSelected.emit(color);
         this.toggleColorPicker(null);
     };
     return CanvasWhiteboardColorPickerComponent;
@@ -74,7 +74,7 @@ __decorate([
 ], CanvasWhiteboardColorPickerComponent.prototype, "selectedColor", void 0);
 __decorate([
     core_1.ViewChild('canvaswhiteboardcolorpicker'),
-    __metadata("design:type", core_1.ElementRef)
+    __metadata("design:type", typeof (_a = typeof core_1.ElementRef !== "undefined" && core_1.ElementRef) === "function" && _a || Object)
 ], CanvasWhiteboardColorPickerComponent.prototype, "canvas", void 0);
 __decorate([
     core_1.Input(),
@@ -99,10 +99,11 @@ CanvasWhiteboardColorPickerComponent = __decorate([
             '(document:mousedown)': 'closeOnExternalClick($event)',
             '(document:touchstart)': 'closeOnExternalClick($event)',
         },
-        template: "\n        <div [hidden]=\"showColorPicker\" class=\"canvas-whiteboard-colorpicker-input\"\n               (click)=\"toggleColorPicker($event)\">\n               <div class=\"selected-color-type-wrapper\"><ng-content></ng-content></div>\n               <div class=\"selected-color-preview\" [style.background]=\"selectedColor\"></div>\n        </div>\n        <div [hidden]=\"!showColorPicker\" class=\"canvas-whiteboard-colorpicker-wrapper\">\n            <div (click)=\"selectColor('rgba(0,0,0,0)')\">Transparent</div>\n            <canvas #canvaswhiteboardcolorpicker class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n                    (click)=\"selectColor($event)\"></canvas>\n        </div>\n    ",
-        styles: ["\n        .selected-color-preview {\n            width: 100%;\n            height: 20%;\n            position: absolute;\n            bottom: 0;\n            left: 0;\n        }\n        \n        .selected-color-type-wrapper {\n            display: inline-block;\n            height: 100%;\n            width: 100%;\n            text-align: center;\n        }\n        \n        .canvas-whiteboard-colorpicker {\n            padding: 4px;\n            background: #000;\n            border: 1px solid #afafaf;\n        }\n\n        @media (min-width: 401px) {\n            .canvas-whiteboard-colorpicker {\n                position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n\n        .canvas-whiteboard-colorpicker-input {\n            display: inline-block;\n            position:relative;\n            width: 44px;\n            height: 44px;\n            margin: 5px;\n            cursor: pointer;\n            color: #000;\n        }\n    "]
+        template: "\n        <div [hidden]=\"showColorPicker\" class=\"canvas-whiteboard-colorpicker-input\"\n               (click)=\"toggleColorPicker($event)\">\n               <div class=\"selected-color-type-wrapper\"><ng-content></ng-content></div>\n               <div class=\"selected-color-preview\" [style.background]=\"selectedColor\"></div>\n        </div>\n        <div [hidden]=\"!showColorPicker\" class=\"canvas-whiteboard-colorpicker-wrapper\">\n            <div (click)=\"selectColor('transparent')\">Transparent</div>\n            <canvas #canvaswhiteboardcolorpicker class=\"canvas-whiteboard-colorpicker\" width=\"284\" height=\"155\"\n                    (click)=\"selectColor(determineColorFromCanvas($event))\"></canvas>\n        </div>\n    ",
+        styles: ["\n        .selected-color-preview {\n            width: 100%;\n            height: 20%;\n            position: absolute;\n            bottom: 0;\n            left: 0;\n        }\n        \n        .selected-color-type-wrapper {\n            display: inline-block;\n            height: 100%;\n            width: 100%;\n            text-align: center;\n        }\n        \n        .canvas-whiteboard-colorpicker-wrapper {\n            border: 1px solid #afafaf;\n            color: #000;\n        }\n\n        @media (min-width: 401px) {\n            .canvas-whiteboard-colorpicker-wrapper {\n                position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n\n        .canvas-whiteboard-colorpicker-input {\n            display: inline-block;\n            position:relative;\n            width: 44px;\n            height: 44px;\n            margin: 5px;\n            cursor: pointer;\n            color: #000;\n        }\n    "]
     }),
-    __metadata("design:paramtypes", [core_1.ElementRef])
+    __metadata("design:paramtypes", [typeof (_b = typeof core_1.ElementRef !== "undefined" && core_1.ElementRef) === "function" && _b || Object])
 ], CanvasWhiteboardColorPickerComponent);
 exports.CanvasWhiteboardColorPickerComponent = CanvasWhiteboardColorPickerComponent;
+var _a, _b;
 //# sourceMappingURL=canvas-whiteboard-colorpicker.component.js.map

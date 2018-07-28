@@ -8,6 +8,8 @@ var CanvasWhiteboardShape = (function () {
         this.options = options || new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions();
         this.isVisible = true;
     }
+    CanvasWhiteboardShape.prototype.onStopReceived = function (update) {
+    };
     return CanvasWhiteboardShape;
 }());
 exports.CanvasWhiteboardShape = CanvasWhiteboardShape;

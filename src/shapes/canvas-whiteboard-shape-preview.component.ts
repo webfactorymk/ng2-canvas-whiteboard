@@ -18,7 +18,7 @@ import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "../canvas-whit
 @Component({
     selector: "canvas-whiteboard-shape-preview",
     template: `
-        <canvas #canvasWhiteboardShapePreview width="60px" height="60px" class="canvas-whiteboard-shape-preview-canvas"></canvas>
+        <canvas #canvasWhiteboardShapePreview width="50px" height="50px" class="canvas-whiteboard-shape-preview-canvas"></canvas>
     `,
     styles: [`
         .canvas-whiteboard-shape-preview-canvas {
@@ -50,17 +50,14 @@ export class CanvasWhiteboardShapePreviewComponent implements OnInit, AfterViewI
         if (!this.canvas) return;
 
         let context: CanvasRenderingContext2D = this.canvas.nativeElement.getContext("2d");
-        console.log(context);
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        let concreteShape = new this.shapeConstructor(
-            new CanvasWhiteboardPoint(context.canvas.width / 2, context.canvas.height / 2),
+
+       let concreteShape = new this.shapeConstructor(
+            new CanvasWhiteboardPoint(0, 0),
             Object.assign(new CanvasWhiteboardShapeOptions(), this.shapeOptions)
         );
 
-        let update = new CanvasWhiteboardUpdate(context.canvas.width - 2, context.canvas.height / 2);
-        concreteShape.onUpdateReceived(update);
-
-        concreteShape.draw(context);
+        concreteShape.drawPreview(context);
     }
 
     ngOnDestroy(): void {

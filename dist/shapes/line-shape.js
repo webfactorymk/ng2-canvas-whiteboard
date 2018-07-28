@@ -24,20 +24,18 @@ var LineShape = (function (_super) {
             return;
         context.beginPath();
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
         context.lineTo(this.endPosition.x, this.endPosition.y);
         context.closePath();
         context.stroke();
     };
+    LineShape.prototype.drawPreview = function (context) {
+        this.positionPoint = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(0, 0);
+        this.endPosition = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width, context.canvas.height);
+        this.draw(context);
+    };
     LineShape.prototype.onUpdateReceived = function (update) {
         this.endPosition = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(update.x, update.y);
-    };
-    LineShape.prototype.onStopReceived = function (update) {
     };
     return LineShape;
 }(canvas_whiteboard_shape_1.CanvasWhiteboardShape));

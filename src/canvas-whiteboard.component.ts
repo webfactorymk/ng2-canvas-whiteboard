@@ -122,7 +122,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() shadowBlur: number = 10;
     @Input() shapeSelectorEnabled: boolean = true;
     @Input() showShapeSelector: boolean = false;
-    @Input() fillColor: string = "rgba(0,0,0,1)";
+    @Input() fillColor: string = "rgba(0,0,0,0)";
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();

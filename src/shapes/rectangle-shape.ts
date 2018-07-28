@@ -7,7 +7,7 @@ export class RectangleShape extends CanvasWhiteboardShape {
     width: number;
     height: number;
 
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, width?: number, height?: number) {
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, width?: number, height?: number) {
         super(positionPoint, options);
         this.width = width || 0;
         this.height = height || 0;
@@ -18,17 +18,10 @@ export class RectangleShape extends CanvasWhiteboardShape {
         context.beginPath();
 
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
-        // context.fillStyle = this.options.fillStyle;
 
         context.rect(this.positionPoint.x, this.positionPoint.y, this.width, this.height);
 
         context.stroke();
-
         if (this.options.shouldFillShape) {
             context.fill();
         }
@@ -36,11 +29,15 @@ export class RectangleShape extends CanvasWhiteboardShape {
         context.closePath();
     }
 
+    drawPreview(context: CanvasRenderingContext2D) {
+        this.positionPoint = new CanvasWhiteboardPoint(2, 2);
+        this.width = context.canvas.width - 4;
+        this.height = context.canvas.height - 4;
+        this.draw(context);
+    }
+
     onUpdateReceived(update: CanvasWhiteboardUpdate) {
         this.width = update.x - this.positionPoint.x;
         this.height = update.y - this.positionPoint.y;
-    }
-
-    onStopReceived(update: CanvasWhiteboardUpdate) {
     }
 }

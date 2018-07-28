@@ -1,4 +1,4 @@
-import { ElementRef, EventEmitter } from "@angular/core";
+import { ElementRef } from "@angular/core";
 import { CanvasWhiteboardShapeService, INewCanvasWhiteboardShape } from "./canvas-whiteboard-shape.service";
 import { CanvasWhiteboardShape } from "./canvas-whiteboard-shape";
 import { Observable } from "rxjs/Observable";
@@ -9,8 +9,8 @@ export declare class CanvasWhiteboardShapeSelectorComponent {
     readonly showShapeSelector: boolean;
     readonly selectedShapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
     readonly shapeOptions: CanvasWhiteboardShapeOptions;
-    onToggleShapeSelector: EventEmitter<boolean>;
-    onShapeSelected: EventEmitter<INewCanvasWhiteboardShape<CanvasWhiteboardShape>>;
+    onToggleShapeSelector: any;
+    onShapeSelected: any;
     registeredShapes$: Observable<INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]>;
     constructor(_elementRef: ElementRef, _canvasWhiteboardShapeService: CanvasWhiteboardShapeService);
     selectShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): void;

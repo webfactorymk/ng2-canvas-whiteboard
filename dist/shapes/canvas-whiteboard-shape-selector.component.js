@@ -66,10 +66,10 @@ CanvasWhiteboardShapeSelectorComponent = __decorate([
             '(document:touchstart)': 'closeOnExternalClick($event)',
         },
         template: "\n        <div *ngIf=\"!showShapeSelector\" (click)=\"toggleShapeSelector($event)\" class=\"canvas-whiteboard-shape-selector-selected-preview\">\n            <canvas-whiteboard-shape-preview [shapeConstructor]=\"selectedShapeConstructor\" [shapeOptions]=\"shapeOptions\"></canvas-whiteboard-shape-preview>\n        </div>\n        <div class=\"canvas-whiteboard-shape-selector-wrapper\" *ngIf=\"showShapeSelector\">\n              <canvas-whiteboard-shape-preview *ngFor=\"let shapeConstructor of registeredShapes$ | async\" \n              [shapeConstructor]=\"shapeConstructor\"\n              [shapeOptions]=\"shapeOptions\"\n              (click)=\"selectShape(shapeConstructor)\"></canvas-whiteboard-shape-preview>\n        </div>\n    ",
-        styles: ["\n        .canvas-whiteboard-shape-selector-selected-preview {\n             vertical-align: bottom;\n             display: inline-block;\n        }\n        \n        .canvas-whiteboard-shape-selector-wrapper {\n            display: inline-block;\n            padding: 4px;\n            border: 1px solid #afafaf;\n        }\n\n        @media (min-width: 401px) {\n            .canvas-whiteboard-shape-selector-wrapper {\n                position: absolute;\n                top: 0;\n                right: 100%;\n            }\n        }\n    "]
+        styles: ["\n        .canvas-whiteboard-shape-selector-selected-preview {\n             vertical-align: bottom;\n             display: inline-block;\n        }\n        \n        .canvas-whiteboard-shape-selector-wrapper {\n            display: block;\n            padding: 4px;\n            border: 1px solid #afafaf;\n        }\n\n        @media (min-width: 401px) {\n            .canvas-whiteboard-shape-selector-wrapper {\n            }\n        }\n    "]
     }),
-    __metadata("design:paramtypes", [core_1.ElementRef,
-        canvas_whiteboard_shape_service_1.CanvasWhiteboardShapeService])
+    __metadata("design:paramtypes", [typeof (_a = typeof core_1.ElementRef !== "undefined" && core_1.ElementRef) === "function" && _a || Object, canvas_whiteboard_shape_service_1.CanvasWhiteboardShapeService])
 ], CanvasWhiteboardShapeSelectorComponent);
 exports.CanvasWhiteboardShapeSelectorComponent = CanvasWhiteboardShapeSelectorComponent;
+var _a;
 //# sourceMappingURL=canvas-whiteboard-shape-selector.component.js.map

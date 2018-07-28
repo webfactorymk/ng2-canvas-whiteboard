@@ -6,7 +6,7 @@ import {CanvasWhiteboardUpdate} from "../canvas-whiteboard-update.model";
 export class LineShape extends CanvasWhiteboardShape {
     endPosition: CanvasWhiteboardPoint;
 
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, endPosition?: CanvasWhiteboardPoint) {
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, endPosition?: CanvasWhiteboardPoint) {
         super(positionPoint, options);
         this.endPosition = endPosition || new CanvasWhiteboardPoint(this.positionPoint.x, this.positionPoint.y)
     }
@@ -14,13 +14,7 @@ export class LineShape extends CanvasWhiteboardShape {
     draw(context: CanvasRenderingContext2D) {
         if (!this.endPosition) return;
         context.beginPath();
-
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
 
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
         context.lineTo(this.endPosition.x, this.endPosition.y);
@@ -29,10 +23,13 @@ export class LineShape extends CanvasWhiteboardShape {
         context.stroke();
     }
 
-    onUpdateReceived(update: CanvasWhiteboardUpdate) {
-        this.endPosition = new CanvasWhiteboardPoint(update.x, update.y);
+    drawPreview(context: CanvasRenderingContext2D) {
+        this.positionPoint = new CanvasWhiteboardPoint(0, 0);
+        this.endPosition = new CanvasWhiteboardPoint(context.canvas.width, context.canvas.height);
+        this.draw(context);
     }
 
-    onStopReceived(update: CanvasWhiteboardUpdate) {
+    onUpdateReceived(update: CanvasWhiteboardUpdate) {
+        this.endPosition = new CanvasWhiteboardPoint(update.x, update.y);
     }
 }

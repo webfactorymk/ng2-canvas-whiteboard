@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_whiteboard_shape_1 = require("./canvas-whiteboard-shape");
+var canvas_whiteboard_point_1 = require("../canvas-whiteboard-point");
 var CircleShape = (function (_super) {
     __extends(CircleShape, _super);
     function CircleShape(positionPoint, options, radius) {
@@ -22,22 +23,22 @@ var CircleShape = (function (_super) {
         context.beginPath();
         context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
-        // context.fillStyle = this.options.fillStyle;
         context.stroke();
         if (this.options.shouldFillShape) {
             context.fill();
         }
         context.closePath();
     };
-    CircleShape.prototype.onUpdateReceived = function (update) {
-        this.radius = Math.sqrt(Math.pow(update.x - this.positionPoint.x, 2) + Math.pow(update.y - this.positionPoint.y, 2));
+    CircleShape.prototype.drawPreview = function (context) {
+        this.positionPoint = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width / 2, context.canvas.height / 2);
+        this.radius = this.calculateRadius(context.canvas.width - 2, context.canvas.height / 2);
+        this.draw(context);
     };
-    CircleShape.prototype.onStopReceived = function (update) {
+    CircleShape.prototype.onUpdateReceived = function (update) {
+        this.radius = this.calculateRadius(update.x, update.y);
+    };
+    CircleShape.prototype.calculateRadius = function (x, y) {
+        return Math.sqrt(Math.pow(x - this.positionPoint.x, 2) + Math.pow(y - this.positionPoint.y, 2));
     };
     return CircleShape;
 }(canvas_whiteboard_shape_1.CanvasWhiteboardShape));

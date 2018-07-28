@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var canvas_whiteboard_shape_1 = require("./canvas-whiteboard-shape");
+var canvas_whiteboard_point_1 = require("../canvas-whiteboard-point");
 var RectangleShape = (function (_super) {
     __extends(RectangleShape, _super);
     function RectangleShape(positionPoint, options, width, height) {
@@ -24,12 +25,6 @@ var RectangleShape = (function (_super) {
             return;
         context.beginPath();
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
-        // context.fillStyle = this.options.fillStyle;
         context.rect(this.positionPoint.x, this.positionPoint.y, this.width, this.height);
         context.stroke();
         if (this.options.shouldFillShape) {
@@ -37,11 +32,15 @@ var RectangleShape = (function (_super) {
         }
         context.closePath();
     };
+    RectangleShape.prototype.drawPreview = function (context) {
+        this.positionPoint = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(2, 2);
+        this.width = context.canvas.width - 4;
+        this.height = context.canvas.height - 4;
+        this.draw(context);
+    };
     RectangleShape.prototype.onUpdateReceived = function (update) {
         this.width = update.x - this.positionPoint.x;
         this.height = update.y - this.positionPoint.y;
-    };
-    RectangleShape.prototype.onStopReceived = function (update) {
     };
     return RectangleShape;
 }(canvas_whiteboard_shape_1.CanvasWhiteboardShape));

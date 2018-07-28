@@ -4,8 +4,9 @@ import { CanvasWhiteboardPoint } from "../canvas-whiteboard-point";
 import { CanvasWhiteboardUpdate } from "../canvas-whiteboard-update.model";
 export declare class CircleShape extends CanvasWhiteboardShape {
     radius: number;
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, radius?: number);
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, radius?: number);
     draw(context: CanvasRenderingContext2D): void;
+    drawPreview(context: CanvasRenderingContext2D): void;
     onUpdateReceived(update: CanvasWhiteboardUpdate): void;
-    onStopReceived(update: CanvasWhiteboardUpdate): void;
+    calculateRadius(x: number, y: number): number;
 }

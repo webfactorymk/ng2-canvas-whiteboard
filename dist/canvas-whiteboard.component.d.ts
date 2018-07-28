@@ -1,4 +1,4 @@
-import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
+import { ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
 import { CanvasWhiteboardOptions } from "./canvas-whiteboard-options";
@@ -45,12 +45,12 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     shapeSelectorEnabled: boolean;
     showShapeSelector: boolean;
     fillColor: string;
-    onClear: EventEmitter<any>;
-    onUndo: EventEmitter<any>;
-    onRedo: EventEmitter<any>;
-    onBatchUpdate: EventEmitter<CanvasWhiteboardUpdate[]>;
-    onImageLoaded: EventEmitter<any>;
-    onSave: EventEmitter<string | Blob>;
+    onClear: any;
+    onUndo: any;
+    onRedo: any;
+    onBatchUpdate: any;
+    onImageLoaded: any;
+    onSave: any;
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
     private _imageElement;

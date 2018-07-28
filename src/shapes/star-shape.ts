@@ -7,7 +7,7 @@ export class StarShape extends CanvasWhiteboardShape {
     radius: number;
     spikes: number;
 
-    constructor(positionPoint: CanvasWhiteboardPoint, options: CanvasWhiteboardShapeOptions, radius?: number, spikes?: number) {
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, radius?: number, spikes?: number) {
         super(positionPoint, options);
         this.radius = radius || 0;
         this.spikes = this.spikes || 5;
@@ -15,12 +15,6 @@ export class StarShape extends CanvasWhiteboardShape {
 
     draw(context: CanvasRenderingContext2D) {
         Object.assign(context, this.options);
-        // context.lineWidth = this.options.lineWidth;
-        // context.lineCap = this.options.lineCap;
-        // context.lineJoin = this.options.lineJoin;
-        // context.shadowBlur = this.options.shadowBlur;
-        // context.strokeStyle = this.options.strokeStyle;
-        // context.fillStyle = this.options.fillStyle;
 
         let rotation = Math.PI / 2 * 3;
         let spikeX = this.positionPoint.x;
@@ -53,10 +47,17 @@ export class StarShape extends CanvasWhiteboardShape {
         }
     }
 
-    onUpdateReceived(update: CanvasWhiteboardUpdate) {
-        this.radius = Math.sqrt(Math.pow(update.x - this.positionPoint.x, 2) + Math.pow(update.y - this.positionPoint.y, 2));
+    drawPreview(context: CanvasRenderingContext2D) {
+        this.positionPoint = new CanvasWhiteboardPoint(context.canvas.width / 2, context.canvas.height / 2);
+        this.radius = this.calculateRadius(context.canvas.width - 2, context.canvas.height / 2);
+        this.draw(context);
     }
 
-    onStopReceived(update: CanvasWhiteboardUpdate) {
+    onUpdateReceived(update: CanvasWhiteboardUpdate) {
+        this.radius = this.calculateRadius(update.x, update.y);
+    }
+
+    calculateRadius(x: number, y: number): number {
+        return Math.sqrt(Math.pow(x - this.positionPoint.x, 2) + Math.pow(y - this.positionPoint.y, 2));
     }
 }

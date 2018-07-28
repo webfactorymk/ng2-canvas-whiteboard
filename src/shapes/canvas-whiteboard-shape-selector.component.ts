@@ -34,16 +34,13 @@ import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
         }
         
         .canvas-whiteboard-shape-selector-wrapper {
-            display: inline-block;
+            display: block;
             padding: 4px;
             border: 1px solid #afafaf;
         }
 
         @media (min-width: 401px) {
             .canvas-whiteboard-shape-selector-wrapper {
-                position: absolute;
-                top: 0;
-                right: 100%;
             }
         }
     `]
