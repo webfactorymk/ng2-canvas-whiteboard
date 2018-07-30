@@ -1,4 +1,4 @@
-import { ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
+import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
 import { CanvasWhiteboardOptions } from "./canvas-whiteboard-options";
@@ -41,16 +41,15 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     downloadedFileName: string;
     lineJoin: string;
     lineCap: string;
-    shadowBlur: number;
     shapeSelectorEnabled: boolean;
     showShapeSelector: boolean;
     fillColor: string;
-    onClear: any;
-    onUndo: any;
-    onRedo: any;
-    onBatchUpdate: any;
-    onImageLoaded: any;
-    onSave: any;
+    onClear: EventEmitter<any>;
+    onUndo: EventEmitter<any>;
+    onRedo: EventEmitter<any>;
+    onBatchUpdate: EventEmitter<CanvasWhiteboardUpdate[]>;
+    onImageLoaded: EventEmitter<any>;
+    onSave: EventEmitter<string | Blob>;
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
     private _imageElement;
@@ -66,6 +65,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _updateTimeout;
     private _canvasWhiteboardServiceSubscriptions;
     private _resizeSubscription;
+    private _registeredShapesSubscription;
     selectedShapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
     canvasWhiteboardShapePreviewOptions: CanvasWhiteboardShapeOptions;
     constructor(ngZone: NgZone, _changeDetector: ChangeDetectorRef, _canvasWhiteboardService: CanvasWhiteboardService, _canvasWhiteboardShapeService: CanvasWhiteboardShapeService);
@@ -190,7 +190,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the undo button has been disabled
      */
-    undo(): void;
+    undo(callbackFn?: Function): void;
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
      * @param {string} updateUUID
@@ -209,7 +209,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the redo button has been disabled
      */
-    redo(): void;
+    redo(callbackFn?: any): void;
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid visible
      * @param {string} updateUUID
@@ -238,7 +238,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * If we released the touch, the position will be placed in the changedTouches object
      * If it is not a touch event, use the original mouse event received
      * @param eventData
-     * @return {EventPositionPoint}
+     * @return {CanvasWhiteboardPoint}
      * @private
      */
     private _getCanvasEventPosition(eventData);
@@ -270,18 +270,23 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     private _redrawHistory();
     /**
-     * Draws a CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
-     * are first reverse mapped so that they can be drawn in the proper place. The update
+     * Draws a CanvasWhiteboardUpdate object on the canvas.
+     * The coordinates are first reverse mapped so that they can be drawn in the proper place. The update
      * is afterwards added to the undoStack so that it can be
      *
-     * If the CanvasWhiteboardUpdate Type is "drag", the context is used to draw on the canvas.
+     * If the CanvasWhiteboardUpdate Type is "start", a new "selectedShape" is created.
+     * If the CanvasWhiteboardUpdate Type is "drag", the shape is taken from the shapesMap and then it's updated.
+     * Afterwards the context is used to draw the shape on the canvas.
      * This function saves the last X and Y coordinates that were drawn.
      *
      * @param {CanvasWhiteboardUpdate} update The update object.
      */
     private _draw(update);
+    /**
+     * Delete everything from the screen, redraw the background, and then redraw all the shapes from the shapesMap
+     */
     drawAllShapes(): void;
-    private _setCurrentShapeToUpdate(update);
+    private _addCurrentShapeDataToAnUpdate(update);
     generateShapePreviewOptions(): CanvasWhiteboardShapeOptions;
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning

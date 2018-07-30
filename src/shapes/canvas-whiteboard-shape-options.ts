@@ -5,7 +5,6 @@ export class CanvasWhiteboardShapeOptions {
     lineWidth?: number;
     lineJoin?: string;
     lineCap?: string;
-    shadowBlur?: number;
 
     constructor() {
         this.shouldFillShape = false;
@@ -14,7 +13,6 @@ export class CanvasWhiteboardShapeOptions {
         this.lineWidth = 2;
         this.lineJoin = "round";
         this.lineCap = "round";
-        this.shadowBlur = 0;
     }
 
     // stringify() {

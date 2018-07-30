@@ -1,13 +1,30 @@
 # ng2-canvas-whiteboard
 
+
+## Canvas version changes
+v2.0.0 and Premade Shapes are here. Since this is a breaking changes version,
+here are the things that have changed:
+* Added shapes and shapes service for registering new shapes (see below)
+* Added a shapesMap to keep check of which shapes are drawn (maybe for drag and move in the future)
+* Added the `export interface CanvasWhiteboardOptions` to a different file so please reimport it
+* Made the undo function to only undo your drawings and not someone else
+* After a drawing, remove the redo items from the stack
+* Changed the `CanvasWhiteboardUpdate` deserialize and serialize methods and variables, so please check them out. (Example: the deserializeJson uses JSON.parse on the data received)
+* Added debounce timer for window resize to improve performance and redrawing
+* Added `fillColor` and fill color colorpicker
+* Added the text: "Transparent" in colorpickers for people to be able to select transparent color
+* The undo and redo outputs now output the UUID of the shape to undo/redo
+
 Add a canvas component which the user can draw on. 
 <br/>The coordinates are drawn as a percentage of the containers width and height.
 <br/>To reuse them anywhere, they need to be remapped (multiply the received x and y coordinates with their width and height accordingly)
 
-**Features:**<br/> 
+**Features:**<br/>
+- Premade Shapes
+- The ability to create custom premade shapes
 - Supports touch.
 - Supports UNDO/REDO.
-- Implements a color picker.
+- Implements a color picker for stroke and fill colors.
 - Sends outputs on every action.
 - Contains inputs for multiple modifications.
 - Save drawn images
@@ -122,26 +139,26 @@ When the drawing is started, after 100 ms all the signals in between are added t
 emitted by the **onBatchUpdate** emitter. If received, the user can then manipulate with the sent signals.
 
 # Inputs
-### `batchUpdateTimeoutDuration: number` (default: 100)
+##### `batchUpdateTimeoutDuration: number` (default: 100)
 The time in milliseconds that a batch update should be sent after drawing.
 
-### `imageUrl: string` (optional)
+##### `imageUrl: string` (optional)
 The path to the image. If not specified, the drawings will be placed on the background color of the canvas
 
-### `aspectRatio: number` (optional)
+##### `aspectRatio: number` (optional)
 If specified, the canvas will be resized according to this ratio
 
-#### `drawButtonClass: string`<br/>`clearButtonClass: string` <br/>`undoButtonClass: string` <br/>`redoButtonClass: string`<br/>`saveDataButtonClass: string`
+##### `drawButtonClass: string`<br/>`clearButtonClass: string` <br/>`undoButtonClass: string` <br/>`redoButtonClass: string`<br/>`saveDataButtonClass: string`
 The classes of the draw, clear, undo and redo buttons. These classes are used in "\<i>" tags. <br/>
 Example:  
 ```html
 [drawButtonClass]="'fa fa-pencil fa-2x'"
 [clearButtonClass]="'fa fa-eraser fa-2x canvas_whiteboard_button-clear'"
    ```
-#### `drawButtonEnabled: boolean` (default: true) <br/>`clearButtonEnabled: boolean` (default: true) <br/>`undoButtonEnabled: boolean` (default: false)<br/>`redoButtonEnabled: boolean` (default: false)<br/>`saveDataButtonEnabled: boolean` (default: false)
+##### `drawButtonEnabled: boolean` (default: true) <br/>`clearButtonEnabled: boolean` (default: true) <br/>`undoButtonEnabled: boolean` (default: false)<br/>`redoButtonEnabled: boolean` (default: false)<br/>`saveDataButtonEnabled: boolean` (default: false)
 Specifies whether or not the button for drawing or clearing the canvas should be shown.
 
-#### `drawButtonText, clearButtonText, undoButtonText, redoButtonText, saveDataButtonText`
+##### `drawButtonText, clearButtonText, undoButtonText, redoButtonText, saveDataButtonText`
 Specify the text to add to the buttons, default is no text
 ```html
 [drawButtonText]="'Draw'"
@@ -201,36 +218,55 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 })
 ```
 
-### `colorPickerEnabled: boolean` (default: false)
-This allows the adding of a colorPicker that the user can choose to draw with and the original colors are kept when redrawing
+##### `colorPickerEnabled: boolean` (default: false)
+This allows the adding of a colorPickers that the user can choose to draw with (stroke and fill color),
+and the original colors are kept when redrawing
 
-### `lineWidth: number` (default: 2)
+##### `lineWidth: number` (default: 2)
 This input controls the drawing pencil size
 
-### `strokeColor: string` (default: "rgb(216, 184, 0)")
+##### `strokeColor: string` (default: "rgba(0, 0, 0, 1)")
 This input control the color of the brush
 
-### `shouldDownloadDrawing: boolean` (default: true)
+##### `fillColor: string` (default: "rgba(0, 0, 0, 0) -> transparent")
+This input control the background color of the shapes
+
+##### `shouldDownloadDrawing: boolean` (default: true)
 This input control if the image created when clicking the save button should be downloaded right away.
 
-### `startingColor: string` (default: "#fff")
+##### `startingColor: string` (default: "#fff")
 This input control is used to fill the canvas with the specified color at initialization and on resize events.
 
-### `scaleFactor: number` (default: 0)
+##### `scaleFactor: number` (default: 0)
 This input controls the generation of the X and Y coordinates with a given scaleOffset. If not provided, the current with and height of the bounding rect and the canvas object will be used so that it works when transforming the canvas with css.
 
-### `drawingEnabled: boolean` (default: false)
+##### `drawingEnabled: boolean` (default: false)
 This input controls if the drawing should be enabled from the start, instead of waiting for the user to click draw
 
-### `showColorPicker: boolean` (default: false)
-This input controls if the CanvasWhiteboardColorPickerComponent should be shown programatically
+##### `showStrokeColorPicker: boolean` (default: false)
+This input controls if the CanvasWhiteboardColorPickerComponent for the `strokeColor` should be shown programmatically
 
-### `downloadedFileName: string` (no default value)
+##### `showFillColorPicker: boolean` (default: false)
+This input controls if the CanvasWhiteboardColorPickerComponent for the `fillColor` should be shown programmatically
+
+##### `downloadedFileName: string` (no default value)
 This input controls the name of the file that will be downloaded when an image is saved.
 If the `downloadCanvasImage` method is called with a `fileName` as a third parameter, then it will have priority over everything
 If the `fileName` is not provided, then this Input will have priority. If this input is not provided as well,
 the image will be saved as `canvas_drawing_" + new Date().valueOf()`;
 At the end the file extension will be added so that it can be opened by a particular app.
+
+##### `lineJoin: string` (default: "round")
+The lineJoin property sets or returns the type of corner created, when two lines meet.
+
+##### `lineCap: string` (default: "round")
+The lineCap property sets or returns the style of the end caps for a line.
+
+##### `shapeSelectorEnabled: boolean` (default: true)
+This input controls if the CanvasWhiteboardShapeSelectorComponent will be enabled so that the user can pick other shapes via the View
+
+##### `showShapeSelector: boolean` (default: false)
+This input controls if the CanvasWhiteboardShapeSelectorComponent should be shown programmatically
 
 ## Event emitters
 ```typescript
@@ -246,6 +282,78 @@ At the end the file extension will be added so that it can be opened by a partic
 **`onUndo`** is emitted when the canvas has done an UNDO function, emits an UUID (string) for the continuous last drawn shape undone. <br/>
 **`onClear`** is emitted when the canvas has done a REDO function, emits an UUID (string) for the continuous shape redrawn. <br/>
 **`onSave`** is emitted when the canvas has done a SAVE function, emits a Data URL or a Blob (IE). <br/>
+
+# Canvas Whiteboard Shapes
+Every shape in the application extends the ```abstract class CanvasWhiteboardShape```. This class adds predefined methods so that
+the creator of the shape can follow them and decide how his shape should be drawn.
+
+Each shape is made of a starting position point of type ```CanvasWhiteboardPoint```, and an options object
+which may be different for each shape, and it's of type ```CanvasWhiteboardShapeOptions```.
+
+Each predefined shape must know how to:
+- Draw itself given a canvas context
+- Draw it's preview given a canvas context
+- Update itself given a ```CanvasWhiteboardUpdate```
+
+All of the predefined shapes are registered and available in the CanvasWhiteboardShapeService which the user can have to register/unregister additional shapes.
+
+To create a new shape, you must create a class which extends the ```abstract class CanvasWhiteboardShape``` .
+
+From there you need to implement the required methods.
+
+After all of this is complete, you need to register this shape in the canvas whiteboard shape service (for the sake of convention).
+
+```typescript
+class AppComponent {
+     constructor(private _canvasWhiteboardService: CanvasWhiteboardService, private _canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
+            _canvasWhiteboardShapeService.registerShape(RandomShape);
+     }
+}
+
+export class RandomShape extends CanvasWhiteboardShape {
+
+    draw(context: CanvasRenderingContext2D): any {
+        // Tell the canvas how to draw your shape here
+
+        // Use the selected options from the canvas whiteboard
+        // Object.assign(context, this.options);
+
+        // Start drawing
+        // context.save();
+        // context.beginPath();
+        // context.stroke();
+        // context.fill();
+        // context.closePath();
+        // context.restore();
+    }
+
+    drawPreview(context: CanvasRenderingContext2D): any {
+        // Provide info or update this object when it's needed for preview drawing.
+        // Example: The CIRCLE selects the center point and updates the radius.
+        // Example: The RECT selects 0,0 and updates width and height to 100%.
+
+        // Then call the draw method with the updated object if you want your shape
+        // to have a proper preview.
+
+        // this.draw(context);
+    }
+
+    onUpdateReceived(update: CanvasWhiteboardUpdate): any {
+        // Choose what your shape does when an update is registered for it
+        // For example the CircleShape updates it's radius
+    }
+
+    onStopReceived(update: CanvasWhiteboardUpdate): void {
+        // This method is optional but CAN be overriden
+    }
+}
+ ```
+# Canvas Whiteboard Shape Selector
+The `CanvasWhiteboardComponent` is now equipped with a shape selector (since the free hand drawing is now a shape because of consistency),
+The shape selector can be managed or hidden with inputs, and it basically calls the `CanvasWhiteboardShapeService` and draws all the
+registered shapes so that they can be selected. They are drawn with the selected fill/stroke color for preview.
+
+![CanvasWhiteboard shape preview](example/canvas_premade_shapes_selector.png)
 
 # Canvas Whiteboard Service
 The ```CanvasWhiteboardService``` will be used by the canvas to listen to outside events.
@@ -267,10 +375,10 @@ export class AppComponent {
          this._canvasWhiteboardService.clearCanvas();
          break;
        case VCDataMessageType.canvas_undo:
-         this._canvasWhiteboardService.undoCanvas();
+         this._canvasWhiteboardService.undoCanvas(newMessage.UUID);
          break;
        case VCDataMessageType.canvas_redo:
-         this._canvasWhiteboardService.redoCanvas();
+         this._canvasWhiteboardService.redoCanvas(newMessage.UUID);
          break;
      }
   }
@@ -341,9 +449,12 @@ An example of a drawn image and shape on the canvas with additional css for the 
 
 ![Image in CanvasWhiteboard](example/canvas_draw_image.png)
 
+
+# Example of a full fledged WebRTC app which shares drawing signals
+![Image in FulFledged WebRTC App](example/canvas_demo_app.png)
+
 ## Current limitations
 
-- There are no pre-made shapes yet, only mouse / touch free drawing.
 - If there are problems with the sizing of the parent container, the canvas size will not be the wanted size.
 It may sometimes be width: 0, height: 0.
 If this is the case you may want to call a resize event for the window for the size to be recalculated.

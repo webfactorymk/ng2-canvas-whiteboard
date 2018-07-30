@@ -5,6 +5,5 @@ export declare class CanvasWhiteboardShapeOptions {
     lineWidth?: number;
     lineJoin?: string;
     lineCap?: string;
-    shadowBlur?: number;
     constructor();
 }

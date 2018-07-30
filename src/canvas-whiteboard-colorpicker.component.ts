@@ -13,11 +13,11 @@ import {
     template: `
         <div [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input"
                (click)="toggleColorPicker($event)">
-               <div class="selected-color-type-wrapper"><ng-content></ng-content></div>
+               <div class="selected-color-type-wrapper">{{previewText}}</div>
                <div class="selected-color-preview" [style.background]="selectedColor"></div>
         </div>
         <div [hidden]="!showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
-            <div (click)="selectColor('transparent')">Transparent</div>
+            <div (click)="selectColor('transparent')" class="transparent-color">Transparent</div>
             <canvas #canvaswhiteboardcolorpicker class="canvas-whiteboard-colorpicker" width="284" height="155"
                     (click)="selectColor(determineColorFromCanvas($event))"></canvas>
         </div>
@@ -36,6 +36,12 @@ import {
             height: 100%;
             width: 100%;
             text-align: center;
+            font-size: 14px;
+            color: #000;
+        }
+        
+        .transparent-color {
+            font-size: 14px;
         }
         
         .canvas-whiteboard-colorpicker-wrapper {
@@ -46,8 +52,6 @@ import {
         @media (min-width: 401px) {
             .canvas-whiteboard-colorpicker-wrapper {
                 position: absolute;
-                top: 0;
-                right: 100%;
             }
         }
 
@@ -64,6 +68,7 @@ import {
 })
 export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
+    @Input() previewText: string;
     @Input() readonly selectedColor: string = 'rgba(0,0,0,1)';
     @ViewChild('canvaswhiteboardcolorpicker') canvas: ElementRef;
 

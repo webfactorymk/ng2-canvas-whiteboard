@@ -25,8 +25,15 @@ export class CanvasWhiteboardUpdate {
     }
 
     static deserializeJson(json: any): CanvasWhiteboardUpdate {
-        return JSON.parse(json);
-        // r new CanvasWhiteboardUpdate(json['x'], json['y'], json['type'], json['stroke_color'], json['uuid'], json['visible']);
+        let parsedJson;
+        try {
+            parsedJson = JSON.parse(json);
+            return new CanvasWhiteboardUpdate(parsedJson['x'], parsedJson['y'], parsedJson['type'], parsedJson['uuid'], parsedJson['selectedShape'], parsedJson['selectedShapeOptions']);
+        } catch (e) {
+            console.error("The canvas whiteboard update is not p1" +
+                "arseable");
+            return null;
+        }
     }
 
     stringify(): string {
@@ -43,15 +50,5 @@ export class CanvasWhiteboardUpdate {
         }
 
         return JSON.stringify(objectToSerialize);
-        // let serializedUpdate = "{ \"x\": " + this._x.toFixed(3) + ", \"y\": " + this._y.toFixed(3) + ", \"type\": " + this._type;
-        //
-        // if (!onlyShowCoordinatesAndType) {
-        //     serializedUpdate += this._strokeColor ? (", \"stroke_color\": " + JSON.stringify(this._strokeColor)) : "";
-        //     serializedUpdate += this._uuid ? (", \"uuid\": " + JSON.stringify(this._uuid)) : "";
-        //     serializedUpdate += this._visible != null ? (", \"visible\": " + this._visible) : "";
-        // }
-        // serializedUpdate += " }";
-        //
-        // return serializedUpdate;
     }
 }

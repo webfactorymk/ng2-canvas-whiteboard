@@ -18,11 +18,11 @@ var CanvasWhiteboardService = (function () {
     CanvasWhiteboardService.prototype.clearCanvas = function () {
         this._canvasClearSubject.next();
     };
-    CanvasWhiteboardService.prototype.undoCanvas = function () {
-        this._canvasUndoSubject.next();
+    CanvasWhiteboardService.prototype.undoCanvas = function (updateUUD) {
+        this._canvasUndoSubject.next(updateUUD);
     };
-    CanvasWhiteboardService.prototype.redoCanvas = function () {
-        this._canvasRedoSubject.next();
+    CanvasWhiteboardService.prototype.redoCanvas = function (updateUUD) {
+        this._canvasRedoSubject.next(updateUUD);
     };
     return CanvasWhiteboardService;
 }());

@@ -33,7 +33,10 @@
     "canvas colorpicker",
     "free hand drawing",
     "shape drawing",
-    "shapes"
+    "shapes",
+    "premade shapes",
+    "custom shapes",
+    "custom premade shapes"
   ],
   "dependencies": {},
   "peerDependencies": {

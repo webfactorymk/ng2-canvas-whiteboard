@@ -14,4 +14,6 @@ export declare class CanvasWhiteboardShapeService {
     isRegisteredShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): boolean;
     registerShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): void;
     registerShapes(shapes: INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]): void;
+    unregisterShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): void;
+    unregisterShapes(shapes: INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]): void;
 }

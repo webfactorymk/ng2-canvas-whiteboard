@@ -63,4 +63,12 @@ export class CanvasWhiteboardShapeService {
                 )
         );
     }
+
+    unregisterShape(shape: INewCanvasWhiteboardShape<CanvasWhiteboardShape>) {
+        this._registeredShapesSubject.next(this.getCurrentRegisteredShapes().filter((registeredShape) => registeredShape != shape));
+    }
+
+    unregisterShapes(shapes: INewCanvasWhiteboardShape<CanvasWhiteboardShape>[]) {
+        this._registeredShapesSubject.next(this.getCurrentRegisteredShapes().filter((shape) => shapes.indexOf(shape) == -1));
+    }
 }
