@@ -1,37 +1,15 @@
-import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit } from '@angular/core';
+import { EventEmitter, ElementRef, OnInit, OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
 import { CanvasWhiteboardService } from "./canvas-whiteboard.service";
-export interface CanvasWhiteboardOptions {
-    batchUpdateTimeoutDuration?: number;
-    imageUrl?: string;
-    aspectRatio?: number;
-    strokeColor?: string;
-    lineWidth?: number;
-    drawButtonEnabled?: boolean;
-    drawButtonClass?: string;
-    drawButtonText?: string;
-    clearButtonEnabled?: boolean;
-    clearButtonClass?: string;
-    clearButtonText?: string;
-    undoButtonEnabled?: boolean;
-    undoButtonClass?: string;
-    undoButtonText?: string;
-    redoButtonEnabled?: boolean;
-    redoButtonClass?: string;
-    redoButtonText?: string;
-    saveDataButtonEnabled?: boolean;
-    saveDataButtonClass?: string;
-    saveDataButtonText?: string;
-    colorPickerEnabled?: boolean;
-    shouldDownloadDrawing?: boolean;
-    startingColor?: string;
-    scaleFactor?: number;
-    drawingEnabled?: boolean;
-    showColorPicker?: boolean;
-    downloadedFileName?: string;
-}
+import { CanvasWhiteboardOptions } from "./canvas-whiteboard-options";
+import { CanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape";
+import { CanvasWhiteboardShapeService, INewCanvasWhiteboardShape } from "./shapes/canvas-whiteboard-shape.service";
+import { CanvasWhiteboardShapeOptions } from "./shapes/canvas-whiteboard-shape-options";
 export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+    private ngZone;
+    private _changeDetector;
     private _canvasWhiteboardService;
+    private _canvasWhiteboardShapeService;
     options: CanvasWhiteboardOptions;
     batchUpdateTimeoutDuration: number;
     imageUrl: string;
@@ -58,8 +36,14 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     startingColor: string;
     scaleFactor: number;
     drawingEnabled: boolean;
-    showColorPicker: boolean;
+    showStrokeColorPicker: boolean;
+    showFillColorPicker: boolean;
     downloadedFileName: string;
+    lineJoin: string;
+    lineCap: string;
+    shapeSelectorEnabled: boolean;
+    showShapeSelector: boolean;
+    fillColor: string;
     onClear: EventEmitter<any>;
     onUndo: EventEmitter<any>;
     onRedo: EventEmitter<any>;
@@ -71,16 +55,20 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _imageElement;
     private _canDraw;
     private _clientDragging;
+    private _updateHistory;
     private _lastUUID;
-    private _lastPositionForUUID;
+    private _shapesMap;
     private _undoStack;
     private _redoStack;
-    private _drawHistory;
     private _batchUpdates;
     private _updatesNotDrawn;
     private _updateTimeout;
     private _canvasWhiteboardServiceSubscriptions;
-    constructor(_canvasWhiteboardService: CanvasWhiteboardService);
+    private _resizeSubscription;
+    private _registeredShapesSubscription;
+    selectedShapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    canvasWhiteboardShapePreviewOptions: CanvasWhiteboardShapeOptions;
+    constructor(ngZone: NgZone, _changeDetector: ChangeDetectorRef, _canvasWhiteboardService: CanvasWhiteboardService, _canvasWhiteboardShapeService: CanvasWhiteboardShapeService);
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
@@ -162,22 +150,18 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     getDrawingEnabled(): boolean;
     /**
-     * @deprecated Use toggleDrawingEnabled(): void
-     */
-    toggleShouldDraw(): void;
-    /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
     toggleDrawingEnabled(): void;
-    /**
-     * @deprecated Use setDrawingEnabled(drawingEnabled: boolean): void
-     */
-    setShouldDraw(drawingEnabled: boolean): void;
     /**
      * Set if drawing is enabled from the client using the canvas
      * @param {boolean} drawingEnabled
      */
     setDrawingEnabled(drawingEnabled: boolean): void;
+    /**
+     * @deprecated Please use the changeStrokeColor(newStrokeColor: string): void method
+     */
+    changeColor(newStrokeColor: string): void;
     /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
@@ -185,7 +169,15 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      *
      * @param {string} newStrokeColor The new stroke color
      */
-    changeColor(newStrokeColor: string): void;
+    changeStrokeColor(newStrokeColor: string): void;
+    /**
+     * Replaces the fill color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the fill color
+     *
+     * @param {string} newFillColor The new fill color
+     */
+    changeFillColor(newFillColor: string): void;
     /**
      * This method is invoked by the undo button on the canvas screen
      * It calls the global undo method and emits a notification after undoing.
@@ -198,7 +190,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the undo button has been disabled
      */
-    undo(): void;
+    undo(callbackFn?: Function): void;
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
      * @param {string} updateUUID
@@ -217,7 +209,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the redo button has been disabled
      */
-    redo(): void;
+    redo(callbackFn?: any): void;
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid visible
      * @param {string} updateUUID
@@ -246,7 +238,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * If we released the touch, the position will be placed in the changedTouches object
      * If it is not a touch event, use the original mouse event received
      * @param eventData
-     * @return {EventPositionPoint}
+     * @return {CanvasWhiteboardPoint}
      * @private
      */
     private _getCanvasEventPosition(eventData);
@@ -256,10 +248,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * was drawn on this update.
      *
      * @param {CanvasWhiteboardUpdate} update The CanvasWhiteboardUpdate object.
-     * @param {number} eventX The offsetX that needs to be mapped
-     * @param {number} eventY The offsetY that needs to be mapped
      */
-    private _prepareToSendUpdate(update, eventX, eventY);
+    private _prepareToSendUpdate(update);
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
@@ -280,17 +270,24 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     private _redrawHistory();
     /**
-     * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
-     * are first reverse mapped so that they can be drawn in the proper place. The update
+     * Draws a CanvasWhiteboardUpdate object on the canvas.
+     * The coordinates are first reverse mapped so that they can be drawn in the proper place. The update
      * is afterwards added to the undoStack so that it can be
      *
-     * If the CanvasWhiteboardUpdate Type is "drag", the context is used to draw on the canvas.
+     * If the CanvasWhiteboardUpdate Type is "start", a new "selectedShape" is created.
+     * If the CanvasWhiteboardUpdate Type is "drag", the shape is taken from the shapesMap and then it's updated.
+     * Afterwards the context is used to draw the shape on the canvas.
      * This function saves the last X and Y coordinates that were drawn.
      *
      * @param {CanvasWhiteboardUpdate} update The update object.
-     * @param {boolean} mappedCoordinates? The offsetX that needs to be mapped
      */
-    private _draw(update, mappedCoordinates?);
+    private _draw(update);
+    /**
+     * Delete everything from the screen, redraw the background, and then redraw all the shapes from the shapesMap
+     */
+    drawAllShapes(): void;
+    private _addCurrentShapeDataToAnUpdate(update);
+    generateShapePreviewOptions(): CanvasWhiteboardShapeOptions;
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
      * multiple updates are sent at the same time). If this method is called, after 100 ms all updates
@@ -387,13 +384,28 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * If no value is supplied (null/undefined) the current value will be negated and used.
      * @param {boolean} value
      */
-    toggleColorPicker(value: boolean): void;
+    toggleStrokeColorPicker(value: boolean): void;
+    /**
+     * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleFillColorPicker(value: boolean): void;
+    /**
+     * Toggles the shape selector window, delegating the showShapeSelector Input to the CanvasWhiteboardShapeSelectorComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleShapeSelector(value: boolean): void;
+    selectShape(newShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): void;
     /**
      * Unsubscribe from a given subscription if it is active
      * @param {Subscription} subscription
      * @private
      */
     private _unsubscribe(subscription);
+    private _generateUUID();
+    private _random4();
     /**
      * Unsubscribe from the service observables
      */

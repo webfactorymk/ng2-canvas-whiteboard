@@ -4,9 +4,16 @@ var core_1 = require("@angular/core");
 var canvas_whiteboard_update_model_1 = require("./canvas-whiteboard-update.model");
 var template_1 = require("./template");
 var canvas_whiteboard_service_1 = require("./canvas-whiteboard.service");
+var canvas_whiteboard_point_1 = require("./canvas-whiteboard-point");
+var canvas_whiteboard_shape_service_1 = require("./shapes/canvas-whiteboard-shape.service");
+var rxjs_1 = require("rxjs");
+var canvas_whiteboard_shape_options_1 = require("./shapes/canvas-whiteboard-shape-options");
 var CanvasWhiteboardComponent = (function () {
-    function CanvasWhiteboardComponent(_canvasWhiteboardService) {
+    function CanvasWhiteboardComponent(ngZone, _changeDetector, _canvasWhiteboardService, _canvasWhiteboardShapeService) {
+        this.ngZone = ngZone;
+        this._changeDetector = _changeDetector;
         this._canvasWhiteboardService = _canvasWhiteboardService;
+        this._canvasWhiteboardShapeService = _canvasWhiteboardShapeService;
         //Number of ms to wait before sending out the updates as an array
         this.batchUpdateTimeoutDuration = 100;
         this.drawButtonText = "";
@@ -22,11 +29,17 @@ var CanvasWhiteboardComponent = (function () {
         this.shouldDownloadDrawing = true;
         this.colorPickerEnabled = false;
         this.lineWidth = 2;
-        this.strokeColor = "rgb(216, 184, 0)";
+        this.strokeColor = "rgba(0, 0, 0, 1)";
         this.startingColor = "#fff";
         this.scaleFactor = 0;
         this.drawingEnabled = false;
-        this.showColorPicker = false;
+        this.showStrokeColorPicker = false;
+        this.showFillColorPicker = false;
+        this.lineJoin = "round";
+        this.lineCap = "round";
+        this.shapeSelectorEnabled = true;
+        this.showShapeSelector = false;
+        this.fillColor = "rgba(0,0,0,0)";
         this.onClear = new core_1.EventEmitter();
         this.onUndo = new core_1.EventEmitter();
         this.onRedo = new core_1.EventEmitter();
@@ -35,13 +48,14 @@ var CanvasWhiteboardComponent = (function () {
         this.onSave = new core_1.EventEmitter();
         this._canDraw = true;
         this._clientDragging = false;
-        this._lastPositionForUUID = {};
+        this._updateHistory = [];
         this._undoStack = []; //Stores the value of start and count for each continuous stroke
         this._redoStack = [];
-        this._drawHistory = [];
         this._batchUpdates = [];
         this._updatesNotDrawn = [];
         this._canvasWhiteboardServiceSubscriptions = [];
+        this._shapesMap = new Map();
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
     }
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
@@ -124,6 +138,20 @@ var CanvasWhiteboardComponent = (function () {
                 this.drawingEnabled = options.drawingEnabled;
             if (!this._isNullOrUndefined(options.downloadedFileName))
                 this.downloadedFileName = options.downloadedFileName;
+            if (!this._isNullOrUndefined(options.lineJoin))
+                this.lineJoin = options.lineJoin;
+            if (!this._isNullOrUndefined(options.lineCap))
+                this.lineCap = options.lineCap;
+            if (!this._isNullOrUndefined(options.shapeSelectorEnabled))
+                this.shapeSelectorEnabled = options.shapeSelectorEnabled;
+            if (!this._isNullOrUndefined(options.showShapeSelector))
+                this.showShapeSelector = options.showShapeSelector;
+            if (!this._isNullOrUndefined(options.fillColor))
+                this.fillColor = options.fillColor;
+            if (!this._isNullOrUndefined(options.showStrokeColorPicker))
+                this.showStrokeColorPicker = options.showStrokeColorPicker;
+            if (!this._isNullOrUndefined(options.showFillColorPicker))
+                this.showFillColorPicker = options.showFillColorPicker;
         }
     };
     CanvasWhiteboardComponent.prototype._isNullOrUndefined = function (property) {
@@ -134,7 +162,15 @@ var CanvasWhiteboardComponent = (function () {
      * @private
      */
     CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
-        window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
+        var _this = this;
+        this.ngZone.runOutsideAngular(function () {
+            _this._resizeSubscription = rxjs_1.Observable.fromEvent(window, 'resize')
+                .debounceTime(200).distinctUntilChanged().subscribe(function () {
+                _this.ngZone.run(function () {
+                    _this._redrawCanvasOnResize();
+                });
+            });
+        });
         window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     };
     /**
@@ -150,9 +186,14 @@ var CanvasWhiteboardComponent = (function () {
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasClearSubject$
             .subscribe(function () { return _this.clearCanvas(); }));
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasUndoSubject$
-            .subscribe(function () { return _this.undo(); }));
+            .subscribe(function (updateUUD) { return _this._undoCanvas(updateUUD); }));
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasRedoSubject$
-            .subscribe(function () { return _this.redo(); }));
+            .subscribe(function (updateUUD) { return _this._redoCanvas(updateUUD); }));
+        this._registeredShapesSubscription = this._canvasWhiteboardShapeService.registeredShapes$.subscribe(function (shapes) {
+            if (!_this.selectedShapeConstructor || !_this._canvasWhiteboardShapeService.isRegisteredShape(_this.selectedShapeConstructor)) {
+                _this.selectedShapeConstructor = shapes[0];
+            }
+        });
     };
     /**
      * Calculate the canvas width and height from it's parent container width and height (use aspect ratio if needed)
@@ -228,8 +269,9 @@ var CanvasWhiteboardComponent = (function () {
      * @private
      */
     CanvasWhiteboardComponent.prototype._removeCanvasData = function (callbackFn) {
+        this._shapesMap = new Map();
         this._clientDragging = false;
-        this._drawHistory = [];
+        this._updateHistory = [];
         this._undoStack = [];
         this._redrawBackground(callbackFn);
     };
@@ -240,7 +282,6 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype._redrawBackground = function (callbackFn) {
         if (this.context) {
-            this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             this._drawStartingColor();
             if (this.imageUrl) {
@@ -252,8 +293,12 @@ var CanvasWhiteboardComponent = (function () {
         }
     };
     CanvasWhiteboardComponent.prototype._drawStartingColor = function () {
+        var previousFillStyle = this.context.fillStyle;
+        this.context.save();
         this.context.fillStyle = this.startingColor;
         this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+        this.context.fillStyle = previousFillStyle;
+        this.context.restore();
     };
     /**
      * @deprecated Use getDrawingEnabled(): boolean
@@ -268,22 +313,10 @@ var CanvasWhiteboardComponent = (function () {
         return this.drawingEnabled;
     };
     /**
-     * @deprecated Use toggleDrawingEnabled(): void
-     */
-    CanvasWhiteboardComponent.prototype.toggleShouldDraw = function () {
-        this.toggleDrawingEnabled();
-    };
-    /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
     CanvasWhiteboardComponent.prototype.toggleDrawingEnabled = function () {
         this.drawingEnabled = !this.drawingEnabled;
-    };
-    /**
-     * @deprecated Use setDrawingEnabled(drawingEnabled: boolean): void
-     */
-    CanvasWhiteboardComponent.prototype.setShouldDraw = function (drawingEnabled) {
-        this.setDrawingEnabled(drawingEnabled);
     };
     /**
      * Set if drawing is enabled from the client using the canvas
@@ -293,14 +326,34 @@ var CanvasWhiteboardComponent = (function () {
         this.drawingEnabled = drawingEnabled;
     };
     /**
+     * @deprecated Please use the changeStrokeColor(newStrokeColor: string): void method
+     */
+    CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
+        this.changeStrokeColor(newStrokeColor);
+    };
+    /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
      * This method is public so that anyone can access the canvas and change the stroke color
      *
      * @param {string} newStrokeColor The new stroke color
      */
-    CanvasWhiteboardComponent.prototype.changeColor = function (newStrokeColor) {
+    CanvasWhiteboardComponent.prototype.changeStrokeColor = function (newStrokeColor) {
         this.strokeColor = newStrokeColor;
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
+        this._changeDetector.detectChanges();
+    };
+    /**
+     * Replaces the fill color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the fill color
+     *
+     * @param {string} newFillColor The new fill color
+     */
+    CanvasWhiteboardComponent.prototype.changeFillColor = function (newFillColor) {
+        this.fillColor = newFillColor;
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
+        this._changeDetector.detectChanges();
     };
     /**
      * This method is invoked by the undo button on the canvas screen
@@ -309,19 +362,23 @@ var CanvasWhiteboardComponent = (function () {
      * If the client calls this method he may create a circular undo action which may cause danger.
      */
     CanvasWhiteboardComponent.prototype.undoLocal = function () {
-        this.undo();
-        this.onUndo.emit();
+        var _this = this;
+        this.undo(function (updateUUID) {
+            _this._redoStack.push(updateUUID);
+            _this.onUndo.emit(updateUUID);
+        });
     };
     /**
      * This methods selects the last uuid prepares it for undoing (making the whole update sequence invisible)
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the undo button has been disabled
      */
-    CanvasWhiteboardComponent.prototype.undo = function () {
+    CanvasWhiteboardComponent.prototype.undo = function (callbackFn) {
         if (!this._undoStack.length)
             return;
         var updateUUID = this._undoStack.pop();
         this._undoCanvas(updateUUID);
+        callbackFn && callbackFn(updateUUID);
     };
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
@@ -329,13 +386,11 @@ var CanvasWhiteboardComponent = (function () {
      * @private
      */
     CanvasWhiteboardComponent.prototype._undoCanvas = function (updateUUID) {
-        this._redoStack.push(updateUUID);
-        this._drawHistory.forEach(function (update) {
-            if (update.getUUID() === updateUUID) {
-                update.setVisible(false);
-            }
-        });
-        this._redrawHistory();
+        if (this._shapesMap.has(updateUUID)) {
+            var shape = this._shapesMap.get(updateUUID);
+            shape.isVisible = false;
+            this.drawAllShapes();
+        }
     };
     /**
      * This method is invoked by the redo button on the canvas screen
@@ -344,19 +399,23 @@ var CanvasWhiteboardComponent = (function () {
      * If the client calls this method he may create a circular redo action which may cause danger.
      */
     CanvasWhiteboardComponent.prototype.redoLocal = function () {
-        this.redo();
-        this.onRedo.emit();
+        var _this = this;
+        this.redo(function (updateUUID) {
+            _this._undoStack.push(updateUUID);
+            _this.onRedo.emit(updateUUID);
+        });
     };
     /**
      * This methods selects the last uuid prepares it for redoing (making the whole update sequence visible)
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the redo button has been disabled
      */
-    CanvasWhiteboardComponent.prototype.redo = function () {
+    CanvasWhiteboardComponent.prototype.redo = function (callbackFn) {
         if (!this._redoStack.length)
             return;
         var updateUUID = this._redoStack.pop();
         this._redoCanvas(updateUUID);
+        callbackFn && callbackFn(updateUUID);
     };
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid visible
@@ -364,13 +423,11 @@ var CanvasWhiteboardComponent = (function () {
      * @private
      */
     CanvasWhiteboardComponent.prototype._redoCanvas = function (updateUUID) {
-        this._undoStack.push(updateUUID);
-        this._drawHistory.forEach(function (update) {
-            if (update.getUUID() === updateUUID) {
-                update.setVisible(true);
-            }
-        });
-        this._redrawHistory();
+        if (this._shapesMap.has(updateUUID)) {
+            var shape = this._shapesMap.get(updateUUID);
+            shape.isVisible = true;
+            this.drawAllShapes();
+        }
     };
     /**
      * Catches the Mouse and Touch events made on the canvas.
@@ -402,31 +459,36 @@ var CanvasWhiteboardComponent = (function () {
         var update;
         var updateType;
         var eventPosition = this._getCanvasEventPosition(event);
+        update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y);
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                this._lastUUID = eventPosition.x + eventPosition.y + Math.random().toString(36);
-                updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.start;
+                this._lastUUID = this._generateUUID();
+                updateType = canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.START;
+                this._redoStack = [];
+                this._addCurrentShapeDataToAnUpdate(update);
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (!this._clientDragging) {
                     return;
                 }
-                updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.drag;
+                updateType = canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.DRAG;
                 break;
             case 'touchcancel':
             case 'mouseup':
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                updateType = canvas_whiteboard_update_model_1.UPDATE_TYPE.stop;
+                updateType = canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.STOP;
+                this._undoStack.push(this._lastUUID);
                 break;
         }
-        update = new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
+        update.UUID = this._lastUUID;
+        update.type = updateType;
         this._draw(update);
-        this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
+        this._prepareToSendUpdate(update);
     };
     /**
      * Get the coordinates (x,y) from a given event
@@ -434,7 +496,7 @@ var CanvasWhiteboardComponent = (function () {
      * If we released the touch, the position will be placed in the changedTouches object
      * If it is not a touch event, use the original mouse event received
      * @param eventData
-     * @return {EventPositionPoint}
+     * @return {CanvasWhiteboardPoint}
      * @private
      */
     CanvasWhiteboardComponent.prototype._getCanvasEventPosition = function (eventData) {
@@ -449,10 +511,7 @@ var CanvasWhiteboardComponent = (function () {
         var yPosition = (event.clientY - canvasBoundingRect.top);
         xPosition /= this.scaleFactor ? this.scaleFactor : scaleWidth;
         yPosition /= this.scaleFactor ? this.scaleFactor : scaleHeight;
-        return {
-            x: xPosition,
-            y: yPosition
-        };
+        return new canvas_whiteboard_point_1.CanvasWhiteboardPoint(xPosition / this.context.canvas.width, yPosition / this.context.canvas.height);
     };
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
@@ -460,12 +519,8 @@ var CanvasWhiteboardComponent = (function () {
      * was drawn on this update.
      *
      * @param {CanvasWhiteboardUpdate} update The CanvasWhiteboardUpdate object.
-     * @param {number} eventX The offsetX that needs to be mapped
-     * @param {number} eventY The offsetY that needs to be mapped
      */
-    CanvasWhiteboardComponent.prototype._prepareToSendUpdate = function (update, eventX, eventY) {
-        update.setX(eventX / this.context.canvas.width);
-        update.setY(eventY / this.context.canvas.height);
+    CanvasWhiteboardComponent.prototype._prepareToSendUpdate = function (update) {
         this._prepareUpdateForBatchDispatch(update);
     };
     /**
@@ -506,56 +561,79 @@ var CanvasWhiteboardComponent = (function () {
      */
     CanvasWhiteboardComponent.prototype._redrawHistory = function () {
         var _this = this;
-        var updatesToDraw = [].concat(this._drawHistory);
+        var updatesToDraw = [].concat(this._updateHistory);
         this._removeCanvasData(function () {
             updatesToDraw.forEach(function (update) {
-                _this._draw(update, true);
+                _this._draw(update);
             });
         });
     };
     /**
-     * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
-     * are first reverse mapped so that they can be drawn in the proper place. The update
+     * Draws a CanvasWhiteboardUpdate object on the canvas.
+     * The coordinates are first reverse mapped so that they can be drawn in the proper place. The update
      * is afterwards added to the undoStack so that it can be
      *
-     * If the CanvasWhiteboardUpdate Type is "drag", the context is used to draw on the canvas.
+     * If the CanvasWhiteboardUpdate Type is "start", a new "selectedShape" is created.
+     * If the CanvasWhiteboardUpdate Type is "drag", the shape is taken from the shapesMap and then it's updated.
+     * Afterwards the context is used to draw the shape on the canvas.
      * This function saves the last X and Y coordinates that were drawn.
      *
      * @param {CanvasWhiteboardUpdate} update The update object.
-     * @param {boolean} mappedCoordinates? The offsetX that needs to be mapped
      */
-    CanvasWhiteboardComponent.prototype._draw = function (update, mappedCoordinates) {
-        this._drawHistory.push(update);
-        var xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
-        var yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
-        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
-            var lastPosition = this._lastPositionForUUID[update.getUUID()];
-            this.context.save();
-            this.context.beginPath();
-            this.context.lineWidth = this.lineWidth;
-            if (update.getVisible()) {
-                this.context.strokeStyle = update.getStrokeColor() || this.strokeColor;
-            }
-            else {
-                this.context.strokeStyle = "rgba(0,0,0,0)";
-            }
-            this.context.lineJoin = "round";
-            this.context.moveTo(lastPosition.x, lastPosition.y);
-            this.context.lineTo(xToDraw, yToDraw);
-            this.context.closePath();
-            this.context.stroke();
-            this.context.restore();
+    CanvasWhiteboardComponent.prototype._draw = function (update) {
+        this._updateHistory.push(update);
+        //map the canvas coordinates to our canvas size since they are scaled.
+        update = Object.assign(new canvas_whiteboard_update_model_1.CanvasWhiteboardUpdate(), update, {
+            x: update.x * this.context.canvas.width,
+            y: update.y * this.context.canvas.height
+        });
+        if (update.type === canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.START) {
+            var updateShapeConstructor = this._canvasWhiteboardShapeService.getShapeConstructorFromShapeName(update.selectedShape);
+            this._shapesMap.set(update.UUID, new updateShapeConstructor(new canvas_whiteboard_point_1.CanvasWhiteboardPoint(update.x, update.y), Object.assign(new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions(), update.selectedShapeOptions)));
         }
-        else if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.stop && update.getVisible()) {
-            this._undoStack.push(update.getUUID());
-            delete this._lastPositionForUUID[update.getUUID()];
+        else if (update.type === canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.DRAG) {
+            var shape = this._shapesMap.get(update.UUID);
+            shape && shape.onUpdateReceived(update);
         }
-        if (update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.start || update.getType() === canvas_whiteboard_update_model_1.UPDATE_TYPE.drag) {
-            this._lastPositionForUUID[update.getUUID()] = {
-                x: xToDraw,
-                y: yToDraw
-            };
+        else if (canvas_whiteboard_update_model_1.CanvasWhiteboardUpdateType.STOP) {
+            var shape = this._shapesMap.get(update.UUID);
+            shape && shape.onStopReceived(update);
         }
+        this.drawAllShapes();
+    };
+    /**
+     * Delete everything from the screen, redraw the background, and then redraw all the shapes from the shapesMap
+     */
+    CanvasWhiteboardComponent.prototype.drawAllShapes = function () {
+        var _this = this;
+        this._redrawBackground(function () {
+            _this.ngZone.runOutsideAngular(function () {
+                _this._shapesMap.forEach(function (shape) {
+                    if (shape.isVisible) {
+                        shape.draw(_this.context);
+                    }
+                });
+            });
+        });
+    };
+    CanvasWhiteboardComponent.prototype._addCurrentShapeDataToAnUpdate = function (update) {
+        if (!update.selectedShape) {
+            update.selectedShape = this.selectedShapeConstructor.name;
+        }
+        if (!update.selectedShapeOptions) {
+            //Make a deep copy since we don't want some Shape implementation to change something by accident
+            update.selectedShapeOptions = Object.assign(new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions(), this.generateShapePreviewOptions(), { lineWidth: this.lineWidth });
+        }
+    };
+    CanvasWhiteboardComponent.prototype.generateShapePreviewOptions = function () {
+        return Object.assign(new canvas_whiteboard_shape_options_1.CanvasWhiteboardShapeOptions(), {
+            shouldFillShape: !!this.fillColor,
+            fillStyle: this.fillColor,
+            strokeStyle: this.strokeColor,
+            lineWidth: 2,
+            lineJoin: this.lineJoin,
+            lineCap: this.lineCap
+        });
     };
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
@@ -587,7 +665,7 @@ var CanvasWhiteboardComponent = (function () {
         if (this._canDraw) {
             this._drawMissingUpdates();
             updates.forEach(function (update) {
-                _this._draw(update, true);
+                _this._draw(update);
             });
         }
         else {
@@ -605,7 +683,7 @@ var CanvasWhiteboardComponent = (function () {
             var updatesToDraw = this._updatesNotDrawn;
             this._updatesNotDrawn = [];
             updatesToDraw.forEach(function (update) {
-                _this._draw(update, true);
+                _this._draw(update);
             });
         }
     };
@@ -801,8 +879,27 @@ var CanvasWhiteboardComponent = (function () {
      * If no value is supplied (null/undefined) the current value will be negated and used.
      * @param {boolean} value
      */
-    CanvasWhiteboardComponent.prototype.toggleColorPicker = function (value) {
-        this.showColorPicker = !this._isNullOrUndefined(value) ? value : !this.showColorPicker;
+    CanvasWhiteboardComponent.prototype.toggleStrokeColorPicker = function (value) {
+        this.showStrokeColorPicker = !this._isNullOrUndefined(value) ? value : !this.showStrokeColorPicker;
+    };
+    /**
+     * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    CanvasWhiteboardComponent.prototype.toggleFillColorPicker = function (value) {
+        this.showFillColorPicker = !this._isNullOrUndefined(value) ? value : !this.showFillColorPicker;
+    };
+    /**
+     * Toggles the shape selector window, delegating the showShapeSelector Input to the CanvasWhiteboardShapeSelectorComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    CanvasWhiteboardComponent.prototype.toggleShapeSelector = function (value) {
+        this.showShapeSelector = !this._isNullOrUndefined(value) ? value : !this.showShapeSelector;
+    };
+    CanvasWhiteboardComponent.prototype.selectShape = function (newShapeBlueprint) {
+        this.selectedShapeConstructor = newShapeBlueprint;
     };
     /**
      * Unsubscribe from a given subscription if it is active
@@ -813,11 +910,22 @@ var CanvasWhiteboardComponent = (function () {
         if (subscription)
             subscription.unsubscribe();
     };
+    CanvasWhiteboardComponent.prototype._generateUUID = function () {
+        return this._random4() + this._random4() + "-" + this._random4() + "-" + this._random4() + "-" +
+            this._random4() + "-" + this._random4() + this._random4() + this._random4();
+    };
+    CanvasWhiteboardComponent.prototype._random4 = function () {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    };
     /**
      * Unsubscribe from the service observables
      */
     CanvasWhiteboardComponent.prototype.ngOnDestroy = function () {
         var _this = this;
+        this._unsubscribe(this._resizeSubscription);
+        this._unsubscribe(this._registeredShapesSubscription);
         this._canvasWhiteboardServiceSubscriptions.forEach(function (subscription) { return _this._unsubscribe(subscription); });
     };
     return CanvasWhiteboardComponent;
@@ -825,13 +933,16 @@ var CanvasWhiteboardComponent = (function () {
 CanvasWhiteboardComponent.decorators = [
     { type: core_1.Component, args: [{
                 selector: 'canvas-whiteboard',
-                template: template_1.DEFAULT_TEMPLATE,
+                template: "\n        <div class=\"canvas_wrapper_div\">\n             <div class=\"canvas_whiteboard_buttons\">\n                 <canvas-whiteboard-shape-selector *ngIf=\"shapeSelectorEnabled\"\n                                                   [showShapeSelector]=\"showShapeSelector\"\n                                                   [selectedShapeConstructor]=\"selectedShapeConstructor\"\n                                                   [shapeOptions]=\"generateShapePreviewOptions()\"\n                                                   (onToggleShapeSelector)=\"toggleShapeSelector($event)\"\n                                                   (onShapeSelected)=\"selectShape($event)\"></canvas-whiteboard-shape-selector>\n                                                   \n                 <canvas-whiteboard-colorpicker *ngIf=\"colorPickerEnabled\"\n                                                [previewText]=\"'Fill'\"\n                                                [showColorPicker]=\"showFillColorPicker\"\n                                                [selectedColor]=\"fillColor\"\n                                                (onToggleColorPicker)=\"toggleFillColorPicker($event)\"\n                                                (onColorSelected)=\"changeFillColor($event)\">\n                 </canvas-whiteboard-colorpicker>    \n                 \n                 <canvas-whiteboard-colorpicker *ngIf=\"colorPickerEnabled\"\n                                                [previewText]=\"'Stroke'\"\n                                                [showColorPicker]=\"showStrokeColorPicker\"\n                                                [selectedColor]=\"strokeColor\"\n                                                (onToggleColorPicker)=\"toggleStrokeColorPicker($event)\"\n                                                (onColorSelected)=\"changeStrokeColor($event)\">\n                   </canvas-whiteboard-colorpicker>\n                                                 \n                 \n                 <button *ngIf=\"drawButtonEnabled\" (click)=\"toggleDrawingEnabled()\"\n                         [class.canvas_whiteboard_button-draw_animated]=\"getDrawingEnabled()\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-draw\" type=\"button\">\n                        <i [class]=\"drawButtonClass\" aria-hidden=\"true\"></i> {{drawButtonText}}\n                </button>\n                \n                <button *ngIf=\"clearButtonEnabled\" (click)=\"clearCanvasLocal()\" type=\"button\"\n                        class=\"canvas_whiteboard_button canvas_whiteboard_button-clear\">\n                    <i [class]=\"clearButtonClass\" aria-hidden=\"true\"></i> {{clearButtonText}}\n                </button>\n                \n                 <button *ngIf=\"undoButtonEnabled\" (click)=\"undoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-undo\">\n                     <i [class]=\"undoButtonClass\" aria-hidden=\"true\"></i> {{undoButtonText}} \n                 </button>\n                 \n                 <button *ngIf=\"redoButtonEnabled\" (click)=\"redoLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-redo\">\n                     <i [class]=\"redoButtonClass\" aria-hidden=\"true\"></i> {{redoButtonText}}\n                 </button> \n                 <button *ngIf=\"saveDataButtonEnabled\" (click)=\"saveLocal()\" type=\"button\"\n                         class=\"canvas_whiteboard_button canvas_whiteboard_button-save\">\n                     <i [class]=\"saveDataButtonClass\" aria-hidden=\"true\"></i> {{saveDataButtonText}}\n                 </button>\n             </div>\n            <canvas #canvas\n                    (mousedown)=\"canvasUserEvents($event)\" (mouseup)=\"canvasUserEvents($event)\"\n                    (mousemove)=\"canvasUserEvents($event)\" (mouseout)=\"canvasUserEvents($event)\"\n                    (touchstart)=\"canvasUserEvents($event)\" (touchmove)=\"canvasUserEvents($event)\"\n                    (touchend)=\"canvasUserEvents($event)\" (touchcancel)=\"canvasUserEvents($event)\">\n            </canvas>\n        </div>\n    ",
                 styles: [template_1.DEFAULT_STYLES]
             },] },
 ];
 /** @nocollapse */
 CanvasWhiteboardComponent.ctorParameters = function () { return [
+    { type: core_1.NgZone, },
+    { type: core_1.ChangeDetectorRef, },
     { type: canvas_whiteboard_service_1.CanvasWhiteboardService, },
+    { type: canvas_whiteboard_shape_service_1.CanvasWhiteboardShapeService, },
 ]; };
 CanvasWhiteboardComponent.propDecorators = {
     'options': [{ type: core_1.Input },],
@@ -860,8 +971,14 @@ CanvasWhiteboardComponent.propDecorators = {
     'startingColor': [{ type: core_1.Input },],
     'scaleFactor': [{ type: core_1.Input },],
     'drawingEnabled': [{ type: core_1.Input },],
-    'showColorPicker': [{ type: core_1.Input },],
+    'showStrokeColorPicker': [{ type: core_1.Input },],
+    'showFillColorPicker': [{ type: core_1.Input },],
     'downloadedFileName': [{ type: core_1.Input },],
+    'lineJoin': [{ type: core_1.Input },],
+    'lineCap': [{ type: core_1.Input },],
+    'shapeSelectorEnabled': [{ type: core_1.Input },],
+    'showShapeSelector': [{ type: core_1.Input },],
+    'fillColor': [{ type: core_1.Input },],
     'onClear': [{ type: core_1.Output },],
     'onUndo': [{ type: core_1.Output },],
     'onRedo': [{ type: core_1.Output },],

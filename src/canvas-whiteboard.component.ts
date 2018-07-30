@@ -6,51 +6,82 @@ import {
     ViewChild,
     ElementRef,
     OnInit,
-    OnChanges, OnDestroy, AfterViewInit
+    OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef
 } from '@angular/core';
-import {CanvasWhiteboardUpdate, UPDATE_TYPE} from "./canvas-whiteboard-update.model";
-import {DEFAULT_TEMPLATE, DEFAULT_STYLES} from "./template";
+import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "./canvas-whiteboard-update.model";
+import {DEFAULT_STYLES} from "./template";
 import {CanvasWhiteboardService} from "./canvas-whiteboard.service";
+import {CanvasWhiteboardOptions} from "./canvas-whiteboard-options";
 import {Subscription} from "rxjs/Subscription";
-
-interface EventPositionPoint {
-    x: number,
-    y: number
-}
-
-export interface CanvasWhiteboardOptions {
-    batchUpdateTimeoutDuration?: number
-    imageUrl?: string
-    aspectRatio?: number
-    strokeColor?: string
-    lineWidth?: number
-    drawButtonEnabled?: boolean
-    drawButtonClass?: string
-    drawButtonText?: string
-    clearButtonEnabled?: boolean
-    clearButtonClass?: string
-    clearButtonText?: string
-    undoButtonEnabled?: boolean
-    undoButtonClass?: string
-    undoButtonText?: string
-    redoButtonEnabled?: boolean
-    redoButtonClass?: string
-    redoButtonText?: string
-    saveDataButtonEnabled?: boolean
-    saveDataButtonClass?: string
-    saveDataButtonText?: string
-    colorPickerEnabled?: boolean
-    shouldDownloadDrawing?: boolean
-    startingColor?: string
-    scaleFactor?: number
-    drawingEnabled?: boolean
-    showColorPicker?: boolean
-    downloadedFileName?: string
-}
+import {CanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape";
+import {CanvasWhiteboardPoint} from "./canvas-whiteboard-point";
+import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape.service";
+import {Observable} from "rxjs";
+import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
 
 @Component({
     selector: 'canvas-whiteboard',
-    template: DEFAULT_TEMPLATE,
+    template:
+        `
+        <div class="canvas_wrapper_div">
+             <div class="canvas_whiteboard_buttons">
+                 <canvas-whiteboard-shape-selector *ngIf="shapeSelectorEnabled"
+                                                   [showShapeSelector]="showShapeSelector"
+                                                   [selectedShapeConstructor]="selectedShapeConstructor"
+                                                   [shapeOptions]="generateShapePreviewOptions()"
+                                                   (onToggleShapeSelector)="toggleShapeSelector($event)"
+                                                   (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
+                                                   
+                 <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                                                [previewText]="'Fill'"
+                                                [showColorPicker]="showFillColorPicker"
+                                                [selectedColor]="fillColor"
+                                                (onToggleColorPicker)="toggleFillColorPicker($event)"
+                                                (onColorSelected)="changeFillColor($event)">
+                 </canvas-whiteboard-colorpicker>    
+                 
+                 <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                                                [previewText]="'Stroke'"
+                                                [showColorPicker]="showStrokeColorPicker"
+                                                [selectedColor]="strokeColor"
+                                                (onToggleColorPicker)="toggleStrokeColorPicker($event)"
+                                                (onColorSelected)="changeStrokeColor($event)">
+                   </canvas-whiteboard-colorpicker>
+                                                 
+                 
+                 <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
+                         [class.canvas_whiteboard_button-draw_animated]="getDrawingEnabled()"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">
+                        <i [class]="drawButtonClass" aria-hidden="true"></i> {{drawButtonText}}
+                </button>
+                
+                <button *ngIf="clearButtonEnabled" (click)="clearCanvasLocal()" type="button"
+                        class="canvas_whiteboard_button canvas_whiteboard_button-clear">
+                    <i [class]="clearButtonClass" aria-hidden="true"></i> {{clearButtonText}}
+                </button>
+                
+                 <button *ngIf="undoButtonEnabled" (click)="undoLocal()" type="button"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-undo">
+                     <i [class]="undoButtonClass" aria-hidden="true"></i> {{undoButtonText}} 
+                 </button>
+                 
+                 <button *ngIf="redoButtonEnabled" (click)="redoLocal()" type="button"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-redo">
+                     <i [class]="redoButtonClass" aria-hidden="true"></i> {{redoButtonText}}
+                 </button> 
+                 <button *ngIf="saveDataButtonEnabled" (click)="saveLocal()" type="button"
+                         class="canvas_whiteboard_button canvas_whiteboard_button-save">
+                     <i [class]="saveDataButtonClass" aria-hidden="true"></i> {{saveDataButtonText}}
+                 </button>
+             </div>
+            <canvas #canvas
+                    (mousedown)="canvasUserEvents($event)" (mouseup)="canvasUserEvents($event)"
+                    (mousemove)="canvasUserEvents($event)" (mouseout)="canvasUserEvents($event)"
+                    (touchstart)="canvasUserEvents($event)" (touchmove)="canvasUserEvents($event)"
+                    (touchend)="canvasUserEvents($event)" (touchcancel)="canvasUserEvents($event)">
+            </canvas>
+        </div>
+    `,
     styles: [DEFAULT_STYLES]
 })
 export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
@@ -78,12 +109,19 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Input() shouldDownloadDrawing: boolean = true;
     @Input() colorPickerEnabled: boolean = false;
     @Input() lineWidth: number = 2;
-    @Input() strokeColor: string = "rgb(216, 184, 0)";
+    @Input() strokeColor: string = "rgba(0, 0, 0, 1)";
     @Input() startingColor: string = "#fff";
     @Input() scaleFactor: number = 0;
     @Input() drawingEnabled: boolean = false;
-    @Input() showColorPicker: boolean = false;
+    @Input() showStrokeColorPicker: boolean = false;
+    @Input() showFillColorPicker: boolean = false;
     @Input() downloadedFileName: string;
+
+    @Input() lineJoin: string = "round";
+    @Input() lineCap: string = "round";
+    @Input() shapeSelectorEnabled: boolean = true;
+    @Input() showShapeSelector: boolean = false;
+    @Input() fillColor: string = "rgba(0,0,0,0)";
 
     @Output() onClear = new EventEmitter<any>();
     @Output() onUndo = new EventEmitter<any>();
@@ -102,20 +140,27 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     private _clientDragging = false;
 
+    private _updateHistory: CanvasWhiteboardUpdate[] = [];
     private _lastUUID: string;
-    private _lastPositionForUUID: Object = {};
+    private _shapesMap: Map<string, CanvasWhiteboardShape>;
 
     private _undoStack: string[] = []; //Stores the value of start and count for each continuous stroke
     private _redoStack: string[] = [];
-    private _drawHistory: CanvasWhiteboardUpdate[] = [];
     private _batchUpdates: CanvasWhiteboardUpdate[] = [];
     private _updatesNotDrawn: any = [];
 
     private _updateTimeout: any;
 
     private _canvasWhiteboardServiceSubscriptions: Subscription[] = [];
+    private _resizeSubscription: Subscription;
+    private _registeredShapesSubscription: Subscription;
 
-    constructor(private _canvasWhiteboardService: CanvasWhiteboardService) {
+    selectedShapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
+    canvasWhiteboardShapePreviewOptions: CanvasWhiteboardShapeOptions;
+
+    constructor(private ngZone: NgZone, private _changeDetector: ChangeDetectorRef, private _canvasWhiteboardService: CanvasWhiteboardService, private _canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
+        this._shapesMap = new Map<string, CanvasWhiteboardShape>();
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
     }
 
     /**
@@ -175,6 +220,13 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             if (!this._isNullOrUndefined(options.scaleFactor)) this.scaleFactor = options.scaleFactor;
             if (!this._isNullOrUndefined(options.drawingEnabled)) this.drawingEnabled = options.drawingEnabled;
             if (!this._isNullOrUndefined(options.downloadedFileName)) this.downloadedFileName = options.downloadedFileName;
+            if (!this._isNullOrUndefined(options.lineJoin)) this.lineJoin = options.lineJoin;
+            if (!this._isNullOrUndefined(options.lineCap)) this.lineCap = options.lineCap;
+            if (!this._isNullOrUndefined(options.shapeSelectorEnabled)) this.shapeSelectorEnabled = options.shapeSelectorEnabled;
+            if (!this._isNullOrUndefined(options.showShapeSelector)) this.showShapeSelector = options.showShapeSelector;
+            if (!this._isNullOrUndefined(options.fillColor)) this.fillColor = options.fillColor;
+            if (!this._isNullOrUndefined(options.showStrokeColorPicker)) this.showStrokeColorPicker = options.showStrokeColorPicker;
+            if (!this._isNullOrUndefined(options.showFillColorPicker)) this.showFillColorPicker = options.showFillColorPicker;
         }
     }
 
@@ -187,7 +239,15 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @private
      */
     private _initCanvasEventListeners(): void {
-        window.addEventListener("resize", this._redrawCanvasOnResize.bind(this), false);
+        this.ngZone.runOutsideAngular(() => {
+            this._resizeSubscription = Observable.fromEvent(window, 'resize')
+                .debounceTime(200).distinctUntilChanged().subscribe(() => {
+                    this.ngZone.run(() => {
+                        this._redrawCanvasOnResize();
+                    });
+                });
+        });
+
         window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     }
 
@@ -203,9 +263,15 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasClearSubject$
             .subscribe(() => this.clearCanvas()));
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasUndoSubject$
-            .subscribe(() => this.undo()));
+            .subscribe((updateUUD) => this._undoCanvas(updateUUD)));
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasRedoSubject$
-            .subscribe(() => this.redo()));
+            .subscribe((updateUUD) => this._redoCanvas(updateUUD)));
+
+        this._registeredShapesSubscription = this._canvasWhiteboardShapeService.registeredShapes$.subscribe((shapes) => {
+            if (!this.selectedShapeConstructor || !this._canvasWhiteboardShapeService.isRegisteredShape(this.selectedShapeConstructor)) {
+                this.selectedShapeConstructor = shapes[0];
+            }
+        });
     }
 
     /**
@@ -285,8 +351,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @private
      */
     private _removeCanvasData(callbackFn?: any): void {
+        this._shapesMap = new Map<string, CanvasWhiteboardShape>();
         this._clientDragging = false;
-        this._drawHistory = [];
+        this._updateHistory = [];
         this._undoStack = [];
         this._redrawBackground(callbackFn);
     }
@@ -298,7 +365,6 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     private _redrawBackground(callbackFn?: any): void {
         if (this.context) {
-            this.context.setTransform(1, 0, 0, 1, 0, 0);
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             this._drawStartingColor();
             if (this.imageUrl) {
@@ -310,9 +376,16 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     }
 
     private _drawStartingColor() {
+        let previousFillStyle = this.context.fillStyle;
+        this.context.save();
+
         this.context.fillStyle = this.startingColor;
         this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+        this.context.fillStyle = previousFillStyle;
+
+        this.context.restore();
     }
+
 
     /**
      * @deprecated Use getDrawingEnabled(): boolean
@@ -329,24 +402,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     }
 
     /**
-     * @deprecated Use toggleDrawingEnabled(): void
-     */
-    toggleShouldDraw(): void {
-        this.toggleDrawingEnabled();
-    }
-
-    /**
      * Toggles drawing on the canvas. It is called via the draw button on the canvas.
      */
     toggleDrawingEnabled(): void {
         this.drawingEnabled = !this.drawingEnabled;
-    }
-
-    /**
-     * @deprecated Use setDrawingEnabled(drawingEnabled: boolean): void
-     */
-    setShouldDraw(drawingEnabled: boolean): void {
-        this.setDrawingEnabled(drawingEnabled);
     }
 
     /**
@@ -358,14 +417,37 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     }
 
     /**
+     * @deprecated Please use the changeStrokeColor(newStrokeColor: string): void method
+     */
+    changeColor(newStrokeColor: string): void {
+        this.changeStrokeColor(newStrokeColor);
+    }
+
+    /**
      * Replaces the drawing color with a new color
      * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
      * This method is public so that anyone can access the canvas and change the stroke color
      *
      * @param {string} newStrokeColor The new stroke color
      */
-    changeColor(newStrokeColor: string): void {
+    changeStrokeColor(newStrokeColor: string): void {
         this.strokeColor = newStrokeColor;
+
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
+        this._changeDetector.detectChanges();
+    }
+
+    /**
+     * Replaces the fill color with a new color
+     * The format should be ("#ffffff" or "rgb(r,g,b,a?)")
+     * This method is public so that anyone can access the canvas and change the fill color
+     *
+     * @param {string} newFillColor The new fill color
+     */
+    changeFillColor(newFillColor: string): void {
+        this.fillColor = newFillColor;
+        this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
+        this._changeDetector.detectChanges();
     }
 
     /**
@@ -375,8 +457,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * If the client calls this method he may create a circular undo action which may cause danger.
      */
     undoLocal(): void {
-        this.undo();
-        this.onUndo.emit();
+        this.undo((updateUUID) => {
+            this._redoStack.push(updateUUID);
+            this.onUndo.emit(updateUUID);
+        });
     }
 
     /**
@@ -384,11 +468,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the undo button has been disabled
      */
-    undo(): void {
+    undo(callbackFn?: Function): void {
         if (!this._undoStack.length) return;
 
         let updateUUID = this._undoStack.pop();
         this._undoCanvas(updateUUID);
+        callbackFn && callbackFn(updateUUID);
     }
 
     /**
@@ -397,15 +482,11 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @private
      */
     private _undoCanvas(updateUUID: string): void {
-        this._redoStack.push(updateUUID);
-
-        this._drawHistory.forEach((update: CanvasWhiteboardUpdate) => {
-            if (update.getUUID() === updateUUID) {
-                update.setVisible(false);
-            }
-        });
-
-        this._redrawHistory();
+        if (this._shapesMap.has(updateUUID)) {
+            let shape = this._shapesMap.get(updateUUID);
+            shape.isVisible = false;
+            this.drawAllShapes();
+        }
     }
 
     /**
@@ -415,8 +496,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * If the client calls this method he may create a circular redo action which may cause danger.
      */
     redoLocal(): void {
-        this.redo();
-        this.onRedo.emit();
+        this.redo((updateUUID) => {
+            this._undoStack.push(updateUUID);
+            this.onRedo.emit(updateUUID);
+        });
     }
 
     /**
@@ -424,11 +507,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * This method can be called if the canvas component is a ViewChild of some other component.
      * This method will work even if the redo button has been disabled
      */
-    redo(): void {
+    redo(callbackFn?: any): void {
         if (!this._redoStack.length) return;
 
         let updateUUID = this._redoStack.pop();
         this._redoCanvas(updateUUID);
+        callbackFn && callbackFn(updateUUID);
     }
 
     /**
@@ -437,15 +521,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @private
      */
     private _redoCanvas(updateUUID: string): void {
-        this._undoStack.push(updateUUID);
+        if (this._shapesMap.has(updateUUID)) {
+            let shape = this._shapesMap.get(updateUUID);
+            shape.isVisible = true;
 
-        this._drawHistory.forEach((update: CanvasWhiteboardUpdate) => {
-            if (update.getUUID() === updateUUID) {
-                update.setVisible(true);
-            }
-        });
-
-        this._redrawHistory();
+            this.drawAllShapes();
+        }
     }
 
     /**
@@ -480,34 +561,42 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
         let update: CanvasWhiteboardUpdate;
         let updateType: number;
-        let eventPosition: EventPositionPoint = this._getCanvasEventPosition(event);
+        let eventPosition: CanvasWhiteboardPoint = this._getCanvasEventPosition(event);
+
+        update = new CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y);
 
         switch (event.type) {
             case 'mousedown':
             case 'touchstart':
                 this._clientDragging = true;
-                this._lastUUID = eventPosition.x + eventPosition.y + Math.random().toString(36);
-                updateType = UPDATE_TYPE.start;
+                this._lastUUID = this._generateUUID();
+                updateType = CanvasWhiteboardUpdateType.START;
+                this._redoStack = [];
+
+                this._addCurrentShapeDataToAnUpdate(update);
                 break;
             case 'mousemove':
             case 'touchmove':
                 if (!this._clientDragging) {
                     return;
                 }
-                updateType = UPDATE_TYPE.drag;
+                updateType = CanvasWhiteboardUpdateType.DRAG;
                 break;
             case 'touchcancel':
             case 'mouseup':
             case 'touchend':
             case 'mouseout':
                 this._clientDragging = false;
-                updateType = UPDATE_TYPE.stop;
+                updateType = CanvasWhiteboardUpdateType.STOP;
+                this._undoStack.push(this._lastUUID);
                 break;
         }
 
-        update = new CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y, updateType, this.strokeColor, this._lastUUID, true);
+        update.UUID = this._lastUUID;
+        update.type = updateType;
+
         this._draw(update);
-        this._prepareToSendUpdate(update, eventPosition.x, eventPosition.y);
+        this._prepareToSendUpdate(update);
     }
 
     /**
@@ -516,10 +605,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * If we released the touch, the position will be placed in the changedTouches object
      * If it is not a touch event, use the original mouse event received
      * @param eventData
-     * @return {EventPositionPoint}
+     * @return {CanvasWhiteboardPoint}
      * @private
      */
-    private _getCanvasEventPosition(eventData: any): EventPositionPoint {
+    private _getCanvasEventPosition(eventData: any): CanvasWhiteboardPoint {
         let canvasBoundingRect = this.context.canvas.getBoundingClientRect();
 
         let hasTouches = (eventData.touches && eventData.touches.length) ? eventData.touches[0] : null;
@@ -537,10 +626,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         xPosition /= this.scaleFactor ? this.scaleFactor : scaleWidth;
         yPosition /= this.scaleFactor ? this.scaleFactor : scaleHeight;
 
-        return {
-            x: xPosition,
-            y: yPosition
-        }
+        return new CanvasWhiteboardPoint(xPosition / this.context.canvas.width, yPosition / this.context.canvas.height);
     }
 
     /**
@@ -549,12 +635,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * was drawn on this update.
      *
      * @param {CanvasWhiteboardUpdate} update The CanvasWhiteboardUpdate object.
-     * @param {number} eventX The offsetX that needs to be mapped
-     * @param {number} eventY The offsetY that needs to be mapped
      */
-    private _prepareToSendUpdate(update: CanvasWhiteboardUpdate, eventX: number, eventY: number): void {
-        update.setX(eventX / this.context.canvas.width);
-        update.setY(eventY / this.context.canvas.height);
+    private _prepareToSendUpdate(update: CanvasWhiteboardUpdate): void {
         this._prepareUpdateForBatchDispatch(update);
     }
 
@@ -598,63 +680,93 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @private
      */
     private _redrawHistory(): void {
-        let updatesToDraw = [].concat(this._drawHistory);
+        let updatesToDraw = [].concat(this._updateHistory);
 
         this._removeCanvasData(() => {
             updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
-                this._draw(update, true);
+                this._draw(update);
             });
         });
     }
 
     /**
-     * Draws an CanvasWhiteboardUpdate object on the canvas. if mappedCoordinates? is set, the coordinates
-     * are first reverse mapped so that they can be drawn in the proper place. The update
+     * Draws a CanvasWhiteboardUpdate object on the canvas.
+     * The coordinates are first reverse mapped so that they can be drawn in the proper place. The update
      * is afterwards added to the undoStack so that it can be
      *
-     * If the CanvasWhiteboardUpdate Type is "drag", the context is used to draw on the canvas.
+     * If the CanvasWhiteboardUpdate Type is "start", a new "selectedShape" is created.
+     * If the CanvasWhiteboardUpdate Type is "drag", the shape is taken from the shapesMap and then it's updated.
+     * Afterwards the context is used to draw the shape on the canvas.
      * This function saves the last X and Y coordinates that were drawn.
      *
      * @param {CanvasWhiteboardUpdate} update The update object.
-     * @param {boolean} mappedCoordinates? The offsetX that needs to be mapped
      */
-    private _draw(update: CanvasWhiteboardUpdate, mappedCoordinates?: boolean): void {
-        this._drawHistory.push(update);
+    private _draw(update: CanvasWhiteboardUpdate): void {
+        this._updateHistory.push(update);
 
-        let xToDraw = (mappedCoordinates) ? (update.getX() * this.context.canvas.width) : update.getX();
-        let yToDraw = (mappedCoordinates) ? (update.getY() * this.context.canvas.height) : update.getY();
+        //map the canvas coordinates to our canvas size since they are scaled.
+        update = Object.assign(new CanvasWhiteboardUpdate(),
+            update,
+            {
+                x: update.x * this.context.canvas.width,
+                y: update.y * this.context.canvas.height
+            });
 
-        if (update.getType() === UPDATE_TYPE.drag) {
-            let lastPosition = this._lastPositionForUUID[update.getUUID()];
-
-            this.context.save();
-            this.context.beginPath();
-            this.context.lineWidth = this.lineWidth;
-
-            if (update.getVisible()) {
-                this.context.strokeStyle = update.getStrokeColor() || this.strokeColor;
-            } else {
-                this.context.strokeStyle = "rgba(0,0,0,0)";
-            }
-            this.context.lineJoin = "round";
-
-            this.context.moveTo(lastPosition.x, lastPosition.y);
-
-            this.context.lineTo(xToDraw, yToDraw);
-            this.context.closePath();
-            this.context.stroke();
-            this.context.restore();
-        } else if (update.getType() === UPDATE_TYPE.stop && update.getVisible()) {
-            this._undoStack.push(update.getUUID());
-            delete this._lastPositionForUUID[update.getUUID()];
+        if (update.type === CanvasWhiteboardUpdateType.START) {
+            let updateShapeConstructor = this._canvasWhiteboardShapeService.getShapeConstructorFromShapeName(update.selectedShape);
+            this._shapesMap.set(
+                update.UUID,
+                new updateShapeConstructor(
+                    new CanvasWhiteboardPoint(update.x, update.y),
+                    Object.assign(new CanvasWhiteboardShapeOptions(), update.selectedShapeOptions)
+                )
+            );
+        } else if (update.type === CanvasWhiteboardUpdateType.DRAG) {
+            let shape = this._shapesMap.get(update.UUID);
+            shape && shape.onUpdateReceived(update);
+        } else if (CanvasWhiteboardUpdateType.STOP) {
+            let shape = this._shapesMap.get(update.UUID);
+            shape && shape.onStopReceived(update);
         }
 
-        if (update.getType() === UPDATE_TYPE.start || update.getType() === UPDATE_TYPE.drag) {
-            this._lastPositionForUUID[update.getUUID()] = {
-                x: xToDraw,
-                y: yToDraw
-            };
+        this.drawAllShapes();
+    }
+
+    /**
+     * Delete everything from the screen, redraw the background, and then redraw all the shapes from the shapesMap
+     */
+    drawAllShapes() {
+        this._redrawBackground(() => {
+            this.ngZone.runOutsideAngular(() => {
+                this._shapesMap.forEach((shape: CanvasWhiteboardShape) => {
+                    if (shape.isVisible) {
+                        shape.draw(this.context);
+                    }
+                });
+            });
+        });
+    }
+
+    private _addCurrentShapeDataToAnUpdate(update: CanvasWhiteboardUpdate) {
+        if (!update.selectedShape) {
+            update.selectedShape = this.selectedShapeConstructor.name;
         }
+        if (!update.selectedShapeOptions) {
+            //Make a deep copy since we don't want some Shape implementation to change something by accident
+            update.selectedShapeOptions = Object.assign(new CanvasWhiteboardShapeOptions(), this.generateShapePreviewOptions(), {lineWidth: this.lineWidth});
+        }
+    }
+
+    generateShapePreviewOptions(): CanvasWhiteboardShapeOptions {
+        return Object.assign(new CanvasWhiteboardShapeOptions(),
+            {
+                shouldFillShape: !!this.fillColor,
+                fillStyle: this.fillColor,
+                strokeStyle: this.strokeColor,
+                lineWidth: 2,
+                lineJoin: this.lineJoin,
+                lineCap: this.lineCap
+            });
     }
 
     /**
@@ -685,7 +797,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         if (this._canDraw) {
             this._drawMissingUpdates();
             updates.forEach((update: CanvasWhiteboardUpdate) => {
-                this._draw(update, true);
+                this._draw(update);
             });
         } else {
             this._updatesNotDrawn = this._updatesNotDrawn.concat(updates);
@@ -702,7 +814,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
             this._updatesNotDrawn = [];
 
             updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
-                this._draw(update, true);
+                this._draw(update);
             });
         }
     }
@@ -896,8 +1008,30 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * If no value is supplied (null/undefined) the current value will be negated and used.
      * @param {boolean} value
      */
-    toggleColorPicker(value: boolean) {
-        this.showColorPicker = !this._isNullOrUndefined(value) ? value : !this.showColorPicker;
+    toggleStrokeColorPicker(value: boolean) {
+        this.showStrokeColorPicker = !this._isNullOrUndefined(value) ? value : !this.showStrokeColorPicker;
+    }
+
+    /**
+     * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleFillColorPicker(value: boolean) {
+        this.showFillColorPicker = !this._isNullOrUndefined(value) ? value : !this.showFillColorPicker;
+    }
+
+    /**
+     * Toggles the shape selector window, delegating the showShapeSelector Input to the CanvasWhiteboardShapeSelectorComponent.
+     * If no value is supplied (null/undefined) the current value will be negated and used.
+     * @param {boolean} value
+     */
+    toggleShapeSelector(value: boolean) {
+        this.showShapeSelector = !this._isNullOrUndefined(value) ? value : !this.showShapeSelector;
+    }
+
+    selectShape(newShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>) {
+        this.selectedShapeConstructor = newShapeBlueprint;
     }
 
     /**
@@ -909,10 +1043,23 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         if (subscription) subscription.unsubscribe();
     }
 
+    private _generateUUID(): string {
+        return this._random4() + this._random4() + "-" + this._random4() + "-" + this._random4() + "-" +
+            this._random4() + "-" + this._random4() + this._random4() + this._random4();
+    }
+
+    private _random4(): string {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    }
+
     /**
      * Unsubscribe from the service observables
      */
     ngOnDestroy(): void {
+        this._unsubscribe(this._resizeSubscription);
+        this._unsubscribe(this._registeredShapesSubscription);
         this._canvasWhiteboardServiceSubscriptions.forEach(subscription => this._unsubscribe(subscription));
     }
 }

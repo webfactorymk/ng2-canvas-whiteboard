@@ -11,39 +11,65 @@ import {
         '(document:touchstart)': 'closeOnExternalClick($event)',
     },
     template: `
-        <input [style.background]="selectedColor" [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input"
-               (click)="toggleColorPicker($event)"/>
+        <div [hidden]="showColorPicker" class="canvas-whiteboard-colorpicker-input"
+               (click)="toggleColorPicker($event)">
+               <div class="selected-color-type-wrapper">{{previewText}}</div>
+               <div class="selected-color-preview" [style.background]="selectedColor"></div>
+        </div>
         <div [hidden]="!showColorPicker" class="canvas-whiteboard-colorpicker-wrapper">
+            <div (click)="selectColor('transparent')" class="transparent-color">Transparent</div>
             <canvas #canvaswhiteboardcolorpicker class="canvas-whiteboard-colorpicker" width="284" height="155"
-                    (click)="selectColor($event)"></canvas>
+                    (click)="selectColor(determineColorFromCanvas($event))"></canvas>
         </div>
     `,
     styles: [`
-        .canvas-whiteboard-colorpicker {
-            padding: 4px;
-            background: #000;
+        .selected-color-preview {
+            width: 100%;
+            height: 20%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+        
+        .selected-color-type-wrapper {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #000;
+        }
+        
+        .transparent-color {
+            font-size: 14px;
+        }
+        
+        .canvas-whiteboard-colorpicker-wrapper {
             border: 1px solid #afafaf;
+            color: #000;
         }
 
         @media (min-width: 401px) {
-            .canvas-whiteboard-colorpicker {
+            .canvas-whiteboard-colorpicker-wrapper {
                 position: absolute;
-                top: 0;
-                right: 100%;
             }
         }
 
         .canvas-whiteboard-colorpicker-input {
+            display: inline-block;
+            position:relative;
             width: 44px;
             height: 44px;
-            border: 2px solid black;
             margin: 5px;
+            cursor: pointer;
+            color: #000;
         }
     `]
 })
 export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
-    @Input() selectedColor: string = "rgb(0,0,0)";
+    @Input() previewText: string;
+    @Input() readonly selectedColor: string = 'rgba(0,0,0,1)';
     @ViewChild('canvaswhiteboardcolorpicker') canvas: ElementRef;
 
     @Input() readonly showColorPicker: boolean = false;
@@ -51,6 +77,7 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
     @Output() onToggleColorPicker = new EventEmitter<boolean>();
     @Output() onColorSelected = new EventEmitter<string>();
+    @Output() onSecondaryColorSelected = new EventEmitter<string>();
 
     constructor(private _elementRef: ElementRef) {
     }
@@ -99,17 +126,15 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
         this.onToggleColorPicker.emit(!this.showColorPicker);
     }
 
-    private _getColor(event: any) {
+    determineColorFromCanvas(event: any) {
         let canvasRect = this._context.canvas.getBoundingClientRect();
         let imageData = this._context.getImageData(event.clientX - canvasRect.left, event.clientY - canvasRect.top, 1, 1);
 
-        return 'rgb(' + imageData.data[0] + ', ' + imageData.data[1] + ', ' + imageData.data[2] + ')';
+        return `rgba(${imageData.data[0]}, ${imageData.data[1]}, ${imageData.data[2]}, ${imageData.data[3]})`;
     }
 
-    selectColor(event: any) {
-        this.selectedColor = this._getColor(event);
-
-        this.onColorSelected.emit(this.selectedColor);
+    selectColor(color: string) {
+        this.onColorSelected.emit(color);
         this.toggleColorPicker(null);
     }
 }
