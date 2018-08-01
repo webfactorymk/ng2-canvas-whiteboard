@@ -910,7 +910,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         let toBlobMethod: Function;
 
         if (typeof this.context.canvas.toBlob !== "undefined") {
-            toBlobMethod = this.context.canvas.toBlob;
+            toBlobMethod = this.context.canvas.toBlob.bind(this.context.canvas);
         } else if (typeof this.context.canvas.msToBlob !== "undefined") {
             toBlobMethod = (callback) => {
                 callback && callback(this.context.canvas.msToBlob());
