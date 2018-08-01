@@ -782,7 +782,7 @@ var CanvasWhiteboardComponent = (function () {
         if (returnedDataQuality === void 0) { returnedDataQuality = 1; }
         var toBlobMethod;
         if (typeof this.context.canvas.toBlob !== "undefined") {
-            toBlobMethod = this.context.canvas.toBlob;
+            toBlobMethod = this.context.canvas.toBlob.bind(this.context.canvas);
         }
         else if (typeof this.context.canvas.msToBlob !== "undefined") {
             toBlobMethod = function (callback) {
