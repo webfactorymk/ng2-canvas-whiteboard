@@ -57,6 +57,18 @@ var CanvasWhiteboardComponent = (function () {
         this._shapesMap = new Map();
         this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
     }
+    Object.defineProperty(CanvasWhiteboardComponent.prototype, "imageUrl", {
+        get: function () {
+            return this._imageUrl;
+        },
+        set: function (imageUrl) {
+            this._imageUrl = imageUrl;
+            this._imageElement = null;
+            this._redrawHistory();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Initialize the canvas drawing context. If we have an aspect ratio set up, the canvas will resize
      * according to the aspect ratio.
@@ -69,11 +81,19 @@ var CanvasWhiteboardComponent = (function () {
         this._calculateCanvasWidthAndHeight();
     };
     /**
+     * If an image exists and it's url changes, we need to redraw the new image on the canvas.
+     */
+    CanvasWhiteboardComponent.prototype.ngOnChanges = function (changes) {
+        if (changes.options && changes.options.currentValue != changes.options.previousValue) {
+            this._initInputsFromOptions(changes.options.currentValue);
+        }
+    };
+    /**
      * Recalculate the width and height of the canvas after the view has been fully initialized
      */
     CanvasWhiteboardComponent.prototype.ngAfterViewInit = function () {
         this._calculateCanvasWidthAndHeight();
-        this._drawStartingColor();
+        this._redrawHistory();
     };
     /**
      * This method reads the options which are helpful since they can be really long when specified in HTML
@@ -209,23 +229,6 @@ var CanvasWhiteboardComponent = (function () {
         }
     };
     /**
-     * If an image exists and it's url changes, we need to redraw the new image on the canvas.
-     */
-    CanvasWhiteboardComponent.prototype.ngOnChanges = function (changes) {
-        if (changes.imageUrl && changes.imageUrl.currentValue != changes.imageUrl.previousValue) {
-            if (changes.imageUrl.currentValue != null) {
-                this._loadImage();
-            }
-            else {
-                this._canDraw = false;
-                this._redrawBackground();
-            }
-        }
-        if (changes.options && changes.options.currentValue != changes.options.previousValue) {
-            this._initInputsFromOptions(changes.options.currentValue);
-        }
-    };
-    /**
      * Load an image and draw it on the canvas (if an image exists)
      * @constructor
      * @param callbackFn A function that is called after the image loading is finished
@@ -234,12 +237,14 @@ var CanvasWhiteboardComponent = (function () {
     CanvasWhiteboardComponent.prototype._loadImage = function (callbackFn) {
         var _this = this;
         this._canDraw = false;
+        //If we already have the image there is no need to acquire it
+        if (this._imageElement) {
+            this._canDraw = true;
+            callbackFn && callbackFn();
+            return;
+        }
         this._imageElement = new Image();
         this._imageElement.addEventListener("load", function () {
-            _this.context.save();
-            _this._drawImage(_this.context, _this._imageElement, 0, 0, _this.context.canvas.width, _this.context.canvas.height, 0.5, 0.5);
-            _this.context.restore();
-            _this._drawMissingUpdates();
             _this._canDraw = true;
             callbackFn && callbackFn();
             _this.onImageLoaded.emit(true);
@@ -281,13 +286,20 @@ var CanvasWhiteboardComponent = (function () {
      * @return Emits a value when the clearing is finished
      */
     CanvasWhiteboardComponent.prototype._redrawBackground = function (callbackFn) {
+        var _this = this;
         if (this.context) {
-            this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-            this._drawStartingColor();
             if (this.imageUrl) {
-                this._loadImage(callbackFn);
+                this._loadImage(function () {
+                    _this.context.save();
+                    _this._drawImage(_this.context, _this._imageElement, 0, 0, _this.context.canvas.width, _this.context.canvas.height, 0.5, 0.5);
+                    _this.context.restore();
+                    _this._drawMissingUpdates();
+                    callbackFn && callbackFn();
+                });
             }
             else {
+                this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+                this._drawStartingColor();
                 callbackFn && callbackFn();
             }
         }

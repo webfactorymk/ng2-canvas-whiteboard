@@ -12,6 +12,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     private _canvasWhiteboardShapeService;
     options: CanvasWhiteboardOptions;
     batchUpdateTimeoutDuration: number;
+    private _imageUrl;
     imageUrl: string;
     aspectRatio: number;
     drawButtonClass: string;
@@ -75,6 +76,10 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      */
     ngOnInit(): void;
     /**
+     * If an image exists and it's url changes, we need to redraw the new image on the canvas.
+     */
+    ngOnChanges(changes: any): void;
+    /**
      * Recalculate the width and height of the canvas after the view has been fully initialized
      */
     ngAfterViewInit(): void;
@@ -106,10 +111,6 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @private
      */
     private _calculateCanvasWidthAndHeight();
-    /**
-     * If an image exists and it's url changes, we need to redraw the new image on the canvas.
-     */
-    ngOnChanges(changes: any): void;
     /**
      * Load an image and draw it on the canvas (if an image exists)
      * @constructor
