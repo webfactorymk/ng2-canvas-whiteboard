@@ -23,30 +23,41 @@ var FreeHandShape = (function (_super) {
         Object.assign(context, this.options);
         context.beginPath();
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
-        // let controlPoint = this.positionPoint;
-        this.linePositions.forEach(function (linePosition) {
-            context.lineTo(linePosition.x, linePosition.y);
-            // let endingPoint: CanvasWhiteboardPoint = this._getBezierControlPoint(controlPoint, linePosition);
-            // context.quadraticCurveTo(controlPoint.x, controlPoint.y, endingPoint.x, endingPoint.y);
-            // controlPoint = linePosition;
-        });
+        // Draw a dot
+        context.lineTo(this.positionPoint.x + 1, this.positionPoint.y + 1);
+        // Normal fastest free hand drawing
+        // this.linePositions.forEach((linePosition) => {
+        //     context.lineTo(linePosition.x, linePosition.y);
+        // });
+        // Quadratic curves drawing
+        var i = 0;
+        while (i < this.linePositions.length) {
+            if (this.linePositions.length - i > 2) {
+                var controlPoint1 = this.linePositions[i];
+                var controlPoint2 = this.linePositions[i + 1];
+                var endPoint = this.linePositions[i + 2];
+                context.bezierCurveTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
+                i += 2;
+            }
+            else {
+                var linePosition = this.linePositions[i];
+                context.lineTo(linePosition.x, linePosition.y);
+                i += 1;
+            }
+        }
         context.stroke();
     };
     FreeHandShape.prototype.drawPreview = function (context) {
         this.positionPoint = new canvas_whiteboard_point_1.CanvasWhiteboardPoint(2, 2);
         this.linePositions = [
             new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width - 5, context.canvas.height * 0.3),
-            new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width * 0.4, context.canvas.height * 0.6),
+            // new CanvasWhiteboardPoint(context.canvas.width * 0.4, context.canvas.height * 0.6),
+            new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width * 0.2, context.canvas.height * 0.4),
+            new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width * 0.6, context.canvas.height * 0.8),
             new canvas_whiteboard_point_1.CanvasWhiteboardPoint(context.canvas.width, context.canvas.height)
         ];
         this.draw(context);
     };
-    // private _getBezierControlPoint(firstPoint: CanvasWhiteboardPoint, secondPoint: CanvasWhiteboardPoint): CanvasWhiteboardPoint {
-    //     return new CanvasWhiteboardPoint(
-    //         firstPoint.x + ((secondPoint.x - firstPoint.x) / 2),
-    //         firstPoint.y + ((secondPoint.y - firstPoint.y) / 2)
-    //     );
-    // }
     FreeHandShape.prototype.onUpdateReceived = function (update) {
         this.linePositions.push(new canvas_whiteboard_point_1.CanvasWhiteboardPoint(update.x, update.y));
     };

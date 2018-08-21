@@ -22,64 +22,64 @@ import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-opt
 @Component({
     selector: 'canvas-whiteboard',
     template:
-        `
+            `
         <div class="canvas_wrapper_div">
-             <div class="canvas_whiteboard_buttons">
-                 <canvas-whiteboard-shape-selector *ngIf="shapeSelectorEnabled"
-                                                   [showShapeSelector]="showShapeSelector"
-                                                   [selectedShapeConstructor]="selectedShapeConstructor"
-                                                   [shapeOptions]="generateShapePreviewOptions()"
-                                                   (onToggleShapeSelector)="toggleShapeSelector($event)"
-                                                   (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
-                                                   
-                 <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
-                                                [previewText]="'Fill'"
-                                                [showColorPicker]="showFillColorPicker"
-                                                [selectedColor]="fillColor"
-                                                (onToggleColorPicker)="toggleFillColorPicker($event)"
-                                                (onColorSelected)="changeFillColor($event)">
-                 </canvas-whiteboard-colorpicker>    
-                 
-                 <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
-                                                [previewText]="'Stroke'"
-                                                [showColorPicker]="showStrokeColorPicker"
-                                                [selectedColor]="strokeColor"
-                                                (onToggleColorPicker)="toggleStrokeColorPicker($event)"
-                                                (onColorSelected)="changeStrokeColor($event)">
-                   </canvas-whiteboard-colorpicker>
-                                                 
-                 
-                 <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
-                         [class.canvas_whiteboard_button-draw_animated]="getDrawingEnabled()"
-                         class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">
-                        <i [class]="drawButtonClass" aria-hidden="true"></i> {{drawButtonText}}
+            <div class="canvas_whiteboard_buttons">
+                <canvas-whiteboard-shape-selector *ngIf="shapeSelectorEnabled"
+                                                  [showShapeSelector]="showShapeSelector"
+                                                  [selectedShapeConstructor]="selectedShapeConstructor"
+                                                  [shapeOptions]="generateShapePreviewOptions()"
+                                                  (onToggleShapeSelector)="toggleShapeSelector($event)"
+                                                  (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
+
+                <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                                               [previewText]="'Fill'"
+                                               [showColorPicker]="showFillColorPicker"
+                                               [selectedColor]="fillColor"
+                                               (onToggleColorPicker)="toggleFillColorPicker($event)"
+                                               (onColorSelected)="changeFillColor($event)">
+                </canvas-whiteboard-colorpicker>
+
+                <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                                               [previewText]="'Stroke'"
+                                               [showColorPicker]="showStrokeColorPicker"
+                                               [selectedColor]="strokeColor"
+                                               (onToggleColorPicker)="toggleStrokeColorPicker($event)"
+                                               (onColorSelected)="changeStrokeColor($event)">
+                </canvas-whiteboard-colorpicker>
+
+
+                <button *ngIf="drawButtonEnabled" (click)="toggleDrawingEnabled()"
+                        [class.canvas_whiteboard_button-draw_animated]="getDrawingEnabled()"
+                        class="canvas_whiteboard_button canvas_whiteboard_button-draw" type="button">
+                    <i [class]="drawButtonClass" aria-hidden="true"></i> {{drawButtonText}}
                 </button>
-                
+
                 <button *ngIf="clearButtonEnabled" (click)="clearCanvasLocal()" type="button"
                         class="canvas_whiteboard_button canvas_whiteboard_button-clear">
                     <i [class]="clearButtonClass" aria-hidden="true"></i> {{clearButtonText}}
                 </button>
-                
-                 <button *ngIf="undoButtonEnabled" (click)="undoLocal()" type="button"
-                         class="canvas_whiteboard_button canvas_whiteboard_button-undo">
-                     <i [class]="undoButtonClass" aria-hidden="true"></i> {{undoButtonText}} 
-                 </button>
-                 
-                 <button *ngIf="redoButtonEnabled" (click)="redoLocal()" type="button"
-                         class="canvas_whiteboard_button canvas_whiteboard_button-redo">
-                     <i [class]="redoButtonClass" aria-hidden="true"></i> {{redoButtonText}}
-                 </button> 
-                 <button *ngIf="saveDataButtonEnabled" (click)="saveLocal()" type="button"
-                         class="canvas_whiteboard_button canvas_whiteboard_button-save">
-                     <i [class]="saveDataButtonClass" aria-hidden="true"></i> {{saveDataButtonText}}
-                 </button>
-             </div>
-            <canvas #canvas
+
+                <button *ngIf="undoButtonEnabled" (click)="undoLocal()" type="button"
+                        class="canvas_whiteboard_button canvas_whiteboard_button-undo">
+                    <i [class]="undoButtonClass" aria-hidden="true"></i> {{undoButtonText}}
+                </button>
+
+                <button *ngIf="redoButtonEnabled" (click)="redoLocal()" type="button"
+                        class="canvas_whiteboard_button canvas_whiteboard_button-redo">
+                    <i [class]="redoButtonClass" aria-hidden="true"></i> {{redoButtonText}}
+                </button>
+                <button *ngIf="saveDataButtonEnabled" (click)="saveLocal()" type="button"
+                        class="canvas_whiteboard_button canvas_whiteboard_button-save">
+                    <i [class]="saveDataButtonClass" aria-hidden="true"></i> {{saveDataButtonText}}
+                </button>
+            </div>
+            <canvas #canvas class="canvas_whiteboard"></canvas>
+            <canvas #incompleteShapesCanvas class="incomplete_shapes_canvas_whiteboard"
                     (mousedown)="canvasUserEvents($event)" (mouseup)="canvasUserEvents($event)"
                     (mousemove)="canvasUserEvents($event)" (mouseout)="canvasUserEvents($event)"
                     (touchstart)="canvasUserEvents($event)" (touchmove)="canvasUserEvents($event)"
-                    (touchend)="canvasUserEvents($event)" (touchcancel)="canvasUserEvents($event)">
-            </canvas>
+                    (touchend)="canvasUserEvents($event)" (touchcancel)="canvasUserEvents($event)"></canvas>
         </div>
     `,
     styles: [DEFAULT_STYLES]
@@ -142,8 +142,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Output() onSave = new EventEmitter<string | Blob>();
 
     @ViewChild('canvas') canvas: ElementRef;
-
     context: CanvasRenderingContext2D;
+
+    @ViewChild('incompleteShapesCanvas') private _incompleteShapesCanvas: ElementRef;
+    private _incompleteShapesCanvasContext: CanvasRenderingContext2D;
 
     private _imageElement: any;
 
@@ -183,7 +185,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         this._initCanvasEventListeners();
         this._initCanvasServiceObservables();
         this.context = this.canvas.nativeElement.getContext("2d");
-        this._calculateCanvasWidthAndHeight();
+        this._incompleteShapesCanvasContext = this._incompleteShapesCanvas.nativeElement.getContext("2d");
     }
 
     /**
@@ -305,6 +307,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         } else {
             this.context.canvas.height = this.canvas.nativeElement.parentNode.clientHeight;
         }
+
+        this._incompleteShapesCanvasContext.canvas.width = this.context.canvas.width;
+        this._incompleteShapesCanvasContext.canvas.height = this.context.canvas.height;
     }
 
     /**
@@ -557,24 +562,23 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      *
      */
     canvasUserEvents(event: any): void {
+        //Ignore all if we didn't click the _draw! button or the image did not load
         if (!this.drawingEnabled || !this._canDraw) {
-            //Ignore all if we didn't click the _draw! button or the image did not load
             return;
         }
 
-        if ((event.type === 'mousemove' || event.type === 'touchmove' || event.type === 'mouseout') && !this._clientDragging) {
-            // Ignore mouse move Events if we're not dragging
+        // Ignore mouse move Events if we're not dragging
+        if (!this._clientDragging && (event.type === 'mousemove' || event.type === 'touchmove' || event.type === 'mouseout')) {
             return;
         }
 
-        if (event.target == this.canvas.nativeElement) {
+        if (event.target == this._incompleteShapesCanvas.nativeElement || event.target == this.canvas.nativeElement) {
             event.preventDefault();
         }
 
         let update: CanvasWhiteboardUpdate;
         let updateType: number;
         let eventPosition: CanvasWhiteboardPoint = this._getCanvasEventPosition(event);
-
         update = new CanvasWhiteboardUpdate(eventPosition.x, eventPosition.y);
 
         switch (event.type) {
@@ -726,22 +730,41 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
         if (update.type === CanvasWhiteboardUpdateType.START) {
             let updateShapeConstructor = this._canvasWhiteboardShapeService.getShapeConstructorFromShapeName(update.selectedShape);
-            this._shapesMap.set(
-                update.UUID,
-                new updateShapeConstructor(
-                    new CanvasWhiteboardPoint(update.x, update.y),
-                    Object.assign(new CanvasWhiteboardShapeOptions(), update.selectedShapeOptions)
-                )
+            let shape = new updateShapeConstructor(
+                new CanvasWhiteboardPoint(update.x, update.y),
+                Object.assign(new CanvasWhiteboardShapeOptions(), update.selectedShapeOptions)
             );
+            this._shapesMap.set(update.UUID, shape);
+            this._drawIncompleteShape(shape);
         } else if (update.type === CanvasWhiteboardUpdateType.DRAG) {
             let shape = this._shapesMap.get(update.UUID);
             shape && shape.onUpdateReceived(update);
+            this._drawIncompleteShape(shape);
         } else if (CanvasWhiteboardUpdateType.STOP) {
             let shape = this._shapesMap.get(update.UUID);
             shape && shape.onStopReceived(update);
+            this._swapCompletedShapeToActualCanvas(shape);
         }
+    }
 
-        this.drawAllShapes();
+    private _drawIncompleteShape(shape: CanvasWhiteboardShape) {
+        this._resetIncompleteShapeCanvas();
+        if (shape.isVisible) {
+            shape.draw(this._incompleteShapesCanvasContext);
+        }
+    }
+
+    private _swapCompletedShapeToActualCanvas(shape: CanvasWhiteboardShape) {
+        this._resetIncompleteShapeCanvas();
+        if (shape.isVisible) {
+            shape.draw(this.context);
+        }
+    }
+
+    private _resetIncompleteShapeCanvas() {
+        this._incompleteShapesCanvasContext.clearRect(0, 0, this._incompleteShapesCanvasContext.canvas.width, this._incompleteShapesCanvasContext.canvas.height);
+        this._incompleteShapesCanvasContext.fillStyle = "transparent";
+        this._incompleteShapesCanvasContext.fillRect(0, 0, this._incompleteShapesCanvasContext.canvas.width, this._incompleteShapesCanvasContext.canvas.height);
     }
 
     /**
@@ -749,12 +772,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     drawAllShapes() {
         this._redrawBackground(() => {
-            this.ngZone.runOutsideAngular(() => {
-                this._shapesMap.forEach((shape: CanvasWhiteboardShape) => {
-                    if (shape.isVisible) {
-                        shape.draw(this.context);
-                    }
-                });
+            this._shapesMap.forEach((shape: CanvasWhiteboardShape) => {
+                if (shape.isVisible) {
+                    shape.draw(this.context);
+                }
             });
         });
     }

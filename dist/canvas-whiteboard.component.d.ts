@@ -53,6 +53,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     onSave: EventEmitter<string | Blob>;
     canvas: ElementRef;
     context: CanvasRenderingContext2D;
+    private _incompleteShapesCanvas;
+    private _incompleteShapesCanvasContext;
     private _imageElement;
     private _canDraw;
     private _clientDragging;
@@ -283,6 +285,9 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param {CanvasWhiteboardUpdate} update The update object.
      */
     private _draw(update);
+    private _drawIncompleteShape(shape);
+    private _swapCompletedShapeToActualCanvas(shape);
+    private _resetIncompleteShapeCanvas();
     /**
      * Delete everything from the screen, redraw the background, and then redraw all the shapes from the shapesMap
      */

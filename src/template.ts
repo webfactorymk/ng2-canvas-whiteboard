@@ -21,9 +21,15 @@ export const DEFAULT_STYLES = `
     border: 1px solid transparent;
     border-radius: 4px;
 }
+
+.canvas_whiteboard_buttons { 
+    z-index: 3;
+}
+
 @media (max-width: 400px) {
      .canvas_whiteboard_buttons {
             position: absolute;
+            z-inde
             top: 0;
             width: 100%;
             text-align: center;
@@ -72,4 +78,16 @@ export const DEFAULT_STYLES = `
 
 .canvas_whiteboard_button-clear {
     padding-top: 5px;
-}`;
+}
+
+.canvas_whiteboard {
+    position: absolute;
+    z-index: 1;
+}
+
+.incomplete_shapes_canvas_whiteboard {
+    position: absolute;
+    z-index: 2;
+}
+
+`;
