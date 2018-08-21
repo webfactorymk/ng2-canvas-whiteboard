@@ -146,6 +146,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     @ViewChild('incompleteShapesCanvas') private _incompleteShapesCanvas: ElementRef;
     private _incompleteShapesCanvasContext: CanvasRenderingContext2D;
+    private _incompleteShapesMap: Map<string, CanvasWhiteboardShape>;
 
     private _imageElement: any;
 
@@ -173,6 +174,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     constructor(private ngZone: NgZone, private _changeDetector: ChangeDetectorRef, private _canvasWhiteboardService: CanvasWhiteboardService, private _canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
         this._shapesMap = new Map<string, CanvasWhiteboardShape>();
+        this._incompleteShapesMap = new Map<string, CanvasWhiteboardShape>();
         this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
     }
 
@@ -568,7 +570,14 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         }
 
         // Ignore mouse move Events if we're not dragging
-        if (!this._clientDragging && (event.type === 'mousemove' || event.type === 'touchmove' || event.type === 'mouseout')) {
+        if (!this._clientDragging
+            && (event.type === 'mousemove'
+                || event.type === 'touchmove'
+                || event.type === 'mouseout'
+                || event.type === 'touchcancel'
+                || event.type === 'mouseup'
+                || event.type === 'touchend'
+                || event.type === 'mouseout')) {
             return;
         }
 
@@ -734,28 +743,33 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
                 new CanvasWhiteboardPoint(update.x, update.y),
                 Object.assign(new CanvasWhiteboardShapeOptions(), update.selectedShapeOptions)
             );
-            this._shapesMap.set(update.UUID, shape);
-            this._drawIncompleteShape(shape);
+            this._incompleteShapesMap.set(update.UUID, shape);
+            this._drawIncompleteShapes();
         } else if (update.type === CanvasWhiteboardUpdateType.DRAG) {
-            let shape = this._shapesMap.get(update.UUID);
+            let shape = this._incompleteShapesMap.get(update.UUID);
             shape && shape.onUpdateReceived(update);
-            this._drawIncompleteShape(shape);
+            this._drawIncompleteShapes();
         } else if (CanvasWhiteboardUpdateType.STOP) {
-            let shape = this._shapesMap.get(update.UUID);
+            let shape = this._incompleteShapesMap.get(update.UUID);
             shape && shape.onStopReceived(update);
+
+            this._shapesMap.set(update.UUID, shape);
+            this._incompleteShapesMap.delete(update.UUID);
             this._swapCompletedShapeToActualCanvas(shape);
         }
     }
 
-    private _drawIncompleteShape(shape: CanvasWhiteboardShape) {
+    private _drawIncompleteShapes() {
         this._resetIncompleteShapeCanvas();
-        if (shape.isVisible) {
-            shape.draw(this._incompleteShapesCanvasContext);
-        }
+        this._incompleteShapesMap.forEach((shape) => {
+            if (shape.isVisible) {
+                shape.draw(this._incompleteShapesCanvasContext);
+            }
+        });
     }
 
     private _swapCompletedShapeToActualCanvas(shape: CanvasWhiteboardShape) {
-        this._resetIncompleteShapeCanvas();
+        this._drawIncompleteShapes();
         if (shape.isVisible) {
             shape.draw(this.context);
         }

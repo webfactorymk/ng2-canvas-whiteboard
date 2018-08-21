@@ -55,6 +55,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     context: CanvasRenderingContext2D;
     private _incompleteShapesCanvas;
     private _incompleteShapesCanvasContext;
+    private _incompleteShapesMap;
     private _imageElement;
     private _canDraw;
     private _clientDragging;
@@ -285,7 +286,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param {CanvasWhiteboardUpdate} update The update object.
      */
     private _draw(update);
-    private _drawIncompleteShape(shape);
+    private _drawIncompleteShapes();
     private _swapCompletedShapeToActualCanvas(shape);
     private _resetIncompleteShapeCanvas();
     /**
