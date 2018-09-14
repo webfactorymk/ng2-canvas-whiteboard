@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShape} from "./canvas-whiteboard-shape";
-import {Observable} from "rxjs/Observable";
+import {Observable} from "rxjs";
 import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
 
 @Component({

@@ -1,11 +1,16 @@
 {
   "name": "ng2-canvas-whiteboard",
-  "version": "2.1.1",
+  "version": "2.1.1.fork",
   "description": "A Canvas component for Angular which supports free drawing.",
   "main": "index.js",
   "scripts": {
-    "watch": "tsc -w",
-    "build": "rm -rf dist && ngc"
+    "ng": "ng",
+    "start": "webpack-dev-server --port=4200",
+    "build": "webpack",
+    "test": "karma start ./karma.conf.js",
+    "lint": "ng lint",
+    "e2e": "protractor ./protractor.conf.js",
+    "pree2e": "webdriver-manager update --standalone false --gecko false --quiet"
   },
   "files": [
     "dist",
@@ -20,10 +25,6 @@
   "author": "webfactory",
   "license": "MIT",
   "keywords": [
-    "angular2",
-    "angular",
-    "angular4",
-    "angular5",
     "angular6",
     "canvas",
     "drawing",
@@ -38,18 +39,16 @@
     "custom shapes",
     "custom premade shapes"
   ],
-  "dependencies": {},
-  "peerDependencies": {
-    "rxjs-compat": "^6.0.0"
-  },
+  "dependencies": {
+   },
   "devDependencies": {
-    "@angular/common": "4.3.2",
-    "@angular/compiler-cli": "4.3.2",
-    "@angular/compiler": "4.3.2",
-    "@angular/core": "4.3.2",
-    "typescript": "2.2.1",
-    "rxjs": "5.2.0",
-    "rxjs-compat": "^6.0.0",
-    "zone.js": "0.8.4"
+    "@angular-devkit/build-angular": "^0.8.1",
+    "@angular/common": "6.1.6",
+    "@angular/compiler-cli": "6.1.6",
+    "@angular/compiler": "6.1.6",
+    "@angular/core": "6.1.6",
+    "rxjs": "^6.3.2",
+   "typescript": "2.7.2",
+    "zone.js": "0.8.26"
   }
 }
