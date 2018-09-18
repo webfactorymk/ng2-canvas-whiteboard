@@ -8,15 +8,17 @@ import {
     OnInit,
     OnChanges, OnDestroy, AfterViewInit, NgZone, ChangeDetectorRef
 } from '@angular/core';
+
 import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "./canvas-whiteboard-update.model";
 import {DEFAULT_STYLES} from "./template";
 import {CanvasWhiteboardService} from "./canvas-whiteboard.service";
 import {CanvasWhiteboardOptions} from "./canvas-whiteboard-options";
-import {Subscription} from "rxjs/Subscription";
+import {Subscription} from "rxjs";
 import {CanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape";
 import {CanvasWhiteboardPoint} from "./canvas-whiteboard-point";
 import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape.service";
-import {Observable} from "rxjs";
+import {Observable, fromEvent} from "rxjs";
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
 
 @Component({
@@ -264,8 +266,11 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      */
     private _initCanvasEventListeners(): void {
         this.ngZone.runOutsideAngular(() => {
-            this._resizeSubscription = Observable.fromEvent(window, 'resize')
-                .debounceTime(200).distinctUntilChanged().subscribe(() => {
+            const resizeEVent = fromEvent(window, 'resize');
+            this._resizeSubscription = resizeEVent.pipe(
+                debounceTime(200),
+                distinctUntilChanged(),
+                ).subscribe(() => {
                     this.ngZone.run(() => {
                         this._redrawCanvasOnResize();
                     });
