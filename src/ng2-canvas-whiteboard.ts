@@ -1,14 +1,3 @@
-import {NgModule} from "@angular/core";
-import {CanvasWhiteboardComponent} from "./canvas-whiteboard.component";
-import {CommonModule} from "@angular/common";
-import {CanvasWhiteboardColorPickerComponent} from "./canvas-whiteboard-colorpicker.component";
-import {CanvasWhiteboardService} from "./canvas-whiteboard.service";
-import {CanvasWhiteboardShapeService} from "./shapes/canvas-whiteboard-shape.service";
-import {RectangleShape} from "./shapes/rectangle-shape";
-import {CircleShape} from "./shapes/circle-shape";
-import {CanvasWhiteboardShapeSelectorComponent} from "./shapes/canvas-whiteboard-shape-selector.component";
-import {CanvasWhiteboardShapePreviewComponent} from "./shapes/canvas-whiteboard-shape-preview.component";
-
 export {CanvasWhiteboardComponent} from "./canvas-whiteboard.component";
 export {CanvasWhiteboardUpdate} from "./canvas-whiteboard-update.model";
 export {CanvasWhiteboardService} from "./canvas-whiteboard.service";
@@ -20,22 +9,7 @@ export {CanvasWhiteboardShapeService} from "./shapes/canvas-whiteboard-shape.ser
 export {RectangleShape} from "./shapes/rectangle-shape";
 export {CircleShape} from "./shapes/circle-shape";
 export {CanvasWhiteboardShapeSelectorComponent} from "./shapes/canvas-whiteboard-shape-selector.component";
-
-@NgModule({
-    imports: [
-        CommonModule
-    ],
-    declarations: [
-        CanvasWhiteboardComponent,
-        CanvasWhiteboardColorPickerComponent,
-        CanvasWhiteboardShapeSelectorComponent,
-        CanvasWhiteboardShapePreviewComponent
-    ],
-    providers: [
-        CanvasWhiteboardService,
-        CanvasWhiteboardShapeService
-    ],
-    exports: [CanvasWhiteboardComponent]
-})
-export class CanvasWhiteboardModule {
-}
+export {CanvasWhiteboardColorPickerComponent} from './canvas-whiteboard-colorpicker.component';
+export {CanvasWhiteboardShapePreviewComponent} from './shapes/canvas-whiteboard-shape-preview.component';
+export {CanvasWhiteboardModule} from './ng2-canvas-whiteboard.module';
+export {DEFAULT_STYLES} from './template';

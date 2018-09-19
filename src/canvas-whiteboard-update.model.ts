@@ -15,25 +15,36 @@ export class CanvasWhiteboardUpdate {
     selectedShape: string;
     selectedShapeOptions: CanvasWhiteboardShapeOptions;
 
-    constructor(x?: number, y?: number, type?: CanvasWhiteboardUpdateType, UUID?: string, selectedShape?: string, selectedShapeOptions?: CanvasWhiteboardShapeOptions) {
+    static deserializeJson(json: any): CanvasWhiteboardUpdate {
+        let parsedJson;
+        try {
+            parsedJson = JSON.parse(json);
+            return new CanvasWhiteboardUpdate(
+                parsedJson['x'],
+                parsedJson['y'],
+                parsedJson['type'],
+                parsedJson['uuid'],
+                parsedJson['selectedShape'],
+                parsedJson['selectedShapeOptions']);
+        } catch (e) {
+            console.error("The canvas whiteboard update is not p1" +
+                "arseable");
+            return null;
+        }
+    }
+
+    constructor(x?: number,
+                y?: number,
+                type?: CanvasWhiteboardUpdateType,
+                UUID?: string,
+                selectedShape?: string,
+                selectedShapeOptions?: CanvasWhiteboardShapeOptions) {
         this.x = x;
         this.y = y;
         this.type = type;
         this.UUID = UUID;
         this.selectedShape = selectedShape;
         this.selectedShapeOptions = selectedShapeOptions;
-    }
-
-    static deserializeJson(json: any): CanvasWhiteboardUpdate {
-        let parsedJson;
-        try {
-            parsedJson = JSON.parse(json);
-            return new CanvasWhiteboardUpdate(parsedJson['x'], parsedJson['y'], parsedJson['type'], parsedJson['uuid'], parsedJson['selectedShape'], parsedJson['selectedShapeOptions']);
-        } catch (e) {
-            console.error("The canvas whiteboard update is not p1" +
-                "arseable");
-            return null;
-        }
     }
 
     stringify(): string {

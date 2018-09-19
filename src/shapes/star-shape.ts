@@ -7,7 +7,10 @@ export class StarShape extends CanvasWhiteboardShape {
     radius: number;
     spikes: number;
 
-    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, radius?: number, spikes?: number) {
+    constructor(positionPoint?: CanvasWhiteboardPoint,
+                options?: CanvasWhiteboardShapeOptions,
+                radius?: number,
+                spikes?: number) {
         super(positionPoint, options);
         this.radius = radius || 0;
         this.spikes = this.spikes || 5;

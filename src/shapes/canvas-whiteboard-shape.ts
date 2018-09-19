@@ -15,8 +15,8 @@ export abstract class CanvasWhiteboardShape {
 
     abstract onUpdateReceived(update: CanvasWhiteboardUpdate);
 
+    // noinspection TsLint
     onStopReceived(update: CanvasWhiteboardUpdate) {
-
     }
 
     abstract draw(context: CanvasRenderingContext2D);
