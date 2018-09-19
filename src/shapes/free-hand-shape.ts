@@ -31,7 +31,12 @@ export class FreeHandShape extends CanvasWhiteboardShape {
                 let controlPoint1 = this.linePositions[i];
                 let controlPoint2 = this.linePositions[i + 1];
                 let endPoint = this.linePositions[i + 2];
-                context.bezierCurveTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
+                context.bezierCurveTo(controlPoint1.x,
+                    controlPoint1.y,
+                    controlPoint2.x,
+                    controlPoint2.y,
+                    endPoint.x,
+                    endPoint.y);
                 i += 2;
             } else {
                 let linePosition = this.linePositions[i];

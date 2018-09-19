@@ -2,8 +2,6 @@ import {
     Component,
     ElementRef,
     Input,
-    OnDestroy,
-    OnInit,
     ViewChild,
     AfterViewInit,
     OnChanges,
@@ -13,12 +11,12 @@ import {INewCanvasWhiteboardShape} from "./canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShape} from "./canvas-whiteboard-shape";
 import {CanvasWhiteboardPoint} from "../canvas-whiteboard-point";
 import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
-import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "../canvas-whiteboard-update.model";
 
 @Component({
     selector: "canvas-whiteboard-shape-preview",
     template: `
-        <canvas #canvasWhiteboardShapePreview width="50px" height="50px" class="canvas-whiteboard-shape-preview-canvas"></canvas>
+        <canvas #canvasWhiteboardShapePreview width="50px" height="50px"
+                class="canvas-whiteboard-shape-preview-canvas"></canvas>
     `,
     styles: [`
         .canvas-whiteboard-shape-preview-canvas {
@@ -26,15 +24,11 @@ import {CanvasWhiteboardUpdate, CanvasWhiteboardUpdateType} from "../canvas-whit
         }
     `]
 })
-export class CanvasWhiteboardShapePreviewComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+export class CanvasWhiteboardShapePreviewComponent implements AfterViewInit, OnChanges {
     @Input() readonly shapeConstructor: INewCanvasWhiteboardShape<CanvasWhiteboardShape>;
     @Input() readonly shapeOptions: CanvasWhiteboardShapeOptions;
 
     @ViewChild('canvasWhiteboardShapePreview') canvas: ElementRef;
-
-    ngOnInit(): void {
-
-    }
 
     ngAfterViewInit() {
         this.drawShapePreview();
@@ -47,19 +41,16 @@ export class CanvasWhiteboardShapePreviewComponent implements OnInit, AfterViewI
     }
 
     drawShapePreview() {
-        if (!this.canvas) return;
+        if (!this.canvas) { return; }
 
         let context: CanvasRenderingContext2D = this.canvas.nativeElement.getContext("2d");
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-       let concreteShape = new this.shapeConstructor(
+        let concreteShape = new this.shapeConstructor(
             new CanvasWhiteboardPoint(0, 0),
             Object.assign(new CanvasWhiteboardShapeOptions(), this.shapeOptions)
         );
 
         concreteShape.drawPreview(context);
-    }
-
-    ngOnDestroy(): void {
     }
 }

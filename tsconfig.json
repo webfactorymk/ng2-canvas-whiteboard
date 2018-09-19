@@ -1,28 +1,30 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
-    "skipLibCheck": true,
+    "baseUrl": ".",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "sourceMap": true,
+    "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
-    "outDir": "./dist",
-    "lib":  ["es5", "dom", "es6", "es2015.iterable", "es7"],
-    "typeRoots": [
-      "./node_modules/@types"
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "rootDir": ".",
+    "inlineSources": true,
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "target": "es5",
+    "skipLibCheck": true,
+    "types": [
+      "jasmine",
+      "node"
     ]
   },
-  "files": [
-    "./src/ng2-canvas-whiteboard.ts"
-  ],
   "exclude": [
-    "build",
-    "node_modules"
-  ],
-  "angularCompilerOptions": {
-    "genDir": "../aot",
-    "skipMetadataEmit": false
-  }
+    "node_modules",
+    "example",
+    "examples",
+    "dist"
+  ]
 }

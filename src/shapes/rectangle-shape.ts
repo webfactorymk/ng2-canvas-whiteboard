@@ -7,14 +7,17 @@ export class RectangleShape extends CanvasWhiteboardShape {
     width: number;
     height: number;
 
-    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, width?: number, height?: number) {
+    constructor(positionPoint?: CanvasWhiteboardPoint,
+                options?: CanvasWhiteboardShapeOptions,
+                width?: number,
+                height?: number) {
         super(positionPoint, options);
         this.width = width || 0;
         this.height = height || 0;
     }
 
     draw(context: CanvasRenderingContext2D) {
-        if (!this.width || !this.height) return;
+        if (!this.width || !this.height) { return; }
         context.beginPath();
 
         Object.assign(context, this.options);

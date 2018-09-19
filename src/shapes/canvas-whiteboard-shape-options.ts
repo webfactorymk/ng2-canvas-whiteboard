@@ -14,18 +14,4 @@ export class CanvasWhiteboardShapeOptions {
         this.lineJoin = "round";
         this.lineCap = "round";
     }
-
-    // stringify() {
-    //     let objectToSerialize = {
-    //         shouldFillShape: this.shouldFillShape,
-    //         fillStyle: this.fillStyle,
-    //         strokeStyle: this.strokeStyle,
-    //         lineWidth: this.lineWidth.toString(),
-    //         lineJoin: this.lineWidth,
-    //         lineCap: this.lineWidth,
-    //         shadowBlur: this.shadowBlur.toString()
-    //     };
-    //
-    //     return JSON.stringify(objectToSerialize);
-    // }
 }

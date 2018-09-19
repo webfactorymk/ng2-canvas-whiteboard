@@ -7,8 +7,8 @@ import {
 } from "@angular/core";
 import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShape} from "./canvas-whiteboard-shape";
-import {Observable} from "rxjs/Observable";
 import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
+import {Observable} from "rxjs/index";
 
 @Component({
     selector: "canvas-whiteboard-shape-selector",
@@ -17,22 +17,24 @@ import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
         '(document:touchstart)': 'closeOnExternalClick($event)',
     },
     template: `
-        <div *ngIf="!showShapeSelector" (click)="toggleShapeSelector($event)" class="canvas-whiteboard-shape-selector-selected-preview">
-            <canvas-whiteboard-shape-preview [shapeConstructor]="selectedShapeConstructor" [shapeOptions]="shapeOptions"></canvas-whiteboard-shape-preview>
+        <div *ngIf="!showShapeSelector" (click)="toggleShapeSelector($event)"
+             class="canvas-whiteboard-shape-selector-selected-preview">
+            <canvas-whiteboard-shape-preview [shapeConstructor]="selectedShapeConstructor"
+                                             [shapeOptions]="shapeOptions"></canvas-whiteboard-shape-preview>
         </div>
         <div class="canvas-whiteboard-shape-selector-wrapper" *ngIf="showShapeSelector">
-              <canvas-whiteboard-shape-preview *ngFor="let shapeConstructor of registeredShapes$ | async" 
-              [shapeConstructor]="shapeConstructor"
-              [shapeOptions]="shapeOptions"
-              (click)="selectShape(shapeConstructor)"></canvas-whiteboard-shape-preview>
+            <canvas-whiteboard-shape-preview *ngFor="let shapeConstructor of registeredShapes$ | async"
+                                             [shapeConstructor]="shapeConstructor"
+                                             [shapeOptions]="shapeOptions"
+                                             (click)="selectShape(shapeConstructor)"></canvas-whiteboard-shape-preview>
         </div>
     `,
     styles: [`
         .canvas-whiteboard-shape-selector-selected-preview {
-             vertical-align: bottom;
-             display: inline-block;
+            vertical-align: bottom;
+            display: inline-block;
         }
-        
+
         .canvas-whiteboard-shape-selector-wrapper {
             display: block;
             padding: 4px;

@@ -6,13 +6,17 @@ import {CanvasWhiteboardUpdate} from "../canvas-whiteboard-update.model";
 export class LineShape extends CanvasWhiteboardShape {
     endPosition: CanvasWhiteboardPoint;
 
-    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, endPosition?: CanvasWhiteboardPoint) {
+    constructor(positionPoint?: CanvasWhiteboardPoint,
+                options?: CanvasWhiteboardShapeOptions,
+                endPosition?: CanvasWhiteboardPoint) {
         super(positionPoint, options);
-        this.endPosition = endPosition || new CanvasWhiteboardPoint(this.positionPoint.x, this.positionPoint.y)
+        this.endPosition = endPosition || new CanvasWhiteboardPoint(this.positionPoint.x, this.positionPoint.y);
     }
 
     draw(context: CanvasRenderingContext2D) {
-        if (!this.endPosition) return;
+        if (!this.endPosition) {
+            return;
+        }
         context.beginPath();
         Object.assign(context, this.options);
 
