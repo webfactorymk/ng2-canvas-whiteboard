@@ -1,6 +1,6 @@
 {
   "name": "ng2-canvas-whiteboard",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A Canvas component for Angular which supports free drawing.",
   "main": "./bundles/ng2-canvas-whiteboard.umd.js",
   "module": "./modules/ng2-canvas-whiteboard.es5.js",
@@ -37,6 +37,9 @@
     "custom shapes",
     "custom premade shapes"
   ],
+  "peerDependencies": {
+    "rxjs": "^6.0.0"
+  },
   "dependencies": {},
   "devDependencies": {
     "@angular/animations": "^6.0.0",
