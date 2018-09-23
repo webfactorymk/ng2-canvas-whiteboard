@@ -18,6 +18,7 @@ import {CanvasWhiteboardPoint} from "./canvas-whiteboard-point";
 import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape.service";
 import {Observable} from "rxjs";
 import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
+import * as cloneDeep from "lodash.cloneDeep";
 
 @Component({
     selector: 'canvas-whiteboard',
@@ -825,7 +826,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
      * @return Emits an Array of Updates when the batch.
      */
     private _prepareUpdateForBatchDispatch(update: CanvasWhiteboardUpdate): void {
-        this._batchUpdates.push(update);
+        this._batchUpdates.push(cloneDeep(update));
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(() => {
                 this.onBatchUpdate.emit(this._batchUpdates);
@@ -1079,6 +1080,15 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     selectShape(newShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>) {
         this.selectedShapeConstructor = newShapeBlueprint;
+    }
+
+    /**
+     * Returns a deep copy of the current drawing history for the canvas.
+     * The deep copy is returned because we don't want anyone to mutate the current history
+     * @returns {CanvasWhiteboardUpdate[]}
+     */
+    getDrawingHistory(): CanvasWhiteboardUpdate[] {
+        return cloneDeep(this._updateHistory);
     }
 
     /**

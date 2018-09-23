@@ -1,6 +1,6 @@
 {
   "name": "ng2-canvas-whiteboard",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A Canvas component for Angular which supports free drawing.",
   "main": "index.js",
   "scripts": {
@@ -38,7 +38,9 @@
     "custom shapes",
     "custom premade shapes"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "lodash.clonedeep": "4.5.0"
+  },
   "peerDependencies": {
     "rxjs-compat": "^6.0.0"
   },
@@ -47,6 +49,7 @@
     "@angular/compiler-cli": "4.3.2",
     "@angular/compiler": "4.3.2",
     "@angular/core": "4.3.2",
+    "@types/lodash": "^4.14.116",
     "typescript": "2.2.1",
     "rxjs": "5.2.0",
     "rxjs-compat": "^6.0.0",
