@@ -18,6 +18,7 @@ var canvas_whiteboard_shape_service_1 = require("./shapes/canvas-whiteboard-shap
 var canvas_whiteboard_shape_options_1 = require("./shapes/canvas-whiteboard-shape-options");
 var index_1 = require("rxjs/index");
 var operators_1 = require("rxjs/operators");
+var _ = require("lodash");
 var CanvasWhiteboardComponent = /** @class */ (function () {
     function CanvasWhiteboardComponent(ngZone, _changeDetector, _canvasWhiteboardService, _canvasWhiteboardShapeService) {
         this.ngZone = ngZone;
@@ -689,7 +690,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype._prepareUpdateForBatchDispatch = function (update) {
         var _this = this;
-        this._batchUpdates.push(update);
+        this._batchUpdates.push(_.cloneDeep(update));
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
@@ -942,6 +943,13 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     CanvasWhiteboardComponent.prototype.selectShape = function (newShapeBlueprint) {
         this.selectedShapeConstructor = newShapeBlueprint;
+    };
+    /**
+     * Returns a deep copy of the current drawing history for the canvas.
+     * The deep copy is returned because we don't want anyone to mutate the current history
+     */
+    CanvasWhiteboardComponent.prototype.getDrawingHistory = function () {
+        return _.cloneDeep(this._updateHistory);
     };
     /**
      * Unsubscribe from a given subscription if it is active

@@ -370,6 +370,8 @@ export class AppComponent {
   }
 }   
 ```
+### Requesting the full update history so far
+Can be called via the method  `getDrawingHistory(): CanvasWhiteboardUpdate[]`. The items will be deep cloned for consistency using lodash.
 
 ## Saving drawn canvas as an image
 In order to save drawn images you can either click the Save button in the canvas, 

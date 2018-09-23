@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('rxjs/index'), require('rxjs/operators'), require('@angular/common')) :
-	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', 'rxjs/index', 'rxjs/operators', '@angular/common'], factory) :
-	(factory((global.ng = global.ng || {}, global.ng.ng2CanvasWhiteboard = global.ng.ng2CanvasWhiteboard || {}),global.ng.core,global.rxjs_index,global.rxjs_operators,global.ng.common));
-}(this, (function (exports,_angular_core,rxjs_index,rxjs_operators,_angular_common) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('rxjs/index'), require('rxjs/operators'), require('lodash'), require('@angular/common')) :
+	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', 'rxjs/index', 'rxjs/operators', 'lodash', '@angular/common'], factory) :
+	(factory((global.ng = global.ng || {}, global.ng.ng2CanvasWhiteboard = global.ng.ng2CanvasWhiteboard || {}),global.ng.core,global.rxjs_index,global.rxjs_operators,global.lodash,global.ng.common));
+}(this, (function (exports,_angular_core,rxjs_index,rxjs_operators,lodash,_angular_common) { 'use strict';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -1426,7 +1426,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype._prepareUpdateForBatchDispatch = function (update) {
         var _this = this;
-        this._batchUpdates.push(update);
+        this._batchUpdates.push(lodash.cloneDeep(update));
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
@@ -1713,6 +1713,14 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype.selectShape = function (newShapeBlueprint) {
         this.selectedShapeConstructor = newShapeBlueprint;
+    };
+    /**
+     * Returns a deep copy of the current drawing history for the canvas.
+     * The deep copy is returned because we don't want anyone to mutate the current history
+     * @return {?}
+     */
+    CanvasWhiteboardComponent.prototype.getDrawingHistory = function () {
+        return lodash.cloneDeep(this._updateHistory);
     };
     /**
      * Unsubscribe from a given subscription if it is active

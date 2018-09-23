@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Injectable, Input, NgModule, NgZone, Output, ViewChild } from '@angular/core';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs/index';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { cloneDeep } from 'lodash';
 import { CommonModule } from '@angular/common';
 /**
  * @fileoverview added by tsickle
@@ -1424,7 +1425,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype._prepareUpdateForBatchDispatch = function (update) {
         var _this = this;
-        this._batchUpdates.push(update);
+        this._batchUpdates.push(cloneDeep(update));
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
@@ -1711,6 +1712,14 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype.selectShape = function (newShapeBlueprint) {
         this.selectedShapeConstructor = newShapeBlueprint;
+    };
+    /**
+     * Returns a deep copy of the current drawing history for the canvas.
+     * The deep copy is returned because we don't want anyone to mutate the current history
+     * @return {?}
+     */
+    CanvasWhiteboardComponent.prototype.getDrawingHistory = function () {
+        return cloneDeep(this._updateHistory);
     };
     /**
      * Unsubscribe from a given subscription if it is active

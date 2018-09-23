@@ -392,6 +392,11 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     toggleShapeSelector(value: boolean): void;
     selectShape(newShapeBlueprint: INewCanvasWhiteboardShape<CanvasWhiteboardShape>): void;
     /**
+     * Returns a deep copy of the current drawing history for the canvas.
+     * The deep copy is returned because we don't want anyone to mutate the current history
+     */
+    getDrawingHistory(): CanvasWhiteboardUpdate[];
+    /**
      * Unsubscribe from a given subscription if it is active
      * @param subscription
      */

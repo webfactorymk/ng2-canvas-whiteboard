@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Injectable, Input, NgModule, NgZone, Output, ViewChild } from '@angular/core';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs/index';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { cloneDeep } from 'lodash';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -1482,7 +1483,7 @@ class CanvasWhiteboardComponent {
      * @return {?} Emits an Array of Updates when the batch.
      */
     _prepareUpdateForBatchDispatch(update) {
-        this._batchUpdates.push(update);
+        this._batchUpdates.push(cloneDeep(update));
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(() => {
                 this.onBatchUpdate.emit(this._batchUpdates);
@@ -1756,6 +1757,14 @@ class CanvasWhiteboardComponent {
      */
     selectShape(newShapeBlueprint) {
         this.selectedShapeConstructor = newShapeBlueprint;
+    }
+    /**
+     * Returns a deep copy of the current drawing history for the canvas.
+     * The deep copy is returned because we don't want anyone to mutate the current history
+     * @return {?}
+     */
+    getDrawingHistory() {
+        return cloneDeep(this._updateHistory);
     }
     /**
      * Unsubscribe from a given subscription if it is active
