@@ -792,8 +792,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
     private _addCurrentShapeDataToAnUpdate(update: CanvasWhiteboardUpdate) {
         if (!update.selectedShape) {
-            update.selectedShape = this.selectedShapeConstructor.name;
+            update.selectedShape = (new this.selectedShapeConstructor).getShapeName();
         }
+
         if (!update.selectedShapeOptions) {
             //Make a deep copy since we don't want some Shape implementation to change something by accident
             update.selectedShapeOptions = Object.assign(new CanvasWhiteboardShapeOptions(), this.generateShapePreviewOptions(), {lineWidth: this.lineWidth});

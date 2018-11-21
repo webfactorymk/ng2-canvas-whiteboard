@@ -202,6 +202,12 @@ var CircleShape = /** @class */ (function (_super) {
         return _this;
     }
     /**
+     * @return {?}
+     */
+    CircleShape.prototype.getShapeName = function () {
+        return 'CircleShape';
+    };
+    /**
      * @param {?} context
      * @return {?}
      */
@@ -260,6 +266,12 @@ var RectangleShape = /** @class */ (function (_super) {
         return _this;
     }
     /**
+     * @return {?}
+     */
+    RectangleShape.prototype.getShapeName = function () {
+        return 'RectangleShape';
+    };
+    /**
      * @param {?} context
      * @return {?}
      */
@@ -311,6 +323,12 @@ var FreeHandShape = /** @class */ (function (_super) {
         _this.linePositions = [];
         return _this;
     }
+    /**
+     * @return {?}
+     */
+    FreeHandShape.prototype.getShapeName = function () {
+        return 'FreeHandShape';
+    };
     /**
      * @param {?} context
      * @return {?}
@@ -380,11 +398,17 @@ var SmileyShape = /** @class */ (function (_super) {
      */
     function SmileyShape(positionPoint, options, radius) {
         var _this = _super.call(this, positionPoint, options) || this;
-        options.shouldFillShape = true;
-        options.fillStyle = options.fillStyle || "yellow";
+        _this.options.shouldFillShape = true;
+        _this.options.fillStyle = _this.options.fillStyle || "yellow";
         _this.radius = radius || 0;
         return _this;
     }
+    /**
+     * @return {?}
+     */
+    SmileyShape.prototype.getShapeName = function () {
+        return 'SmileyShape';
+    };
     /**
      * @param {?} context
      * @return {?}
@@ -455,9 +479,15 @@ var StarShape = /** @class */ (function (_super) {
     function StarShape(positionPoint, options, radius, spikes) {
         var _this = _super.call(this, positionPoint, options) || this;
         _this.radius = radius || 0;
-        _this.spikes = _this.spikes || 5;
+        _this.spikes = spikes || 5;
         return _this;
     }
+    /**
+     * @return {?}
+     */
+    StarShape.prototype.getShapeName = function () {
+        return 'StarShape';
+    };
     /**
      * @param {?} context
      * @return {?}
@@ -535,6 +565,12 @@ var LineShape = /** @class */ (function (_super) {
         return _this;
     }
     /**
+     * @return {?}
+     */
+    LineShape.prototype.getShapeName = function () {
+        return 'LineShape';
+    };
+    /**
      * @param {?} context
      * @return {?}
      */
@@ -593,7 +629,7 @@ var CanvasWhiteboardShapeService = /** @class */ (function () {
      * @return {?}
      */
     CanvasWhiteboardShapeService.prototype.getShapeConstructorFromShapeName = function (shapeName) {
-        return this.getCurrentRegisteredShapes().find(function (shape) { return shape.name === shapeName; });
+        return this.getCurrentRegisteredShapes().find(function (shape) { return (new shape).getShapeName() === shapeName; });
     };
     /**
      * @return {?}
@@ -1396,7 +1432,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype._addCurrentShapeDataToAnUpdate = function (update) {
         if (!update.selectedShape) {
-            update.selectedShape = this.selectedShapeConstructor.name;
+            update.selectedShape = (new this.selectedShapeConstructor).getShapeName();
         }
         if (!update.selectedShapeOptions) {
             //Make a deep copy since we don't want some Shape implementation to change something by accident

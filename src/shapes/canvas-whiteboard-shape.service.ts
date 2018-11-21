@@ -32,7 +32,8 @@ export class CanvasWhiteboardShapeService {
     }
 
     getShapeConstructorFromShapeName(shapeName: string): INewCanvasWhiteboardShape<CanvasWhiteboardShape> {
-        return this.getCurrentRegisteredShapes().find((shape) => shape.name === shapeName);
+        return this.getCurrentRegisteredShapes().find((shape) =>
+            (new shape).getShapeName() === shapeName);
     }
 
     getCurrentRegisteredShapes(): Array<INewCanvasWhiteboardShape<CanvasWhiteboardShape>> {

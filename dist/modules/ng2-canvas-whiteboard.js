@@ -283,6 +283,12 @@ class CircleShape extends CanvasWhiteboardShape {
         this.radius = radius || 0;
     }
     /**
+     * @return {?}
+     */
+    getShapeName() {
+        return 'CircleShape';
+    }
+    /**
      * @param {?} context
      * @return {?}
      */
@@ -339,6 +345,12 @@ class RectangleShape extends CanvasWhiteboardShape {
         this.height = height || 0;
     }
     /**
+     * @return {?}
+     */
+    getShapeName() {
+        return 'RectangleShape';
+    }
+    /**
      * @param {?} context
      * @return {?}
      */
@@ -387,6 +399,12 @@ class FreeHandShape extends CanvasWhiteboardShape {
     constructor(positionPoint, options) {
         super(positionPoint, options);
         this.linePositions = [];
+    }
+    /**
+     * @return {?}
+     */
+    getShapeName() {
+        return 'FreeHandShape';
     }
     /**
      * @param {?} context
@@ -456,9 +474,15 @@ class SmileyShape extends CanvasWhiteboardShape {
      */
     constructor(positionPoint, options, radius) {
         super(positionPoint, options);
-        options.shouldFillShape = true;
-        options.fillStyle = options.fillStyle || "yellow";
+        this.options.shouldFillShape = true;
+        this.options.fillStyle = this.options.fillStyle || "yellow";
         this.radius = radius || 0;
+    }
+    /**
+     * @return {?}
+     */
+    getShapeName() {
+        return 'SmileyShape';
     }
     /**
      * @param {?} context
@@ -529,7 +553,13 @@ class StarShape extends CanvasWhiteboardShape {
     constructor(positionPoint, options, radius, spikes) {
         super(positionPoint, options);
         this.radius = radius || 0;
-        this.spikes = this.spikes || 5;
+        this.spikes = spikes || 5;
+    }
+    /**
+     * @return {?}
+     */
+    getShapeName() {
+        return 'StarShape';
     }
     /**
      * @param {?} context
@@ -606,6 +636,12 @@ class LineShape extends CanvasWhiteboardShape {
         this.endPosition = endPosition || new CanvasWhiteboardPoint(this.positionPoint.x, this.positionPoint.y);
     }
     /**
+     * @return {?}
+     */
+    getShapeName() {
+        return 'LineShape';
+    }
+    /**
      * @param {?} context
      * @return {?}
      */
@@ -665,7 +701,7 @@ class CanvasWhiteboardShapeService {
      * @return {?}
      */
     getShapeConstructorFromShapeName(shapeName) {
-        return this.getCurrentRegisteredShapes().find((shape) => shape.name === shapeName);
+        return this.getCurrentRegisteredShapes().find((shape) => (new shape).getShapeName() === shapeName);
     }
     /**
      * @return {?}
@@ -1454,7 +1490,7 @@ class CanvasWhiteboardComponent {
      */
     _addCurrentShapeDataToAnUpdate(update) {
         if (!update.selectedShape) {
-            update.selectedShape = this.selectedShapeConstructor.name;
+            update.selectedShape = (new this.selectedShapeConstructor).getShapeName();
         }
         if (!update.selectedShapeOptions) {
             //Make a deep copy since we don't want some Shape implementation to change something by accident

@@ -6,6 +6,7 @@ export declare class StarShape extends CanvasWhiteboardShape {
     radius: number;
     spikes: number;
     constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, radius?: number, spikes?: number);
+    getShapeName(): string;
     draw(context: CanvasRenderingContext2D): void;
     drawPreview(context: CanvasRenderingContext2D): void;
     onUpdateReceived(update: CanvasWhiteboardUpdate): void;

@@ -2,6 +2,9 @@
 
 
 ## Canvas version changes
+#### v3.0.4 Fixes a bug with production build and recognition of shape names by adding an abstract method in the base Shape class.
+
+
 #### v3.0.0 Removes the `rxjs-compat` library and adds `rxjs^6`. This means that older versions will not be supported if they upgrade to `ng2-canvas-whiteboard^3.0.0`.
 #### *This version also changes the way of how this library is built and made ready for publish.*
 
@@ -129,7 +132,8 @@ emitted by the **onBatchUpdate** emitter. If received, the user can then manipul
 The time in milliseconds that a batch update should be sent after drawing.
 
 ##### `imageUrl: string` (optional)
-The path to the image. If not specified, the drawings will be placed on the background color of the canvas
+The path to the image. If not specified, the drawings will be placed on the background color of the canvas.
+This path can either be a base64 string or an actual path to a resource
 
 ##### `aspectRatio: number` (optional)
 If specified, the canvas will be resized according to this ratio
@@ -277,6 +281,7 @@ Each shape is made of a starting position point of type ```CanvasWhiteboardPoint
 which may be different for each shape, and it's of type ```CanvasWhiteboardShapeOptions```.
 
 Each predefined shape must know how to:
+- Return the name of the shape (should be the same as the name of the class)
 - Draw itself given a canvas context
 - Draw it's preview given a canvas context
 - Update itself given a ```CanvasWhiteboardUpdate```
@@ -297,6 +302,19 @@ class AppComponent {
 }
 
 export class RandomShape extends CanvasWhiteboardShape {
+    linePositions: Array<number>;
+
+    constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions) {
+        // Optional constructor if you need some additional setup
+        super(positionPoint, options);
+        this.linePositions = [];
+    }
+
+    getShapeName(): string {
+        // Abstract method which should return a string with the shape name
+        // Should be the same as the class name
+        return 'RandomShape';
+    }
 
     draw(context: CanvasRenderingContext2D): any {
         // Tell the canvas how to draw your shape here

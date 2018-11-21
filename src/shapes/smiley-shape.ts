@@ -8,10 +8,14 @@ export class SmileyShape extends CanvasWhiteboardShape {
 
     constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, radius?: number) {
         super(positionPoint, options);
-        options.shouldFillShape = true;
-        options.fillStyle = options.fillStyle || "yellow";
+        this.options.shouldFillShape = true;
+        this.options.fillStyle = this.options.fillStyle || "yellow";
 
         this.radius = radius || 0;
+    }
+
+    getShapeName(): string {
+        return 'SmileyShape';
     }
 
     draw(context: CanvasRenderingContext2D) {

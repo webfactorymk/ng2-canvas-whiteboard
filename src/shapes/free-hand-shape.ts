@@ -11,6 +11,10 @@ export class FreeHandShape extends CanvasWhiteboardShape {
         this.linePositions = [];
     }
 
+    getShapeName(): string {
+        return 'FreeHandShape';
+    }
+
     draw(context: CanvasRenderingContext2D) {
         Object.assign(context, this.options);
 

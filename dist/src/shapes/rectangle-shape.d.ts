@@ -6,6 +6,7 @@ export declare class RectangleShape extends CanvasWhiteboardShape {
     width: number;
     height: number;
     constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, width?: number, height?: number);
+    getShapeName(): string;
     draw(context: CanvasRenderingContext2D): void;
     drawPreview(context: CanvasRenderingContext2D): void;
     onUpdateReceived(update: CanvasWhiteboardUpdate): void;

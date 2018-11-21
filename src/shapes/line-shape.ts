@@ -13,6 +13,10 @@ export class LineShape extends CanvasWhiteboardShape {
         this.endPosition = endPosition || new CanvasWhiteboardPoint(this.positionPoint.x, this.positionPoint.y);
     }
 
+    getShapeName(): string {
+        return 'LineShape';
+    }
+
     draw(context: CanvasRenderingContext2D) {
         if (!this.endPosition) {
             return;

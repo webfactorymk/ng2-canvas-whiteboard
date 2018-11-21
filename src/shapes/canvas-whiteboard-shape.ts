@@ -13,6 +13,8 @@ export abstract class CanvasWhiteboardShape {
         this.isVisible = true;
     }
 
+    abstract getShapeName(): string;
+
     abstract onUpdateReceived(update: CanvasWhiteboardUpdate);
 
     // noinspection TsLint

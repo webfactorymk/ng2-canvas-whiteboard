@@ -13,7 +13,11 @@ export class StarShape extends CanvasWhiteboardShape {
                 spikes?: number) {
         super(positionPoint, options);
         this.radius = radius || 0;
-        this.spikes = this.spikes || 5;
+        this.spikes = spikes || 5;
+    }
+
+    getShapeName(): string {
+        return 'StarShape';
     }
 
     draw(context: CanvasRenderingContext2D) {

@@ -6,6 +6,7 @@ export declare abstract class CanvasWhiteboardShape {
     protected positionPoint: CanvasWhiteboardPoint;
     protected options: CanvasWhiteboardShapeOptions;
     constructor(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions);
+    abstract getShapeName(): string;
     abstract onUpdateReceived(update: CanvasWhiteboardUpdate): any;
     onStopReceived(update: CanvasWhiteboardUpdate): void;
     abstract draw(context: CanvasRenderingContext2D): any;

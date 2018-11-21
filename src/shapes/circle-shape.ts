@@ -11,6 +11,10 @@ export class CircleShape extends CanvasWhiteboardShape {
         this.radius = radius || 0;
     }
 
+    getShapeName(): string {
+        return 'CircleShape';
+    }
+
     draw(context: CanvasRenderingContext2D) {
         context.beginPath();
         context.arc(this.positionPoint.x, this.positionPoint.y, this.radius, 0, Math.PI * 2, false);

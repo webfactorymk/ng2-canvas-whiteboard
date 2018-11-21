@@ -16,8 +16,14 @@ export class RectangleShape extends CanvasWhiteboardShape {
         this.height = height || 0;
     }
 
+    getShapeName(): string {
+        return 'RectangleShape';
+    }
+
     draw(context: CanvasRenderingContext2D) {
-        if (!this.width || !this.height) { return; }
+        if (!this.width || !this.height) {
+            return;
+        }
         context.beginPath();
 
         Object.assign(context, this.options);
