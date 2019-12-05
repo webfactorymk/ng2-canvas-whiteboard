@@ -41,7 +41,7 @@
     "rxjs": "^6.0.0"
   },
   "dependencies": {
-    "lodash": "4.17.11"
+    "lodash": "4.17.12"
   },
   "devDependencies": {
     "@angular/animations": "^6.0.0",
