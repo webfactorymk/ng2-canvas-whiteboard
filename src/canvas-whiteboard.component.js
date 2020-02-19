@@ -18,7 +18,7 @@ var canvas_whiteboard_shape_service_1 = require("./shapes/canvas-whiteboard-shap
 var canvas_whiteboard_shape_options_1 = require("./shapes/canvas-whiteboard-shape-options");
 var index_1 = require("rxjs/index");
 var operators_1 = require("rxjs/operators");
-var _ = require("lodash");
+var lodash_1 = require("lodash");
 var CanvasWhiteboardComponent = /** @class */ (function () {
     function CanvasWhiteboardComponent(ngZone, _changeDetector, _canvasWhiteboardService, _canvasWhiteboardShapeService) {
         this.ngZone = ngZone;
@@ -663,7 +663,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     CanvasWhiteboardComponent.prototype._addCurrentShapeDataToAnUpdate = function (update) {
         if (!update.selectedShape) {
-            update.selectedShape = this.selectedShapeConstructor.name;
+            update.selectedShape = (new this.selectedShapeConstructor).getShapeName();
         }
         if (!update.selectedShapeOptions) {
             //Make a deep copy since we don't want some Shape implementation to change something by accident
@@ -690,7 +690,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype._prepareUpdateForBatchDispatch = function (update) {
         var _this = this;
-        this._batchUpdates.push(_.cloneDeep(update));
+        this._batchUpdates.push(lodash_1.cloneDeep(update));
         if (!this._updateTimeout) {
             this._updateTimeout = setTimeout(function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
@@ -829,6 +829,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
             toBlobMethod = this.context.canvas.toBlob.bind(this.context.canvas);
         }
         else if (typeof this.context.canvas.msToBlob !== "undefined") {
+            // For IE
             toBlobMethod = function (callback) {
                 callback && callback(_this.context.canvas.msToBlob());
             };
@@ -949,7 +950,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * The deep copy is returned because we don't want anyone to mutate the current history
      */
     CanvasWhiteboardComponent.prototype.getDrawingHistory = function () {
-        return _.cloneDeep(this._updateHistory);
+        return lodash_1.cloneDeep(this._updateHistory);
     };
     /**
      * Unsubscribe from a given subscription if it is active
@@ -1139,11 +1140,11 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         __metadata("design:type", Object)
     ], CanvasWhiteboardComponent.prototype, "onSave", void 0);
     __decorate([
-        core_1.ViewChild('canvas'),
+        core_1.ViewChild('canvas', { static: true }),
         __metadata("design:type", core_1.ElementRef)
     ], CanvasWhiteboardComponent.prototype, "canvas", void 0);
     __decorate([
-        core_1.ViewChild('incompleteShapesCanvas'),
+        core_1.ViewChild('incompleteShapesCanvas', { static: true }),
         __metadata("design:type", core_1.ElementRef)
     ], CanvasWhiteboardComponent.prototype, "_incompleteShapesCanvas", void 0);
     CanvasWhiteboardComponent = __decorate([

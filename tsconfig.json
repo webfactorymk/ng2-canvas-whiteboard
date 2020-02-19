@@ -21,6 +21,9 @@
       "lodash"
     ]
   },
+  "angularCompilerOptions": {
+    "enableIvy": false
+  },
   "exclude": [
     "node_modules",
     "example",

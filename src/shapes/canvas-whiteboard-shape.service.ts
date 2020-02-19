@@ -8,7 +8,7 @@ import {CanvasWhiteboardPoint} from "../canvas-whiteboard-point";
 import {SmileyShape} from "./smiley-shape";
 import {StarShape} from "./star-shape";
 import {LineShape} from "./line-shape";
-import {BehaviorSubject, Observable} from "rxjs/index";
+import {BehaviorSubject, Observable} from "rxjs";
 
 export interface INewCanvasWhiteboardShape<T extends CanvasWhiteboardShape> {
     new(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, ...args: any[]): T;

@@ -2,7 +2,7 @@ import { CanvasWhiteboardShapeOptions } from "./shapes/canvas-whiteboard-shape-o
 export declare enum CanvasWhiteboardUpdateType {
     START = 0,
     DRAG = 1,
-    STOP = 2,
+    STOP = 2
 }
 export declare class CanvasWhiteboardUpdate {
     x: number;

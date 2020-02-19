@@ -142,10 +142,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     @Output() onImageLoaded = new EventEmitter<any>();
     @Output() onSave = new EventEmitter<string | Blob>();
 
-    @ViewChild('canvas') canvas: ElementRef;
+    @ViewChild('canvas', { static: true }) canvas: ElementRef;
     context: CanvasRenderingContext2D;
 
-    @ViewChild('incompleteShapesCanvas') private _incompleteShapesCanvas: ElementRef;
+    @ViewChild('incompleteShapesCanvas', { static: true }) private _incompleteShapesCanvas: ElementRef;
     private _incompleteShapesCanvasContext: CanvasRenderingContext2D;
     private _incompleteShapesMap: Map<string, CanvasWhiteboardShape>;
 
@@ -954,9 +954,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
         if (typeof this.context.canvas.toBlob !== "undefined") {
             toBlobMethod = this.context.canvas.toBlob.bind(this.context.canvas);
-        } else if (typeof this.context.canvas.msToBlob !== "undefined") {
+        } else if (typeof (this.context.canvas as any).msToBlob !== "undefined") {
+            // For IE
             toBlobMethod = (callback) => {
-                callback && callback(this.context.canvas.msToBlob());
+                callback && callback((this.context.canvas as any).msToBlob());
             };
         }
 

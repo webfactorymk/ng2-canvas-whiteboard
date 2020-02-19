@@ -20,6 +20,7 @@
     "annotateForClosureCompiler": true,
     "strictMetadataEmit": true,
     "flatModuleOutFile": "ng2-canvas-whiteboard.js",
-    "flatModuleId": "ng2-canvas-whiteboard"
+    "flatModuleId": "ng2-canvas-whiteboard",
+    "enableIvy": false
   }
 }

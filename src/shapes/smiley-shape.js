@@ -1,8 +1,11 @@
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -16,11 +19,14 @@ var SmileyShape = /** @class */ (function (_super) {
     __extends(SmileyShape, _super);
     function SmileyShape(positionPoint, options, radius) {
         var _this = _super.call(this, positionPoint, options) || this;
-        options.shouldFillShape = true;
-        options.fillStyle = options.fillStyle || "yellow";
+        _this.options.shouldFillShape = true;
+        _this.options.fillStyle = _this.options.fillStyle || "yellow";
         _this.radius = radius || 0;
         return _this;
     }
+    SmileyShape.prototype.getShapeName = function () {
+        return 'SmileyShape';
+    };
     SmileyShape.prototype.draw = function (context) {
         context.beginPath();
         Object.assign(context, this.options);

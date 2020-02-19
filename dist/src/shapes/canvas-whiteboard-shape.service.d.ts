@@ -1,7 +1,7 @@
 import { CanvasWhiteboardShape } from "./canvas-whiteboard-shape";
 import { CanvasWhiteboardShapeOptions } from "./canvas-whiteboard-shape-options";
 import { CanvasWhiteboardPoint } from "../canvas-whiteboard-point";
-import { Observable } from "rxjs/index";
+import { Observable } from "rxjs";
 export interface INewCanvasWhiteboardShape<T extends CanvasWhiteboardShape> {
     new (positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, ...args: any[]): T;
 }

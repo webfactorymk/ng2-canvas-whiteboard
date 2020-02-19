@@ -1,5 +1,5 @@
 import { CanvasWhiteboardUpdate } from "./canvas-whiteboard-update.model";
-import { Observable } from "rxjs/index";
+import { Observable } from "rxjs";
 export declare class CanvasWhiteboardService {
     private _canvasDrawSubject;
     canvasDrawSubject$: Observable<CanvasWhiteboardUpdate[]>;

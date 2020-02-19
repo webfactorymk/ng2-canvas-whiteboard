@@ -16,10 +16,10 @@ var free_hand_shape_1 = require("./free-hand-shape");
 var smiley_shape_1 = require("./smiley-shape");
 var star_shape_1 = require("./star-shape");
 var line_shape_1 = require("./line-shape");
-var index_1 = require("rxjs/index");
+var rxjs_1 = require("rxjs");
 var CanvasWhiteboardShapeService = /** @class */ (function () {
     function CanvasWhiteboardShapeService() {
-        this._registeredShapesSubject = new index_1.BehaviorSubject([
+        this._registeredShapesSubject = new rxjs_1.BehaviorSubject([
             free_hand_shape_1.FreeHandShape,
             line_shape_1.LineShape,
             rectangle_shape_1.RectangleShape,
@@ -30,7 +30,9 @@ var CanvasWhiteboardShapeService = /** @class */ (function () {
         this.registeredShapes$ = this._registeredShapesSubject.asObservable();
     }
     CanvasWhiteboardShapeService.prototype.getShapeConstructorFromShapeName = function (shapeName) {
-        return this.getCurrentRegisteredShapes().find(function (shape) { return shape.name === shapeName; });
+        return this.getCurrentRegisteredShapes().find(function (shape) {
+            return (new shape).getShapeName() === shapeName;
+        });
     };
     CanvasWhiteboardShapeService.prototype.getCurrentRegisteredShapes = function () {
         return this._registeredShapesSubject.getValue();
