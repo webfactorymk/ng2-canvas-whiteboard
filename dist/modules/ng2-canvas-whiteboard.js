@@ -1,6 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Injectable, Input, NgModule, NgZone, Output, ViewChild } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { fromEvent } from 'rxjs/index';
+import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { cloneDeep } from 'lodash';
 import { CommonModule } from '@angular/common';

@@ -16,7 +16,7 @@ import {CanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape";
 import {CanvasWhiteboardPoint} from "./canvas-whiteboard-point";
 import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./shapes/canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShapeOptions} from "./shapes/canvas-whiteboard-shape-options";
-import {fromEvent, Subscription} from "rxjs/index";
+import {fromEvent, Subscription} from "rxjs";
 import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 import {cloneDeep} from "lodash";
 

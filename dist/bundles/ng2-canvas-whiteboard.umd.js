@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('rxjs'), require('rxjs/index'), require('rxjs/operators'), require('lodash'), require('@angular/common')) :
-	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', 'rxjs', 'rxjs/index', 'rxjs/operators', 'lodash', '@angular/common'], factory) :
-	(factory((global.ng = global.ng || {}, global.ng.ng2CanvasWhiteboard = global.ng.ng2CanvasWhiteboard || {}),global.ng.core,global.rxjs,global.rxjs_index,global.rxjs_operators,global.lodash,global.ng.common));
-}(this, (function (exports,_angular_core,rxjs,rxjs_index,rxjs_operators,lodash,_angular_common) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('rxjs'), require('rxjs/operators'), require('lodash'), require('@angular/common')) :
+	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', 'rxjs', 'rxjs/operators', 'lodash', '@angular/common'], factory) :
+	(factory((global.ng = global.ng || {}, global.ng.ng2CanvasWhiteboard = global.ng.ng2CanvasWhiteboard || {}),global.ng.core,global.rxjs,global.rxjs_operators,global.lodash,global.ng.common));
+}(this, (function (exports,_angular_core,rxjs,rxjs_operators,lodash,_angular_common) { 'use strict';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -936,7 +936,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         this.ngZone.runOutsideAngular(( /**
          * @return {?}
          */function () {
-            _this._resizeSubscription = rxjs_index.fromEvent(window, 'resize')
+            _this._resizeSubscription = rxjs.fromEvent(window, 'resize')
                 .pipe(rxjs_operators.debounceTime(200), rxjs_operators.distinctUntilChanged())
                 .subscribe(( /**
          * @return {?}

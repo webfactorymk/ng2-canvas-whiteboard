@@ -16,7 +16,7 @@ var canvas_whiteboard_service_1 = require("./canvas-whiteboard.service");
 var canvas_whiteboard_point_1 = require("./canvas-whiteboard-point");
 var canvas_whiteboard_shape_service_1 = require("./shapes/canvas-whiteboard-shape.service");
 var canvas_whiteboard_shape_options_1 = require("./shapes/canvas-whiteboard-shape-options");
-var index_1 = require("rxjs/index");
+var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var lodash_1 = require("lodash");
 var CanvasWhiteboardComponent = /** @class */ (function () {
@@ -194,7 +194,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
         var _this = this;
         this.ngZone.runOutsideAngular(function () {
-            _this._resizeSubscription = index_1.fromEvent(window, 'resize')
+            _this._resizeSubscription = rxjs_1.fromEvent(window, 'resize')
                 .pipe(operators_1.debounceTime(200), operators_1.distinctUntilChanged())
                 .subscribe(function () {
                 _this.ngZone.run(function () {
