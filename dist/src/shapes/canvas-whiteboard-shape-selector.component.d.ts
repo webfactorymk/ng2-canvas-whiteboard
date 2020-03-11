@@ -2,7 +2,7 @@ import { ElementRef, EventEmitter } from "@angular/core";
 import { CanvasWhiteboardShapeService, INewCanvasWhiteboardShape } from "./canvas-whiteboard-shape.service";
 import { CanvasWhiteboardShape } from "./canvas-whiteboard-shape";
 import { CanvasWhiteboardShapeOptions } from "./canvas-whiteboard-shape-options";
-import { Observable } from "rxjs/index";
+import { Observable } from "rxjs";
 export declare class CanvasWhiteboardShapeSelectorComponent {
     private _elementRef;
     private _canvasWhiteboardShapeService;

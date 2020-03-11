@@ -13,7 +13,8 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     options: CanvasWhiteboardOptions;
     batchUpdateTimeoutDuration: number;
     private _imageUrl;
-    imageUrl: string;
+    set imageUrl(imageUrl: string);
+    get imageUrl(): string;
     aspectRatio: number;
     drawButtonClass: string;
     clearButtonClass: string;
@@ -94,28 +95,28 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      *
      * @param options
      */
-    private _initInputsFromOptions(options);
-    private _isNullOrUndefined(property);
+    private _initInputsFromOptions;
+    private _isNullOrUndefined;
     /**
      * Init global window listeners like resize and keydown
      */
-    private _initCanvasEventListeners();
+    private _initCanvasEventListeners;
     /**
      * Subscribes to new signals in the canvas whiteboard service and executes methods accordingly
      * Because of circular publishing and subscribing, the canvas methods do not use the service when
      * local actions are completed (Ex. clicking undo from the button inside this component)
      */
-    private _initCanvasServiceObservables();
+    private _initCanvasServiceObservables;
     /**
      * Calculate the canvas width and height from it's parent container width and height (use aspect ratio if needed)
      */
-    private _calculateCanvasWidthAndHeight();
+    private _calculateCanvasWidthAndHeight;
     /**
      * Load an image and draw it on the canvas (if an image exists)
      * @param callbackFn A function that is called after the image loading is finished
      * @return Emits a value when the image has been loaded.
      */
-    private _loadImage(callbackFn?);
+    private _loadImage;
     /**
      * Sends a notification after clearing the canvas
      * This method should only be called from the clear button in this component since it will emit an clear event
@@ -131,14 +132,14 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * It calls a callback function after redrawing
      * @param callbackFn
      */
-    private _removeCanvasData(callbackFn?);
+    private _removeCanvasData;
     /**
      * Clears the canvas and redraws the image if the url exists.
      * @param callbackFn A function that is called after the background is redrawn
      * @return Emits a value when the clearing is finished
      */
-    private _redrawBackground(callbackFn?);
-    private _drawStartingColor();
+    private _redrawBackground;
+    private _drawStartingColor;
     /**
      * @deprecated Use getDrawingEnabled(): boolean
      */
@@ -193,7 +194,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
      * @param updateUUID
      */
-    private _undoCanvas(updateUUID);
+    private _undoCanvas;
     /**
      * This method is invoked by the redo button on the canvas screen
      * It calls the global redo method and emits a notification after redoing
@@ -211,7 +212,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid visible
      * @param updateUUID
      */
-    private _redoCanvas(updateUUID);
+    private _redoCanvas;
     /**
      * Catches the Mouse and Touch events made on the canvas.
      * If drawing is disabled (If an image exists but it's not loaded, or the user did not click Draw),
@@ -235,7 +236,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * If it is not a touch event, use the original mouse event received
      * @param eventData
      */
-    private _getCanvasEventPosition(eventData);
+    private _getCanvasEventPosition;
     /**
      * The update coordinates on the canvas are mapped so that all receiving ends
      * can reverse the mapping and get the same position as the one that
@@ -243,7 +244,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      *
      * @param update The CanvasWhiteboardUpdate object.
      */
-    private _prepareToSendUpdate(update);
+    private _prepareToSendUpdate;
     /**
      * Catches the Key Up events made on the canvas.
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 90 (z), an undo action will be performed
@@ -252,15 +253,15 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      *
      * @param event The event that occurred.
      */
-    private _canvasKeyDown(event);
+    private _canvasKeyDown;
     /**
      * On window resize, recalculate the canvas dimensions and redraw the history
      */
-    private _redrawCanvasOnResize();
+    private _redrawCanvasOnResize;
     /**
      * Redraw the saved history after resetting the canvas state
      */
-    private _redrawHistory();
+    private _redrawHistory;
     /**
      * Draws a CanvasWhiteboardUpdate object on the canvas.
      * The coordinates are first reverse mapped so that they can be drawn in the proper place. The update
@@ -273,15 +274,15 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      *
      * @param update The update object.
      */
-    private _draw(update);
-    private _drawIncompleteShapes();
-    private _swapCompletedShapeToActualCanvas(shape);
-    private _resetIncompleteShapeCanvas();
+    private _draw;
+    private _drawIncompleteShapes;
+    private _swapCompletedShapeToActualCanvas;
+    private _resetIncompleteShapeCanvas;
     /**
      * Delete everything from the screen, redraw the background, and then redraw all the shapes from the shapesMap
      */
     drawAllShapes(): void;
-    private _addCurrentShapeDataToAnUpdate(update);
+    private _addCurrentShapeDataToAnUpdate;
     generateShapePreviewOptions(): CanvasWhiteboardShapeOptions;
     /**
      * Sends the update to all receiving ends as an Event emit. This is done as a batch operation (meaning
@@ -291,7 +292,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param update The update object.
      * @return Emits an Array of Updates when the batch.
      */
-    private _prepareUpdateForBatchDispatch(update);
+    private _prepareUpdateForBatchDispatch;
     /**
      * Draws an Array of Updates on the canvas.
      *
@@ -301,7 +302,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     /**
      * Draw any missing updates that were received before the image was loaded
      */
-    private _drawMissingUpdates();
+    private _drawMissingUpdates;
     /**
      * Draws an image on the canvas
      *
@@ -314,7 +315,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param offsetX The offsetX if the image size is larger than the canvas (aspect Ratio)
      * @param offsetY The offsetY if the image size is larger than the canvas (aspect Ratio)
      */
-    private _drawImage(context, image, x, y, width, height, offsetX, offsetY);
+    private _drawImage;
     /**
      * The HTMLCanvasElement.toDataURL() method returns a data URI containing a representation of the image in the format specified by the type parameter (defaults to PNG).
      * The returned image is in a resolution of 96 dpi.
@@ -354,7 +355,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param blob
      * @param returnedDataType
      */
-    private _saveCanvasBlob(blob, returnedDataType?);
+    private _saveCanvasBlob;
     /**
      * This method generates a canvas url string or a canvas blob with the presented data type
      * A callback function is then invoked since the blob creation must be done via a callback
@@ -371,7 +372,7 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * @param returnedDataType
      */
     saveLocal(returnedDataType?: string): void;
-    private _generateDataTypeString(returnedDataType);
+    private _generateDataTypeString;
     /**
      * Toggles the color picker window, delegating the showColorPicker Input to the ColorPickerComponent.
      * If no value is supplied (null/undefined) the current value will be negated and used.
@@ -400,9 +401,9 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
      * Unsubscribe from a given subscription if it is active
      * @param subscription
      */
-    private _unsubscribe(subscription);
-    private _generateUUID();
-    private _random4();
+    private _unsubscribe;
+    private _generateUUID;
+    private _random4;
     /**
      * Unsubscribe from the service observables
      */

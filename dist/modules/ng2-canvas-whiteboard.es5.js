@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -9,13 +12,14 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Injectable, Input, NgModule, NgZone, Output, ViewChild } from '@angular/core';
-import { BehaviorSubject, Subject, fromEvent } from 'rxjs/index';
+import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { cloneDeep } from 'lodash';
 import { CommonModule } from '@angular/common';
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/canvas-whiteboard-update.model.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 /** @enum {number} */
 var CanvasWhiteboardUpdateType = {
@@ -81,13 +85,15 @@ var CanvasWhiteboardUpdate = /** @class */ (function () {
 }());
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/template.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 /** @type {?} */
 var DEFAULT_STYLES = "\n.canvas_whiteboard_button {\n    display: inline-block;\n    outline: 0px;\n    padding-top: 7px;\n    margin-bottom: 0;\n    font-size: 14px;\n    font-weight: 400;\n    line-height: 1.42857143;\n    text-align: center;\n    white-space: nowrap;\n    vertical-align: middle;\n    -ms-touch-action: manipulation;\n    touch-action: manipulation;\n    cursor: pointer;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    background-image: none;\n    border: 1px solid transparent;\n    border-radius: 4px;\n}\n\n.canvas_whiteboard_buttons { \n    z-index: 3;\n}\n\n@media (max-width: 400px) {\n     .canvas_whiteboard_buttons {\n            position: absolute;\n            z-inde\n            top: 0;\n            width: 100%;\n            text-align: center;\n      }\n}\n        \n@media (min-width: 401px) { \n    .canvas_whiteboard_buttons {\n        position: absolute;\n        right: 0%;\n        color: #fff;\n    }\n}\n\n.canvas_whiteboard_buttons {\n    padding: 5px;\n}\n\n.canvas_whiteboard_buttons > button {\n    margin: 5px;\n}\n\n.canvas_whiteboard_button-draw_animated {\n    -webkit-animation: pulsate 1s ease-out;\n    -webkit-animation-iteration-count: infinite;\n}\n\n@-webkit-keyframes pulsate {\n    0% {\n        -webkit-transform: scale(0.1, 0.1);\n        opacity: 0.0;\n    }\n    50% {\n        opacity: 1.0;\n    }\n    100% {\n        -webkit-transform: scale(1.2, 1.2);\n        opacity: 0.0;\n    }\n}\n.canvas_wrapper_div {\n    width: 100%;\n    height: 100%;\n    border: 0.5px solid #e2e2e2;\n}\n\n.canvas_whiteboard_button-clear {\n    padding-top: 5px;\n}\n\n.canvas_whiteboard {\n    position: absolute;\n    z-index: 1;\n}\n\n.incomplete_shapes_canvas_whiteboard {\n    position: absolute;\n    z-index: 2;\n}\n\n";
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/canvas-whiteboard.service.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardService = /** @class */ (function () {
     function CanvasWhiteboardService() {
@@ -131,7 +137,8 @@ var CanvasWhiteboardService = /** @class */ (function () {
 }());
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/canvas-whiteboard-point.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardPoint = /** @class */ (function () {
     /**
@@ -146,7 +153,8 @@ var CanvasWhiteboardPoint = /** @class */ (function () {
 }());
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/canvas-whiteboard-shape-options.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardShapeOptions = /** @class */ (function () {
     function CanvasWhiteboardShapeOptions() {
@@ -161,7 +169,8 @@ var CanvasWhiteboardShapeOptions = /** @class */ (function () {
 }());
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/canvas-whiteboard-shape.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 /**
  * @abstract
@@ -176,6 +185,7 @@ var CanvasWhiteboardShape = /** @class */ (function () {
         this.options = options || new CanvasWhiteboardShapeOptions();
         this.isVisible = true;
     }
+    // noinspection TsLint
     /**
      * @param {?} update
      * @return {?}
@@ -186,7 +196,8 @@ var CanvasWhiteboardShape = /** @class */ (function () {
 }());
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/circle-shape.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CircleShape = /** @class */ (function (_super) {
     __extends(CircleShape, _super);
@@ -248,7 +259,8 @@ var CircleShape = /** @class */ (function (_super) {
 }(CanvasWhiteboardShape));
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/rectangle-shape.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var RectangleShape = /** @class */ (function (_super) {
     __extends(RectangleShape, _super);
@@ -309,7 +321,8 @@ var RectangleShape = /** @class */ (function (_super) {
 }(CanvasWhiteboardShape));
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/free-hand-shape.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var FreeHandShape = /** @class */ (function (_super) {
     __extends(FreeHandShape, _super);
@@ -338,6 +351,11 @@ var FreeHandShape = /** @class */ (function (_super) {
         context.moveTo(this.positionPoint.x, this.positionPoint.y);
         // Draw a dot
         context.lineTo(this.positionPoint.x + 1, this.positionPoint.y + 1);
+        // Normal fastest free hand drawing
+        // this.linePositions.forEach((linePosition) => {
+        //     context.lineTo(linePosition.x, linePosition.y);
+        // });
+        // Quadratic curves drawing
         /** @type {?} */
         var i = 0;
         while (i < this.linePositions.length) {
@@ -386,7 +404,8 @@ var FreeHandShape = /** @class */ (function (_super) {
 }(CanvasWhiteboardShape));
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/smiley-shape.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var SmileyShape = /** @class */ (function (_super) {
     __extends(SmileyShape, _super);
@@ -465,7 +484,8 @@ var SmileyShape = /** @class */ (function (_super) {
 }(CanvasWhiteboardShape));
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/star-shape.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var StarShape = /** @class */ (function (_super) {
     __extends(StarShape, _super);
@@ -549,7 +569,8 @@ var StarShape = /** @class */ (function (_super) {
 }(CanvasWhiteboardShape));
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/line-shape.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var LineShape = /** @class */ (function (_super) {
     __extends(LineShape, _super);
@@ -604,9 +625,9 @@ var LineShape = /** @class */ (function (_super) {
 }(CanvasWhiteboardShape));
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/canvas-whiteboard-shape.service.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
-// unsupported: template constraints.
 /**
  * @record
  * @template T
@@ -628,7 +649,10 @@ var CanvasWhiteboardShapeService = /** @class */ (function () {
      * @return {?}
      */
     CanvasWhiteboardShapeService.prototype.getShapeConstructorFromShapeName = function (shapeName) {
-        return this.getCurrentRegisteredShapes().find(function (shape) { return (new shape).getShapeName() === shapeName; });
+        return this.getCurrentRegisteredShapes().find(( /**
+         * @param {?} shape
+         * @return {?}
+         */function (shape) { return (new shape).getShapeName() === shapeName; }));
     };
     /**
      * @return {?}
@@ -664,27 +688,36 @@ var CanvasWhiteboardShapeService = /** @class */ (function () {
     CanvasWhiteboardShapeService.prototype.registerShapes = function (shapes) {
         var _this = this;
         this._registeredShapesSubject.next(this.getCurrentRegisteredShapes()
-            .concat(shapes.filter(function (shape) {
+            .concat(shapes.filter(( /**
+     * @param {?} shape
+     * @return {?}
+     */function (shape) {
             if (_this.isRegisteredShape(shape)) {
                 console.warn("You tried to register a shape:" + shape + ", but is has already been registered.");
                 return false;
             }
             return true;
-        })));
+        }))));
     };
     /**
      * @param {?} shape
      * @return {?}
      */
     CanvasWhiteboardShapeService.prototype.unregisterShape = function (shape) {
-        this._registeredShapesSubject.next(this.getCurrentRegisteredShapes().filter(function (registeredShape) { return registeredShape !== shape; }));
+        this._registeredShapesSubject.next(this.getCurrentRegisteredShapes().filter(( /**
+         * @param {?} registeredShape
+         * @return {?}
+         */function (registeredShape) { return registeredShape !== shape; })));
     };
     /**
      * @param {?} shapes
      * @return {?}
      */
     CanvasWhiteboardShapeService.prototype.unregisterShapes = function (shapes) {
-        this._registeredShapesSubject.next(this.getCurrentRegisteredShapes().filter(function (shape) { return shapes.indexOf(shape) === -1; }));
+        this._registeredShapesSubject.next(this.getCurrentRegisteredShapes().filter(( /**
+         * @param {?} shape
+         * @return {?}
+         */function (shape) { return shapes.indexOf(shape) === -1; })));
     };
     return CanvasWhiteboardShapeService;
 }());
@@ -695,7 +728,8 @@ CanvasWhiteboardShapeService.decorators = [
 CanvasWhiteboardShapeService.ctorParameters = function () { return []; };
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/canvas-whiteboard.component.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardComponent = /** @class */ (function () {
     /**
@@ -744,7 +778,8 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         this._canDraw = true;
         this._clientDragging = false;
         this._updateHistory = [];
-        this._undoStack = [];
+        this._undoStack = []; // Stores the value of start and count for each continuous stroke
+        // Stores the value of start and count for each continuous stroke
         this._redoStack = [];
         this._batchUpdates = [];
         this._updatesNotDrawn = [];
@@ -808,6 +843,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * For security reasons we must check each item on its own since if we iterate the keys
      * we may be injected with malicious values
      *
+     * @private
      * @param {?} options
      * @return {?}
      */
@@ -882,6 +918,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         }
     };
     /**
+     * @private
      * @param {?} property
      * @return {?}
      */
@@ -890,45 +927,71 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * Init global window listeners like resize and keydown
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._initCanvasEventListeners = function () {
         var _this = this;
-        this.ngZone.runOutsideAngular(function () {
+        this.ngZone.runOutsideAngular(( /**
+         * @return {?}
+         */function () {
             _this._resizeSubscription = fromEvent(window, 'resize')
                 .pipe(debounceTime(200), distinctUntilChanged())
-                .subscribe(function () {
-                _this.ngZone.run(function () {
+                .subscribe(( /**
+         * @return {?}
+         */function () {
+                _this.ngZone.run(( /**
+                 * @return {?}
+                 */function () {
                     _this._redrawCanvasOnResize();
-                });
-            });
-        });
+                }));
+            }));
+        }));
         window.addEventListener("keydown", this._canvasKeyDown.bind(this), false);
     };
     /**
      * Subscribes to new signals in the canvas whiteboard service and executes methods accordingly
      * Because of circular publishing and subscribing, the canvas methods do not use the service when
      * local actions are completed (Ex. clicking undo from the button inside this component)
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._initCanvasServiceObservables = function () {
         var _this = this;
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasDrawSubject$
-            .subscribe(function (updates) { return _this.drawUpdates(updates); }));
+            .subscribe(( /**
+     * @param {?} updates
+     * @return {?}
+     */function (/**
+     * @param {?} updates
+     * @return {?}
+     */ updates) { return _this.drawUpdates(updates); })));
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasClearSubject$
-            .subscribe(function () { return _this.clearCanvas(); }));
+            .subscribe(( /**
+     * @return {?}
+     */function () { return _this.clearCanvas(); })));
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasUndoSubject$
-            .subscribe(function (updateUUD) { return _this._undoCanvas(updateUUD); }));
+            .subscribe(( /**
+     * @param {?} updateUUD
+     * @return {?}
+     */function (updateUUD) { return _this._undoCanvas(updateUUD); })));
         this._canvasWhiteboardServiceSubscriptions.push(this._canvasWhiteboardService.canvasRedoSubject$
-            .subscribe(function (updateUUD) { return _this._redoCanvas(updateUUD); }));
-        this._registeredShapesSubscription = this._canvasWhiteboardShapeService.registeredShapes$.subscribe(function (shapes) {
+            .subscribe(( /**
+     * @param {?} updateUUD
+     * @return {?}
+     */function (updateUUD) { return _this._redoCanvas(updateUUD); })));
+        this._registeredShapesSubscription = this._canvasWhiteboardShapeService.registeredShapes$.subscribe(( /**
+         * @param {?} shapes
+         * @return {?}
+         */function (shapes) {
             if (!_this.selectedShapeConstructor || !_this._canvasWhiteboardShapeService.isRegisteredShape(_this.selectedShapeConstructor)) {
                 _this.selectedShapeConstructor = shapes[0];
             }
-        });
+        }));
     };
     /**
      * Calculate the canvas width and height from it's parent container width and height (use aspect ratio if needed)
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._calculateCanvasWidthAndHeight = function () {
@@ -944,6 +1007,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * Load an image and draw it on the canvas (if an image exists)
+     * @private
      * @param {?=} callbackFn A function that is called after the image loading is finished
      * @return {?} Emits a value when the image has been loaded.
      */
@@ -957,11 +1021,13 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
             return;
         }
         this._imageElement = new Image();
-        this._imageElement.addEventListener("load", function () {
+        this._imageElement.addEventListener("load", ( /**
+         * @return {?}
+         */function () {
             _this._canDraw = true;
             callbackFn && callbackFn();
             _this.onImageLoaded.emit(true);
-        });
+        }));
         this._imageElement.src = this.imageUrl;
     };
     /**
@@ -985,6 +1051,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     /**
      * This method resets the state of the canvas and redraws it.
      * It calls a callback function after redrawing
+     * @private
      * @param {?=} callbackFn
      * @return {?}
      */
@@ -997,6 +1064,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * Clears the canvas and redraws the image if the url exists.
+     * @private
      * @param {?=} callbackFn A function that is called after the background is redrawn
      * @return {?} Emits a value when the clearing is finished
      */
@@ -1004,13 +1072,15 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         var _this = this;
         if (this.context) {
             if (this.imageUrl) {
-                this._loadImage(function () {
+                this._loadImage(( /**
+                 * @return {?}
+                 */function () {
                     _this.context.save();
                     _this._drawImage(_this.context, _this._imageElement, 0, 0, _this.context.canvas.width, _this.context.canvas.height, 0.5, 0.5);
                     _this.context.restore();
                     _this._drawMissingUpdates();
                     callbackFn && callbackFn();
-                });
+                }));
             }
             else {
                 this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
@@ -1020,6 +1090,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         }
     };
     /**
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._drawStartingColor = function () {
@@ -1103,10 +1174,13 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype.undoLocal = function () {
         var _this = this;
-        this.undo(function (updateUUID) {
+        this.undo(( /**
+         * @param {?} updateUUID
+         * @return {?}
+         */function (updateUUID) {
             _this._redoStack.push(updateUUID);
             _this.onUndo.emit(updateUUID);
-        });
+        }));
     };
     /**
      * This methods selects the last uuid prepares it for undoing (making the whole update sequence invisible)
@@ -1125,6 +1199,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
+     * @private
      * @param {?} updateUUID
      * @return {?}
      */
@@ -1145,10 +1220,13 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype.redoLocal = function () {
         var _this = this;
-        this.redo(function (updateUUID) {
+        this.redo(( /**
+         * @param {?} updateUUID
+         * @return {?}
+         */function (updateUUID) {
             _this._undoStack.push(updateUUID);
             _this.onRedo.emit(updateUUID);
-        });
+        }));
     };
     /**
      * This methods selects the last uuid prepares it for redoing (making the whole update sequence visible)
@@ -1167,6 +1245,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid visible
+     * @private
      * @param {?} updateUUID
      * @return {?}
      */
@@ -1256,6 +1335,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * If it is a touch event, get the touch positions
      * If we released the touch, the position will be placed in the changedTouches object
      * If it is not a touch event, use the original mouse event received
+     * @private
      * @param {?} eventData
      * @return {?}
      */
@@ -1285,6 +1365,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * can reverse the mapping and get the same position as the one that
      * was drawn on this update.
      *
+     * @private
      * @param {?} update The CanvasWhiteboardUpdate object.
      * @return {?}
      */
@@ -1297,6 +1378,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 89 (y), a redo action will be performed
      * If the ctrlKey or commandKey(macOS) was held and the keyCode is 83 (s) or 115(S), a save action will be performed
      *
+     * @private
      * @param {?} event The event that occurred.
      * @return {?}
      */
@@ -1318,6 +1400,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * On window resize, recalculate the canvas dimensions and redraw the history
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._redrawCanvasOnResize = function () {
@@ -1326,17 +1409,23 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * Redraw the saved history after resetting the canvas state
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._redrawHistory = function () {
         var _this = this;
         /** @type {?} */
         var updatesToDraw = [].concat(this._updateHistory);
-        this._removeCanvasData(function () {
-            updatesToDraw.forEach(function (update) {
+        this._removeCanvasData(( /**
+         * @return {?}
+         */function () {
+            updatesToDraw.forEach(( /**
+             * @param {?} update
+             * @return {?}
+             */function (update) {
                 _this._draw(update);
-            });
-        });
+            }));
+        }));
     };
     /**
      * Draws a CanvasWhiteboardUpdate object on the canvas.
@@ -1348,6 +1437,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * Afterwards the context is used to draw the shape on the canvas.
      * This function saves the last X and Y coordinates that were drawn.
      *
+     * @private
      * @param {?} update The update object.
      * @return {?}
      */
@@ -1382,18 +1472,23 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         }
     };
     /**
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._drawIncompleteShapes = function () {
         var _this = this;
         this._resetIncompleteShapeCanvas();
-        this._incompleteShapesMap.forEach(function (shape) {
+        this._incompleteShapesMap.forEach(( /**
+         * @param {?} shape
+         * @return {?}
+         */function (shape) {
             if (shape.isVisible) {
                 shape.draw(_this._incompleteShapesCanvasContext);
             }
-        });
+        }));
     };
     /**
+     * @private
      * @param {?} shape
      * @return {?}
      */
@@ -1404,6 +1499,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         }
     };
     /**
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._resetIncompleteShapeCanvas = function () {
@@ -1417,15 +1513,21 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      */
     CanvasWhiteboardComponent.prototype.drawAllShapes = function () {
         var _this = this;
-        this._redrawBackground(function () {
-            _this._shapesMap.forEach(function (shape) {
+        this._redrawBackground(( /**
+         * @return {?}
+         */function () {
+            _this._shapesMap.forEach(( /**
+             * @param {?} shape
+             * @return {?}
+             */function (shape) {
                 if (shape.isVisible) {
                     shape.draw(_this.context);
                 }
-            });
-        });
+            }));
+        }));
     };
     /**
+     * @private
      * @param {?} update
      * @return {?}
      */
@@ -1456,6 +1558,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * multiple updates are sent at the same time). If this method is called, after 100 ms all updates
      * that were made at that time will be packed up together and sent to the receiver.
      *
+     * @private
      * @param {?} update The update object.
      * @return {?} Emits an Array of Updates when the batch.
      */
@@ -1463,11 +1566,13 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         var _this = this;
         this._batchUpdates.push(cloneDeep(update));
         if (!this._updateTimeout) {
-            this._updateTimeout = setTimeout(function () {
+            this._updateTimeout = setTimeout(( /**
+             * @return {?}
+             */function () {
                 _this.onBatchUpdate.emit(_this._batchUpdates);
                 _this._batchUpdates = [];
                 _this._updateTimeout = null;
-            }, this.batchUpdateTimeoutDuration);
+            }), this.batchUpdateTimeoutDuration);
         }
     };
     ;
@@ -1481,9 +1586,12 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         var _this = this;
         if (this._canDraw) {
             this._drawMissingUpdates();
-            updates.forEach(function (update) {
+            updates.forEach(( /**
+             * @param {?} update
+             * @return {?}
+             */function (update) {
                 _this._draw(update);
-            });
+            }));
         }
         else {
             this._updatesNotDrawn = this._updatesNotDrawn.concat(updates);
@@ -1492,6 +1600,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     ;
     /**
      * Draw any missing updates that were received before the image was loaded
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._drawMissingUpdates = function () {
@@ -1500,14 +1609,18 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
             /** @type {?} */
             var updatesToDraw = this._updatesNotDrawn;
             this._updatesNotDrawn = [];
-            updatesToDraw.forEach(function (update) {
+            updatesToDraw.forEach(( /**
+             * @param {?} update
+             * @return {?}
+             */function (update) {
                 _this._draw(update);
-            });
+            }));
         }
     };
     /**
      * Draws an image on the canvas
      *
+     * @private
      * @param {?} context The context used to draw the image on the canvas.
      * @param {?} image The image to draw.
      * @param {?} x The X coordinate for the starting draw position.
@@ -1616,14 +1729,21 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         if (typeof this.context.canvas.toBlob !== "undefined") {
             toBlobMethod = this.context.canvas.toBlob.bind(this.context.canvas);
         }
-        else if (typeof this.context.canvas.msToBlob !== "undefined") {
-            toBlobMethod = function (callback) {
-                callback && callback(_this.context.canvas.msToBlob());
-            };
+        else if (typeof (( /** @type {?} */(this.context.canvas))).msToBlob !== "undefined") {
+            // For IE
+            toBlobMethod = ( /**
+             * @param {?} callback
+             * @return {?}
+             */function (callback) {
+                callback && callback((( /** @type {?} */(_this.context.canvas))).msToBlob());
+            });
         }
-        toBlobMethod && toBlobMethod(function (blob) {
+        toBlobMethod && toBlobMethod(( /**
+         * @param {?} blob
+         * @return {?}
+         */function (blob) {
             callbackFn && callbackFn(blob, returnedDataType);
-        }, returnedDataType, returnedDataQuality);
+        }), returnedDataType, returnedDataQuality);
     };
     /**
      * Generate a canvas image representation and download it locally
@@ -1640,7 +1760,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         if (window.navigator.msSaveOrOpenBlob === undefined) {
             /** @type {?} */
             var downloadLink = document.createElement('a');
-            downloadLink.setAttribute('href', downloadData ? /** @type {?} */ (downloadData) : this.generateCanvasDataUrl(returnedDataType));
+            downloadLink.setAttribute('href', downloadData ? ( /** @type {?} */(downloadData)) : this.generateCanvasDataUrl(returnedDataType));
             /** @type {?} */
             var fileName = customFileName ? customFileName
                 : (this.downloadedFileName ? this.downloadedFileName : "canvas_drawing_" + new Date().valueOf());
@@ -1652,7 +1772,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         else {
             // IE-specific code
             if (downloadData) {
-                this._saveCanvasBlob(/** @type {?} */ (downloadData), returnedDataType);
+                this._saveCanvasBlob(( /** @type {?} */(downloadData)), returnedDataType);
             }
             else {
                 this.generateCanvasBlob(this._saveCanvasBlob.bind(this), returnedDataType);
@@ -1661,6 +1781,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * Save the canvas blob (IE) locally
+     * @private
      * @param {?} blob
      * @param {?=} returnedDataType
      * @return {?}
@@ -1698,14 +1819,18 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     CanvasWhiteboardComponent.prototype.saveLocal = function (returnedDataType) {
         var _this = this;
         if (returnedDataType === void 0) { returnedDataType = "image/png"; }
-        this.generateCanvasData(function (generatedData) {
+        this.generateCanvasData(( /**
+         * @param {?} generatedData
+         * @return {?}
+         */function (generatedData) {
             _this.onSave.emit(generatedData);
             if (_this.shouldDownloadDrawing) {
                 _this.downloadCanvasImage(returnedDataType, generatedData);
             }
-        });
+        }));
     };
     /**
+     * @private
      * @param {?} returnedDataType
      * @return {?}
      */
@@ -1759,6 +1884,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
     };
     /**
      * Unsubscribe from a given subscription if it is active
+     * @private
      * @param {?} subscription
      * @return {?}
      */
@@ -1767,6 +1893,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
             subscription.unsubscribe();
     };
     /**
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._generateUUID = function () {
@@ -1774,6 +1901,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
             this._random4() + "-" + this._random4() + this._random4() + this._random4();
     };
     /**
+     * @private
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype._random4 = function () {
@@ -1789,7 +1917,13 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
         var _this = this;
         this._unsubscribe(this._resizeSubscription);
         this._unsubscribe(this._registeredShapesSubscription);
-        this._canvasWhiteboardServiceSubscriptions.forEach(function (subscription) { return _this._unsubscribe(subscription); });
+        this._canvasWhiteboardServiceSubscriptions.forEach(( /**
+         * @param {?} subscription
+         * @return {?}
+         */function (/**
+         * @param {?} subscription
+         * @return {?}
+         */ subscription) { return _this._unsubscribe(subscription); }));
     };
     return CanvasWhiteboardComponent;
 }());
@@ -1848,12 +1982,13 @@ CanvasWhiteboardComponent.propDecorators = {
     onBatchUpdate: [{ type: Output }],
     onImageLoaded: [{ type: Output }],
     onSave: [{ type: Output }],
-    canvas: [{ type: ViewChild, args: ['canvas',] }],
-    _incompleteShapesCanvas: [{ type: ViewChild, args: ['incompleteShapesCanvas',] }]
+    canvas: [{ type: ViewChild, args: ['canvas', { static: true },] }],
+    _incompleteShapesCanvas: [{ type: ViewChild, args: ['incompleteShapesCanvas', { static: true },] }]
 };
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/canvas-whiteboard-shape-selector.component.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardShapeSelectorComponent = /** @class */ (function () {
     /**
@@ -1922,7 +2057,8 @@ CanvasWhiteboardShapeSelectorComponent.propDecorators = {
 };
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/canvas-whiteboard-colorpicker.component.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardColorPickerComponent = /** @class */ (function () {
     /**
@@ -2026,7 +2162,7 @@ CanvasWhiteboardColorPickerComponent.ctorParameters = function () { return [
 CanvasWhiteboardColorPickerComponent.propDecorators = {
     previewText: [{ type: Input }],
     selectedColor: [{ type: Input }],
-    canvas: [{ type: ViewChild, args: ['canvaswhiteboardcolorpicker',] }],
+    canvas: [{ type: ViewChild, args: ['canvaswhiteboardcolorpicker', { static: true },] }],
     showColorPicker: [{ type: Input }],
     onToggleColorPicker: [{ type: Output }],
     onColorSelected: [{ type: Output }],
@@ -2034,7 +2170,8 @@ CanvasWhiteboardColorPickerComponent.propDecorators = {
 };
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/shapes/canvas-whiteboard-shape-preview.component.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardShapePreviewComponent = /** @class */ (function () {
     function CanvasWhiteboardShapePreviewComponent() {
@@ -2050,7 +2187,7 @@ var CanvasWhiteboardShapePreviewComponent = /** @class */ (function () {
      * @return {?}
      */
     CanvasWhiteboardShapePreviewComponent.prototype.ngOnChanges = function (changes) {
-        if (changes["shapeConstructor"] || changes["shapeOptions"]) {
+        if (changes.shapeConstructor || changes.shapeOptions) {
             this.drawShapePreview();
         }
     };
@@ -2084,7 +2221,8 @@ CanvasWhiteboardShapePreviewComponent.propDecorators = {
 };
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/ng2-canvas-whiteboard.module.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var CanvasWhiteboardModule = /** @class */ (function () {
     function CanvasWhiteboardModule() {
@@ -2111,15 +2249,18 @@ CanvasWhiteboardModule.decorators = [
 ];
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: src/ng2-canvas-whiteboard.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: public_api.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 /**
  * @fileoverview added by tsickle
- * @suppress {checkTypes,extraRequire,uselessCode} checked by tsc
+ * Generated from: ng2-canvas-whiteboard.ts
+ * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 /**
  * Generated bundle index. Do not edit.

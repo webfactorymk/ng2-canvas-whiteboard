@@ -8,7 +8,7 @@ import {
 import {CanvasWhiteboardShapeService, INewCanvasWhiteboardShape} from "./canvas-whiteboard-shape.service";
 import {CanvasWhiteboardShape} from "./canvas-whiteboard-shape";
 import {CanvasWhiteboardShapeOptions} from "./canvas-whiteboard-shape-options";
-import {Observable} from "rxjs/index";
+import {Observable} from "rxjs";
 
 @Component({
     selector: "canvas-whiteboard-shape-selector",
