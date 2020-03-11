@@ -2364,7 +2364,7 @@ CanvasWhiteboardColorPickerComponent.ctorParameters = () => [
 CanvasWhiteboardColorPickerComponent.propDecorators = {
     previewText: [{ type: Input }],
     selectedColor: [{ type: Input }],
-    canvas: [{ type: ViewChild, args: ['canvaswhiteboardcolorpicker',] }],
+    canvas: [{ type: ViewChild, args: ['canvaswhiteboardcolorpicker', { static: true },] }],
     showColorPicker: [{ type: Input }],
     onToggleColorPicker: [{ type: Output }],
     onColorSelected: [{ type: Output }],

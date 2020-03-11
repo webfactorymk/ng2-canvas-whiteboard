@@ -70,7 +70,7 @@ export class CanvasWhiteboardColorPickerComponent implements OnInit {
 
     @Input() previewText: string;
     @Input() readonly selectedColor: string = 'rgba(0,0,0,1)';
-    @ViewChild('canvaswhiteboardcolorpicker') canvas: ElementRef;
+    @ViewChild('canvaswhiteboardcolorpicker', { static: true }) canvas: ElementRef;
 
     @Input() readonly showColorPicker: boolean = false;
     private _context: CanvasRenderingContext2D;

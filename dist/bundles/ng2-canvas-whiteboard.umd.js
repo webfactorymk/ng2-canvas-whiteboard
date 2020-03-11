@@ -2163,7 +2163,7 @@ CanvasWhiteboardColorPickerComponent.ctorParameters = function () { return [
 CanvasWhiteboardColorPickerComponent.propDecorators = {
     previewText: [{ type: _angular_core.Input }],
     selectedColor: [{ type: _angular_core.Input }],
-    canvas: [{ type: _angular_core.ViewChild, args: ['canvaswhiteboardcolorpicker',] }],
+    canvas: [{ type: _angular_core.ViewChild, args: ['canvaswhiteboardcolorpicker', { static: true },] }],
     showColorPicker: [{ type: _angular_core.Input }],
     onToggleColorPicker: [{ type: _angular_core.Output }],
     onColorSelected: [{ type: _angular_core.Output }],
