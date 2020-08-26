@@ -1,33 +1,23 @@
+/*
+  This is a "Solution Style" tsconfig.json file, and is used by editors and TypeScript’s language server to improve development experience.
+  It is not intended to be used to perform a compilation.
+
+  To learn more about this file see: https://angular.io/config/solution-tsconfig.
+*/
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true,
-    "sourceMap": true,
-    "rootDir": ".",
-    "inlineSources": true,
-    "lib": [
-      "es6",
-      "dom"
-    ],
-    "target": "es5",
-    "skipLibCheck": true,
-    "types": [
-      "node",
-      "lodash"
-    ]
-  },
-  "angularCompilerOptions": {
-    "enableIvy": false
-  },
-  "exclude": [
-    "node_modules",
-    "example",
-    "examples",
-    "dist"
-  ]
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/ng2-canvas-whiteboard/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ng2-canvas-whiteboard/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ng2-canvas-whiteboard-example/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/ng2-canvas-whiteboard-example/tsconfig.spec.json"
+    }
+]
 }
