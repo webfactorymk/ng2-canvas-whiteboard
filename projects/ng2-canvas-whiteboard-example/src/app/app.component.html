@@ -1,0 +1,22 @@
+<button (click)="saveToStorage()">saveToStorage</button>
+<button (click)="loadFromStorage()">Load from storage</button>
+
+<div style="width: 300px; height: 300px; border: 1px solid black">
+
+  <canvas-whiteboard #canvasWhiteboard
+                     [drawButtonClass]="'drawButtonClass'"
+                     [drawButtonText]="'Draw'"
+                     [clearButtonClass]="'clearButtonClass'"
+                     [clearButtonText]="'Clear'"
+                     [undoButtonText]="'Undo'"
+                     [undoButtonEnabled]="true"
+                     [redoButtonText]="'Redo'"
+                     [redoButtonEnabled]="true"
+                     [colorPickerEnabled]="true"
+                     [saveDataButtonEnabled]="true"
+                     [saveDataButtonText]="'Save'"
+                     [lineWidth]="5"
+                     [strokeColor]="'rgb(0,0,0)'"
+                     [shouldDownloadDrawing]="true">
+  </canvas-whiteboard>
+</div>
