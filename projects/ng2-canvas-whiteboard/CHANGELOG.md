@@ -1,5 +1,9 @@
 
 ## Canvas version changes
+
+#### v3.1.2, v4.0.1
+Exports all existing canvas shapes, so that they can be easily unregistered from the canvas. (see README for unregistering the shapes).
+
 #### v4.0.0 Switches the repo to an angular-workspace and uses ng-packagr for *building the library*.
  
  It will help with testing, maintaining and future changes of the library. The peer-dependency for @angular is ^10.0.6

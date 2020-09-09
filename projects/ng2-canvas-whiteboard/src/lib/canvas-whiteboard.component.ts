@@ -18,7 +18,7 @@ import { CanvasWhiteboardShapeService, INewCanvasWhiteboardShape } from './shape
 import { CanvasWhiteboardShapeOptions } from './shapes/canvas-whiteboard-shape-options';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isEqual } from 'lodash-es';
 
 @Component({
   selector: 'canvas-whiteboard',
@@ -33,7 +33,7 @@ import { cloneDeep } from 'lodash-es';
                                           (onToggleShapeSelector)="toggleShapeSelector($event)"
                                           (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
 
-        <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+        <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled || fillColorPickerEnabled"
                                        [previewText]="'Fill'"
                                        [showColorPicker]="showFillColorPicker"
                                        [selectedColor]="fillColor"
@@ -41,7 +41,7 @@ import { cloneDeep } from 'lodash-es';
                                        (onColorSelected)="changeFillColor($event)">
         </canvas-whiteboard-colorpicker>
 
-        <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+        <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled || strokeColorPickerEnabled"
                                        [previewText]="'Stroke'"
                                        [showColorPicker]="showStrokeColorPicker"
                                        [selectedColor]="strokeColor"
@@ -119,7 +119,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
   @Input() redoButtonEnabled = false;
   @Input() saveDataButtonEnabled = false;
   @Input() shouldDownloadDrawing = true;
-  @Input() colorPickerEnabled = false;
+  /** @deprecated. Replaced with strokeColorPickerEnabled and fillColorPickerEnabled inputs */
+  @Input() colorPickerEnabled: boolean = false;
+  @Input() strokeColorPickerEnabled: boolean = false;
+  @Input() fillColorPickerEnabled: boolean = false;
   @Input() lineWidth = 2;
   @Input() strokeColor = 'rgba(0, 0, 0, 1)';
   @Input() startingColor = '#fff';
@@ -198,7 +201,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * If an image exists and it's url changes, we need to redraw the new image on the canvas.
    */
   ngOnChanges(changes: any): void {
-    if (changes.options && changes.options.currentValue != changes.options.previousValue) {
+    if (changes.options && !isEqual(changes.options.currentValue, changes.options.previousValue)) {
       this._initInputsFromOptions(changes.options.currentValue);
     }
   }
@@ -277,6 +280,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
       }
       if (!this._isNullOrUndefined(options.colorPickerEnabled)) {
         this.colorPickerEnabled = options.colorPickerEnabled;
+      }
+      if (!this._isNullOrUndefined(options.strokeColorPickerEnabled)) {
+        this.strokeColorPickerEnabled = options.strokeColorPickerEnabled;
+      }
+      if (!this._isNullOrUndefined(options.fillColorPickerEnabled)) {
+        this.fillColorPickerEnabled = options.fillColorPickerEnabled;
       }
       if (!this._isNullOrUndefined(options.lineWidth)) {
         this.lineWidth = options.lineWidth;

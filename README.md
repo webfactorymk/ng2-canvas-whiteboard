@@ -1,5 +1,24 @@
 # ng2-canvas-whiteboard
 
+## Canvas version changes
+#### v3.1.2, v4.0.1
+Exports all existing canvas shapes, so that they can be easily unregistered from the canvas. (see README for unregistering the shapes).
+
+Also, this version introduces two new Inputs,  `strokeColorPickerEnabled: boolean` and `fillColorPickerEnabled: boolean`, also deprecates the `colorPickerEnabled` Input.
+
+For the sake of reverse-compat, the `colorPickerEnabled` input is still there and it will be used in combination with the two new variables. (ex: `colorPickerEnabled || fillColorPickerEnabled`). 
+
+#### v3.1.1 Audits the npm packages and upgrades the lodash version from 4.17.11 to 4.17.13
+
+#### v3.1.0 Merges the pull request from https://github.com/webfactorymk/ng2-canvas-whiteboard/pull/55 to allow the component to be used in Angular 8 and 9 applications. Also fixes the imports for rxjs items from 'rxjs/index' to 'rxjs'
+
+#### v3.0.4 Fixes a bug with production build and recognition of shape names by adding an abstract method in the base Shape class.
+
+#### v3.0.0 Removes the `rxjs-compat` library and adds `rxjs^6`. This means that older versions will not be supported if they upgrade to `ng2-canvas-whiteboard^3.0.0`.
+#### *This version also changes the way of how this library is built and made ready for publish.*
+
+#### For applications before Angular 6 please use versions below v3.0.0.
+
 **Features:**<br/>
 - Premade Shapes
 - The ability to create custom premade shapes
@@ -178,9 +197,21 @@ Changes to this object will be detected by the canvas in the OnChange listener a
   </canvas-whiteboard>
 ```
 
+NOTE: In order for the changeDetection to pick up the options changes, you must change the options reference whenever you want to change a value.
+Example:
+```typescript
+  public changeOptions(): void {
+    this.canvasOptions = {
+      ...this.canvasOptions,
+      fillColorPickerEnabled: true,
+      colorPickerEnabled: false
+    };
+  }
+```
+
 ### To add text to the buttons via css
 Each button has its on class (example: Draw button -> .canvas_whiteboard_button-draw)<br/>
-This button can be customized by overriding it's css
+This button can be customized by overriding its css
 ```css
 .canvas_whiteboard_button-draw:before {
   content: "Draw";
@@ -198,9 +229,17 @@ If using component-only styles, for this to work the viewEncapsulation must be s
 })
 ```
 
-##### `colorPickerEnabled: boolean` (default: false)
+You can also use the `::ng-deep` selector if you do not want to change the ViewEncapsulation property on the component.
+
+##### Deprecated: `colorPickerEnabled: boolean` (default: false)
 This allows the adding of a colorPickers that the user can choose to draw with (stroke and fill color),
-and the original colors are kept when redrawing
+and the original colors will be used when redrawing
+
+##### `fillColorPickerEnabled: boolean` (default: false)
+This shows/hides the fill color picker. Note: if this field has been to `false`, but the `colorPickerEnabled` field has been to `true`, the color picker will be shown, as per reverse-compat needs.
+
+##### `strokeColorPickerEnabled: boolean` (default: false)
+This shows/hides the stroke color picker. Note: if this field has been to `false`, but the `colorPickerEnabled` field has been set to `true`, the color picker will be shown, as per reverse-compat needs.
 
 ##### `lineWidth: number` (default: 2)
 This input controls the drawing pencil size
@@ -342,6 +381,25 @@ export class RandomShape extends CanvasWhiteboardShape {
     }
 }
  ```
+
+## Unregistering Shapes
+
+The default shapes can also be unregistered. Example:
+```typescript
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  constructor(private canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
+    this.canvasWhiteboardShapeService.unregisterShapes([CircleShape, SmileyShape, StarShape]);
+  }
+}
+```
+
+NOTE: There must be at least one shape registered for the canvas to work, but for the sake of convenience, all of the default shapes have been exported (maybe someone would want to unregister all of them and register his own shapes), but it is recommended not to unregister the FreeHandShape.
+
 # Canvas Whiteboard Shape Selector
 The `CanvasWhiteboardComponent` is now equipped with a shape selector (since the free hand drawing is now a shape because of consistency),
 The shape selector can be managed or hidden with inputs, and it basically calls the `CanvasWhiteboardShapeService` and draws all the

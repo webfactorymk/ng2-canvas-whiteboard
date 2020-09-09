@@ -1,9 +1,11 @@
 <button (click)="saveToStorage()">saveToStorage</button>
 <button (click)="loadFromStorage()">Load from storage</button>
+<button (click)="changeOptions()">Update canvas options</button>
 
 <div style="width: 300px; height: 300px; border: 1px solid black">
 
   <canvas-whiteboard #canvasWhiteboard
+                     [options]="canvasOptions"
                      [drawButtonClass]="'drawButtonClass'"
                      [drawButtonText]="'Draw'"
                      [clearButtonClass]="'clearButtonClass'"
@@ -13,6 +15,7 @@
                      [redoButtonText]="'Redo'"
                      [redoButtonEnabled]="true"
                      [colorPickerEnabled]="true"
+                     [strokeColorPickerEnabled]="true"
                      [saveDataButtonEnabled]="true"
                      [saveDataButtonText]="'Save'"
                      [lineWidth]="5"

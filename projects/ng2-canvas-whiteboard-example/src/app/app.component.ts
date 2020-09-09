@@ -1,5 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
-import { CanvasWhiteboardComponent, CanvasWhiteboardService, CanvasWhiteboardUpdate } from 'ng2-canvas-whiteboard';
+import {
+  CanvasWhiteboardComponent,
+  CanvasWhiteboardService,
+  CanvasWhiteboardUpdate,
+  CanvasWhiteboardOptions,
+  CanvasWhiteboardShapeService, CircleShape, SmileyShape, StarShape, LineShape, RectangleShape
+} from 'ng2-canvas-whiteboard';
 
 @Component({
   selector: 'app-root',
@@ -8,8 +14,11 @@ import { CanvasWhiteboardComponent, CanvasWhiteboardService, CanvasWhiteboardUpd
 })
 export class AppComponent {
   @ViewChild(CanvasWhiteboardComponent) canvasWhiteboardComponent: CanvasWhiteboardComponent;
+  canvasOptions: CanvasWhiteboardOptions = {};
 
-  constructor(private canvasWhiteboardService: CanvasWhiteboardService) {
+  constructor(private canvasWhiteboardService: CanvasWhiteboardService,
+              private canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
+    this.canvasWhiteboardShapeService.unregisterShapes([CircleShape, SmileyShape, StarShape, LineShape, RectangleShape]);
   }
 
   saveToStorage(): void {
@@ -36,5 +45,13 @@ export class AppComponent {
       // Draw the updates onto the canvas
       this.canvasWhiteboardService.drawCanvas(updates);
     }
+  }
+
+  public changeOptions(): void {
+    this.canvasOptions = {
+      ...this.canvasOptions,
+      fillColorPickerEnabled: false,
+      colorPickerEnabled: false
+    };
   }
 }
