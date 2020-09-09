@@ -19,7 +19,10 @@ export interface CanvasWhiteboardOptions {
     saveDataButtonEnabled?: boolean;
     saveDataButtonClass?: string;
     saveDataButtonText?: string;
+    /** @deprecated. Replaced with strokeColorPickerEnabled and fillColorPickerEnabled inputs */
     colorPickerEnabled?: boolean;
+    strokeColorPickerEnabled?: boolean;
+    fillColorPickerEnabled?: boolean;
     shouldDownloadDrawing?: boolean;
     startingColor?: string;
     scaleFactor?: number;
