@@ -831,7 +831,7 @@ var CanvasWhiteboardComponent = /** @class */ (function () {
      * @return {?}
      */
     CanvasWhiteboardComponent.prototype.ngOnChanges = function (changes) {
-        if (changes.options && lodash.isEqual(changes.options.currentValue, changes.options.previousValue)) {
+        if (changes.options && !lodash.isEqual(changes.options.currentValue, changes.options.previousValue)) {
             this._initInputsFromOptions(changes.options.currentValue);
         }
     };

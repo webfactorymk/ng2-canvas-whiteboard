@@ -899,7 +899,7 @@ class CanvasWhiteboardComponent {
      * @return {?}
      */
     ngOnChanges(changes) {
-        if (changes.options && isEqual(changes.options.currentValue, changes.options.previousValue)) {
+        if (changes.options && !isEqual(changes.options.currentValue, changes.options.previousValue)) {
             this._initInputsFromOptions(changes.options.currentValue);
         }
     }
