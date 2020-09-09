@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Injectable, Input, NgModule, NgZone, Output, ViewChild } from '@angular/core';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isEqual } from 'lodash';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -829,7 +829,12 @@ class CanvasWhiteboardComponent {
         this.redoButtonEnabled = false;
         this.saveDataButtonEnabled = false;
         this.shouldDownloadDrawing = true;
+        /**
+         * \@deprecated. Replaced with strokeColorPickerEnabled and fillColorPickerEnabled inputs
+         */
         this.colorPickerEnabled = false;
+        this.strokeColorPickerEnabled = false;
+        this.fillColorPickerEnabled = false;
         this.lineWidth = 2;
         this.strokeColor = "rgba(0, 0, 0, 1)";
         this.startingColor = "#fff";
@@ -894,7 +899,7 @@ class CanvasWhiteboardComponent {
      * @return {?}
      */
     ngOnChanges(changes) {
-        if (changes.options && changes.options.currentValue != changes.options.previousValue) {
+        if (changes.options && isEqual(changes.options.currentValue, changes.options.previousValue)) {
             this._initInputsFromOptions(changes.options.currentValue);
         }
     }
@@ -956,6 +961,10 @@ class CanvasWhiteboardComponent {
                 this.saveDataButtonEnabled = options.saveDataButtonEnabled;
             if (!this._isNullOrUndefined(options.colorPickerEnabled))
                 this.colorPickerEnabled = options.colorPickerEnabled;
+            if (!this._isNullOrUndefined(options.strokeColorPickerEnabled))
+                this.strokeColorPickerEnabled = options.strokeColorPickerEnabled;
+            if (!this._isNullOrUndefined(options.fillColorPickerEnabled))
+                this.fillColorPickerEnabled = options.fillColorPickerEnabled;
             if (!this._isNullOrUndefined(options.lineWidth))
                 this.lineWidth = options.lineWidth;
             if (!this._isNullOrUndefined(options.strokeColor))
@@ -2002,7 +2011,7 @@ CanvasWhiteboardComponent.decorators = [
                                                   (onToggleShapeSelector)="toggleShapeSelector($event)"
                                                   (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
 
-                <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled || fillColorPickerEnabled"
                                                [previewText]="'Fill'"
                                                [showColorPicker]="showFillColorPicker"
                                                [selectedColor]="fillColor"
@@ -2010,7 +2019,7 @@ CanvasWhiteboardComponent.decorators = [
                                                (onColorSelected)="changeFillColor($event)">
                 </canvas-whiteboard-colorpicker>
 
-                <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled"
+                <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled || strokeColorPickerEnabled"
                                                [previewText]="'Stroke'"
                                                [showColorPicker]="showStrokeColorPicker"
                                                [selectedColor]="strokeColor"
@@ -2084,6 +2093,8 @@ CanvasWhiteboardComponent.propDecorators = {
     saveDataButtonEnabled: [{ type: Input }],
     shouldDownloadDrawing: [{ type: Input }],
     colorPickerEnabled: [{ type: Input }],
+    strokeColorPickerEnabled: [{ type: Input }],
+    fillColorPickerEnabled: [{ type: Input }],
     lineWidth: [{ type: Input }],
     strokeColor: [{ type: Input }],
     startingColor: [{ type: Input }],
@@ -2474,5 +2485,5 @@ CanvasWhiteboardModule.decorators = [
  * Generated bundle index. Do not edit.
  */
 
-export { CanvasWhiteboardComponent, CanvasWhiteboardUpdate, CanvasWhiteboardService, CanvasWhiteboardPoint, CanvasWhiteboardShape, CanvasWhiteboardShapeOptions, CanvasWhiteboardShapeService, RectangleShape, CircleShape, CanvasWhiteboardShapeSelectorComponent, CanvasWhiteboardColorPickerComponent, CanvasWhiteboardShapePreviewComponent, CanvasWhiteboardModule, DEFAULT_STYLES };
+export { CanvasWhiteboardComponent, CanvasWhiteboardUpdate, CanvasWhiteboardService, CanvasWhiteboardPoint, CanvasWhiteboardShape, CanvasWhiteboardShapeOptions, CanvasWhiteboardShapeService, FreeHandShape, CircleShape, LineShape, RectangleShape, SmileyShape, StarShape, CanvasWhiteboardShapeSelectorComponent, CanvasWhiteboardColorPickerComponent, CanvasWhiteboardShapePreviewComponent, CanvasWhiteboardModule, DEFAULT_STYLES };
 //# sourceMappingURL=ng2-canvas-whiteboard.js.map

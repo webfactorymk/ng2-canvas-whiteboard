@@ -32,7 +32,10 @@ export declare class CanvasWhiteboardComponent implements OnInit, AfterViewInit,
     redoButtonEnabled: boolean;
     saveDataButtonEnabled: boolean;
     shouldDownloadDrawing: boolean;
+    /** @deprecated. Replaced with strokeColorPickerEnabled and fillColorPickerEnabled inputs */
     colorPickerEnabled: boolean;
+    strokeColorPickerEnabled: boolean;
+    fillColorPickerEnabled: boolean;
     lineWidth: number;
     strokeColor: string;
     startingColor: string;
