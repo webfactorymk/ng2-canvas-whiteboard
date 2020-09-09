@@ -1,7 +1,7 @@
 # ng2-canvas-whiteboard
 
 ## Canvas version changes
-#### v3.1.2, v4.0.1
+#### v3.1.3, v4.0.1
 Exports all existing canvas shapes, so that they can be easily unregistered from the canvas. (see README for unregistering the shapes).
 
 Also, this version introduces two new Inputs,  `strokeColorPickerEnabled: boolean` and `fillColorPickerEnabled: boolean`, also deprecates the `colorPickerEnabled` Input.
