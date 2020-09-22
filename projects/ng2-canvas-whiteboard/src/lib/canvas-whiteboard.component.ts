@@ -34,7 +34,7 @@ import { cloneDeep, isEqual } from 'lodash-es';
                                           (onShapeSelected)="selectShape($event)"></canvas-whiteboard-shape-selector>
 
         <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled || fillColorPickerEnabled"
-                                       [previewText]="'Fill'"
+                                       [previewText]="fillColorPickerText"
                                        [showColorPicker]="showFillColorPicker"
                                        [selectedColor]="fillColor"
                                        (onToggleColorPicker)="toggleFillColorPicker($event)"
@@ -42,7 +42,7 @@ import { cloneDeep, isEqual } from 'lodash-es';
         </canvas-whiteboard-colorpicker>
 
         <canvas-whiteboard-colorpicker *ngIf="colorPickerEnabled || strokeColorPickerEnabled"
-                                       [previewText]="'Stroke'"
+                                       [previewText]="strokeColorPickerText"
                                        [showColorPicker]="showStrokeColorPicker"
                                        [selectedColor]="strokeColor"
                                        (onToggleColorPicker)="toggleStrokeColorPicker($event)"
@@ -113,6 +113,8 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
   @Input() undoButtonText = '';
   @Input() redoButtonText = '';
   @Input() saveDataButtonText = '';
+  @Input() strokeColorPickerText = 'Stroke';
+  @Input() fillColorPickerText = 'Fill';
   @Input() drawButtonEnabled = true;
   @Input() clearButtonEnabled = true;
   @Input() undoButtonEnabled = false;
@@ -262,6 +264,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
       }
       if (!this._isNullOrUndefined(options.saveDataButtonText)) {
         this.saveDataButtonText = options.saveDataButtonText;
+      }
+      if (!this._isNullOrUndefined(options.strokeColorPickerText)) {
+        this.strokeColorPickerText = options.strokeColorPickerText;
+      }
+      if (!this._isNullOrUndefined(options.fillColorPickerText)) {
+        this.fillColorPickerText = options.fillColorPickerText;
       }
       if (!this._isNullOrUndefined(options.drawButtonEnabled)) {
         this.drawButtonEnabled = options.drawButtonEnabled;
