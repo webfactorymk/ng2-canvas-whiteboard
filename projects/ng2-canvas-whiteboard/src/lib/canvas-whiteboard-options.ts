@@ -22,7 +22,9 @@ export interface CanvasWhiteboardOptions {
   /** @deprecated. Replaced with strokeColorPickerEnabled and fillColorPickerEnabled inputs */
   colorPickerEnabled?: boolean;
   strokeColorPickerEnabled?: boolean;
+  strokeColorPickerText?: string;
   fillColorPickerEnabled?: boolean;
+  fillColorPickerText?: string;
   shouldDownloadDrawing?: boolean;
   startingColor?: string;
   scaleFactor?: number;

@@ -83,6 +83,8 @@ In the html file, you can insert the Canvas Whiteboard
                      [redoButtonText]="'Redo'"
                      [redoButtonEnabled]="true"
                      [colorPickerEnabled]="true"
+                     [fillColorPickerText]="'Fill'"
+                     [strokeColorPickerText]="'Stroke'"
                      [saveDataButtonEnabled]="true"
                      [saveDataButtonText]="'Save'"
                      [lineWidth]="5"
@@ -121,6 +123,8 @@ Code:
     redoButtonText: "Redo",
     redoButtonEnabled: true,
     colorPickerEnabled: true,
+    fillColorPickerText: "Fill",
+    strokeColorPickerText: "Stroke",
     saveDataButtonEnabled: true,
     saveDataButtonText: "Save",
     lineWidth: 5,
@@ -238,8 +242,14 @@ and the original colors will be used when redrawing
 ##### `fillColorPickerEnabled: boolean` (default: false)
 This shows/hides the fill color picker. Note: if this field has been to `false`, but the `colorPickerEnabled` field has been to `true`, the color picker will be shown, as per reverse-compat needs.
 
+##### `fillColorPickerText: string` (default: 'Fill')
+Specify the text to add to the fill color picker button. Default is 'Fill' for reverse-compat needs. 
+
 ##### `strokeColorPickerEnabled: boolean` (default: false)
 This shows/hides the stroke color picker. Note: if this field has been to `false`, but the `colorPickerEnabled` field has been set to `true`, the color picker will be shown, as per reverse-compat needs.
+
+##### `strokeColorPickerText: string` (default: 'Stroke')
+Specify the text to add to the stroke color picker button. Default is 'Stroke' for reverse-compat needs.
 
 ##### `lineWidth: number` (default: 2)
 This input controls the drawing pencil size
