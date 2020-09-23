@@ -1,6 +1,9 @@
 # ng2-canvas-whiteboard
 
 ## Canvas version changes
+#### v4.0.2 merges PR to add variables for fillColorPickerText and strokeColorPickerText
+https://github.com/webfactorymk/ng2-canvas-whiteboard/pull/68
+
 #### v3.1.3, v4.0.1
 Exports all existing canvas shapes, so that they can be easily unregistered from the canvas. (see README for unregistering the shapes).
 
