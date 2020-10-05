@@ -90,18 +90,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
 
   // Number of ms to wait before sending out the updates as an array
   @Input() batchUpdateTimeoutDuration = 100;
-
-  private _imageUrl: string;
-  @Input() set imageUrl(imageUrl: string) {
-    this._imageUrl = imageUrl;
-    this._imageElement = null;
-    this._redrawHistory();
-  }
-
-  get imageUrl(): string {
-    return this._imageUrl;
-  }
-
+  @Input() imageUrl: string;
   @Input() aspectRatio: number;
   @Input() drawButtonClass: string;
   @Input() clearButtonClass: string;
