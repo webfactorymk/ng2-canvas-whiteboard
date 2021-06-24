@@ -447,13 +447,15 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * This method resets the state of the canvas and redraws it.
    * It calls a callback function after redrawing
    * @param callbackFn
+   * @param isForRedraw If true, won't clear undo history from _undoStack
    */
-  private _removeCanvasData(callbackFn?: any): void {
+  _removeCanvasData(callbackFn, isForRedraw): void {
+    const prevShapesMap = new Map(this._shapesMap);
     this._shapesMap = new Map<string, CanvasWhiteboardShape>();
     this._clientDragging = false;
     this._updateHistory = [];
-    this._undoStack = [];
-    this._redrawBackground(callbackFn);
+    if (!isForRedraw) this._undoStack = [];
+    this._redrawBackground(() => callbackFn && callbackFn(prevShapesMap));
   }
 
   /**
@@ -583,6 +585,13 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
   }
 
   /**
+   * Returns the status of allowing undo.
+   */
+  canUndo() {
+    return this._undoStack.length > 0;
+  }
+
+  /**
    * This method takes an UUID for an update, and redraws the canvas by making all updates with that uuid invisible
    * @param updateUUID
    */
@@ -620,6 +629,13 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     const updateUUID = this._redoStack.pop();
     this._redoCanvas(updateUUID);
     callbackFn && callbackFn(updateUUID);
+  }
+
+  /**
+   * Returns the status of allowing redo.
+   */
+  canRedo() {
+    return this._redoStack.length > 0;
   }
 
   /**
@@ -790,12 +806,12 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    */
   private _redrawHistory(): void {
     const updatesToDraw = [].concat(this._updateHistory);
-
-    this._removeCanvasData(() => {
-      updatesToDraw.forEach((update: CanvasWhiteboardUpdate) => {
-        this._draw(update);
+    this._removeCanvasData((prevShapesMap) => {
+      updatesToDraw.forEach((update) => {
+        const prevShape = prevShapesMap.get(update.UUID);
+        this._draw(update, prevShape);
       });
-    });
+    }, true);
   }
 
   /**
@@ -809,8 +825,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * This function saves the last X and Y coordinates that were drawn.
    *
    * @param update The update object.
+   * @param prevShape The shape that this update was part of before. Used for redrawing
    */
-  private _draw(update: CanvasWhiteboardUpdate): void {
+  private _draw(update: CanvasWhiteboardUpdate, prevShape: CanvasWhiteboardShape): void {
     this._updateHistory.push(update);
 
     // map the canvas coordinates to our canvas size since they are scaled.
@@ -827,6 +844,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
         new CanvasWhiteboardPoint(update.x, update.y),
         Object.assign(new CanvasWhiteboardShapeOptions(), update.selectedShapeOptions)
       );
+      if (prevShape && !prevShape.isVisible) shape.isVisible = false;
       this._incompleteShapesMap.set(update.UUID, shape);
       this._drawIncompleteShapes();
     } else if (update.type === CanvasWhiteboardUpdateType.DRAG) {
