@@ -163,6 +163,5 @@
         }
       }
     }
-  },
-  "defaultProject": "ng2-canvas-whiteboard"
+  }
 }
