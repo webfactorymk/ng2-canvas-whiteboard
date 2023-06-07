@@ -1,6 +1,6 @@
 {
   "name": "ng2-canvas-whiteboard-workspace",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "scripts": {
     "build:ng2-canvas-whiteboard:prod": "ng build ng2-canvas-whiteboard --prod",
     "test:ng2-canvas-whiteboard": "ng test ng2-canvas-whiteboard",
@@ -16,7 +16,8 @@
     "@angular/platform-browser": "15.2.9",
     "@angular/platform-browser-dynamic": "15.2.9",
     "@angular/router": "15.2.9",
-    "lodash-es": "4.17.15",
+    "lodash-es": "4.17.21",
+    "ng2-canvas-whiteboard": "file:projects/ng2-canvas-whiteboard-4.0.3.tgz",
     "rxjs": "6.5.5",
     "tslib": "^2.5.3",
     "zone.js": "0.11.8"
