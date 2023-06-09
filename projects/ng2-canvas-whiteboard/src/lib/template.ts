@@ -56,7 +56,7 @@ export const DEFAULT_STYLES = `
     -webkit-animation-iteration-count: infinite;
 }
 
-@-webkit-keyframes pulsate {
+@keyframes pulsate {
     0% {
         -webkit-transform: scale(0.1, 0.1);
         opacity: 0.0;
