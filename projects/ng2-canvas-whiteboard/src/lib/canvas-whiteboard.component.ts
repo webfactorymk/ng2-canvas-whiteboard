@@ -23,7 +23,7 @@ import { cloneDeep, isEqual } from 'lodash-es';
 @Component({
   selector: 'canvas-whiteboard',
   template:
-      `
+    `
     <div class="canvas_wrapper_div">
       <div class="canvas_whiteboard_buttons">
         <canvas-whiteboard-shape-selector *ngIf="shapeSelectorEnabled"
@@ -147,10 +147,10 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
   @Output() onImageLoaded = new EventEmitter<any>();
   @Output() onSave = new EventEmitter<string | Blob>();
 
-  @ViewChild('canvas', {static: true}) canvas: ElementRef;
+  @ViewChild('canvas', { static: true }) canvas: ElementRef;
   context: CanvasRenderingContext2D;
 
-  @ViewChild('incompleteShapesCanvas', {static: true}) private _incompleteShapesCanvas: ElementRef;
+  @ViewChild('incompleteShapesCanvas', { static: true }) private _incompleteShapesCanvas: ElementRef;
   private _incompleteShapesCanvasContext: CanvasRenderingContext2D;
   private _incompleteShapesMap: Map<string, CanvasWhiteboardShape>;
 
@@ -179,9 +179,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
   canvasWhiteboardShapePreviewOptions: CanvasWhiteboardShapeOptions;
 
   constructor(private ngZone: NgZone,
-              private changeDetectorRef: ChangeDetectorRef,
-              private canvasWhiteboardService: CanvasWhiteboardService,
-              private canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
+    private changeDetectorRef: ChangeDetectorRef,
+    private canvasWhiteboardService: CanvasWhiteboardService,
+    private canvasWhiteboardShapeService: CanvasWhiteboardShapeService) {
     this._shapesMap = new Map<string, CanvasWhiteboardShape>();
     this._incompleteShapesMap = new Map<string, CanvasWhiteboardShape>();
     this.canvasWhiteboardShapePreviewOptions = this.generateShapePreviewOptions();
@@ -888,7 +888,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
     if (!update.selectedShapeOptions) {
       // Make a deep copy since we don't want some Shape implementation to change something by accident
       update.selectedShapeOptions = Object.assign(new CanvasWhiteboardShapeOptions(),
-        this.generateShapePreviewOptions(), {lineWidth: this.lineWidth});
+        this.generateShapePreviewOptions(), { lineWidth: this.lineWidth });
     }
   }
 
@@ -1087,6 +1087,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * @param customFileName? The name of the file that should be downloaded
    */
   downloadCanvasImage(returnedDataType: string = 'image/png', downloadData?: string | Blob, customFileName?: string): void {
+    // @ts-ignore
     if (window.navigator.msSaveOrOpenBlob === undefined) {
       const downloadLink = document.createElement('a');
       downloadLink.setAttribute('href', downloadData ? downloadData as string : this.generateCanvasDataUrl(returnedDataType));
@@ -1114,6 +1115,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * @param returnedDataType
    */
   private _saveCanvasBlob(blob: Blob, returnedDataType: string = 'image/png'): void {
+    // @ts-ignore
     window.navigator.msSaveOrOpenBlob(blob, 'canvas_drawing_' +
       new Date().valueOf() + this._generateDataTypeString(returnedDataType));
   }
@@ -1127,6 +1129,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * @param returnedDataQuality
    */
   generateCanvasData(callback: any, returnedDataType: string = 'image/png', returnedDataQuality: number = 1): void {
+    // @ts-ignore
     if (window.navigator.msSaveOrOpenBlob === undefined) {
       callback && callback(this.generateCanvasDataUrl(returnedDataType, returnedDataQuality));
     } else {
