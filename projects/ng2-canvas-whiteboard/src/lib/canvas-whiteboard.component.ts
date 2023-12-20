@@ -1087,6 +1087,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * @param customFileName? The name of the file that should be downloaded
    */
   downloadCanvasImage(returnedDataType: string = 'image/png', downloadData?: string | Blob, customFileName?: string): void {
+    // @ts-ignore
     if (window.navigator.msSaveOrOpenBlob === undefined) {
       const downloadLink = document.createElement('a');
       downloadLink.setAttribute('href', downloadData ? downloadData as string : this.generateCanvasDataUrl(returnedDataType));
@@ -1114,6 +1115,7 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * @param returnedDataType
    */
   private _saveCanvasBlob(blob: Blob, returnedDataType: string = 'image/png'): void {
+    // @ts-ignore
     window.navigator.msSaveOrOpenBlob(blob, 'canvas_drawing_' +
       new Date().valueOf() + this._generateDataTypeString(returnedDataType));
   }
@@ -1127,7 +1129,9 @@ export class CanvasWhiteboardComponent implements OnInit, AfterViewInit, OnChang
    * @param returnedDataQuality
    */
   generateCanvasData(callback: any, returnedDataType: string = 'image/png', returnedDataQuality: number = 1): void {
+    // @ts-ignore
     if (window.navigator.msSaveOrOpenBlob === undefined) {
+      // tslint:disable-next-line:no-unused-expression
       callback && callback(this.generateCanvasDataUrl(returnedDataType, returnedDataQuality));
     } else {
       this.generateCanvasBlob(callback, returnedDataType, returnedDataQuality);
