@@ -1,5 +1,9 @@
 
 ## Canvas version changes
+
+#### v5.0.0 merges PR to add Angular15 support
+https://github.com/webfactorymk/ng2-canvas-whiteboard/pull/110
+
 #### v4.0.2 merges PR to add variables for fillColorPickerText and strokeColorPickerText
 https://github.com/webfactorymk/ng2-canvas-whiteboard/pull/68
 

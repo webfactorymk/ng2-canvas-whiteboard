@@ -1,6 +1,6 @@
 {
   "name": "ng2-canvas-whiteboard",
-  "version": "4.0.3",
+  "version": "5.0.0",
   "author": "webfactory",
   "license": "MIT",
   "description": "A Canvas component for Angular which supports free drawing.",
@@ -14,6 +14,7 @@
     "angular8",
     "angular9",
     "angular10",
+    "angular15",
     "canvas",
     "drawing",
     "touch drawing",
