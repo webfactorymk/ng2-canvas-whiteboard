@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { CanvasWhiteboardUpdate } from './canvas-whiteboard-update.model';
 import { Observable, Subject } from 'rxjs';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class CanvasWhiteboardService {
   private _canvasDrawSubject: Subject<CanvasWhiteboardUpdate[]> = new Subject();
   canvasDrawSubject$: Observable<CanvasWhiteboardUpdate[]> = this._canvasDrawSubject.asObservable();
