@@ -1,16 +1,18 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CanvasWhiteboardComponent } from './canvas-whiteboard.component';
+import { CanvasWhiteboardColorPickerComponent } from './canvas-whiteboard-colorpicker.component';
+import { CanvasWhiteboardShapePreviewComponent, CanvasWhiteboardShapeSelectorComponent } from '../public-api';
 
 describe('Ng2CanvasWhiteboardComponent', () => {
   let component: CanvasWhiteboardComponent;
   let fixture: ComponentFixture<CanvasWhiteboardComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ CanvasWhiteboardComponent ]
+      declarations: [CanvasWhiteboardComponent, CanvasWhiteboardColorPickerComponent, CanvasWhiteboardShapeSelectorComponent, CanvasWhiteboardShapePreviewComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
