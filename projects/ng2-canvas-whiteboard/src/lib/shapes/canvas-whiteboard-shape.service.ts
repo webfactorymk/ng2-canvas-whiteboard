@@ -11,9 +11,11 @@ import { LineShape } from './line-shape';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export type INewCanvasWhiteboardShape<T extends CanvasWhiteboardShape> =
-  new(positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, ...args: any[]) => T;
+  new (positionPoint?: CanvasWhiteboardPoint, options?: CanvasWhiteboardShapeOptions, ...args: any[]) => T;
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class CanvasWhiteboardShapeService {
   private registeredShapesSubject: BehaviorSubject<Array<INewCanvasWhiteboardShape<CanvasWhiteboardShape>>>;
   public registeredShapes$: Observable<Array<INewCanvasWhiteboardShape<CanvasWhiteboardShape>>>;
