@@ -23,7 +23,7 @@ export class CanvasWhiteboardService {
   }
 
   public clearCanvas(): void {
-    this._canvasClearSubject.next();
+    this._canvasClearSubject.next(null);
   }
 
   public undoCanvas(updateUUD: string): void {

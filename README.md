@@ -2,6 +2,8 @@
 
 ## Canvas version changes
 
+#### v7.0.1 fix dependency issues 
+
 #### v7.0.0 merges PR to add Angular17 support
 https://github.com/webfactorymk/ng2-canvas-whiteboard/pull/112
 

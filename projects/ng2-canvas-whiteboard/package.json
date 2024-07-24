@@ -1,6 +1,6 @@
 {
   "name": "ng2-canvas-whiteboard",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "author": "webfactory",
   "license": "MIT",
   "description": "A Canvas component for Angular which supports free drawing.",
@@ -35,9 +35,9 @@
     "url": "https://github.com/WebFactoryMk/ng2-canvas-whiteboard.git"
   },
   "peerDependencies": {
-    "@angular/common": "^17.0.0",
-    "@angular/core": "^17.0.0",
-    "rxjs": "^6.0.0"
+    "@angular/common": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "rxjs": "^7.0.0"
   },
   "dependencies": {
     "lodash-es": "4.17.21",
