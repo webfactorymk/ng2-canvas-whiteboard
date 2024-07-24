@@ -3,7 +3,10 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/app",
-    "types": []
+    "types": [],
+    "paths": {
+      "ng2-canvas-whiteboard": ["dist/ng2-canvas-whiteboard"]
+    }
   },
   "files": [
     "src/main.ts",
