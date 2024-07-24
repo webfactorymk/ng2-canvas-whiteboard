@@ -1,6 +1,8 @@
 
 ## Canvas version changes
 
+#### v6.0.0 Updates to Angular16
+
 #### v5.0.0 merges PR to add Angular15 support
 https://github.com/webfactorymk/ng2-canvas-whiteboard/pull/110
 
